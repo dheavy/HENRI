@@ -1,0 +1,6 @@
+data/raw
+data/processed
+data/reports
+.env
+
+.DS_Store
