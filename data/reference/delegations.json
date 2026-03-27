@@ -1,0 +1,2012 @@
+{
+  "ERE": {
+    "name": "ERE",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ERE ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BCT": {
+    "name": "BCT",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BCT ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "OUG": {
+    "name": "OUG",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "OUG ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "YAN": {
+    "name": "YAN",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "YAN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ALO": {
+    "name": "ALO",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ALO ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BEY": {
+    "name": "BEY",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BEY ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "GOM": {
+    "name": "GOM",
+    "region": null,
+    "country": "Rd Congo",
+    "country_iso3": null,
+    "smt_assignmentgroup": "GOM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "CAI": {
+    "name": "CAI",
+    "region": null,
+    "country": "Colombia",
+    "country_iso3": "COL",
+    "smt_assignmentgroup": "CAI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BOG": {
+    "name": "BOG",
+    "region": null,
+    "country": "Democratic Republic Of The Congo",
+    "country_iso3": null,
+    "smt_assignmentgroup": "BOG ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BME": {
+    "name": "BME",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BME ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MOS": {
+    "name": "MOS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MOS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KYI": {
+    "name": "KYI",
+    "region": null,
+    "country": "Ukraine",
+    "country_iso3": "UKR",
+    "smt_assignmentgroup": "KYI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "GAZ": {
+    "name": "GAZ",
+    "region": null,
+    "country": "Palestine",
+    "country_iso3": "PSE",
+    "smt_assignmentgroup": "GAZ ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BAH": {
+    "name": "BAH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BAH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "AMM": {
+    "name": "AMM",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "AMM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BAG": {
+    "name": "BAG",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BAG ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ABJ": {
+    "name": "ABJ",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ABJ ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KAD": {
+    "name": "KAD",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KAD ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ADD": {
+    "name": "ADD",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ADD ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BUK": {
+    "name": "BUK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BUK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "SAN": {
+    "name": "SAN",
+    "region": null,
+    "country": "Mali",
+    "country_iso3": "MLI",
+    "smt_assignmentgroup": "SAN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BEJ": {
+    "name": "BEJ",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BEJ ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BUU": {
+    "name": "BUU",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BUU ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "SUV": {
+    "name": "SUV",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SUV ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KIN": {
+    "name": "KIN",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KIN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "LON": {
+    "name": "LON",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "LON ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "NDJ": {
+    "name": "NDJ",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "NDJ ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KAB": {
+    "name": "KAB",
+    "region": null,
+    "country": "Afghanistan",
+    "country_iso3": "AFG",
+    "smt_assignmentgroup": "KAB ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "NAI": {
+    "name": "NAI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "NAI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BNG": {
+    "name": "BNG",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BNG ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "COT": {
+    "name": "COT",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "COT ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "JUB": {
+    "name": "JUB",
+    "region": null,
+    "country": "South Sudan",
+    "country_iso3": "SSD",
+    "smt_assignmentgroup": "JUB ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "UVI": {
+    "name": "UVI",
+    "region": null,
+    "country": "Democratic Republic Of The Congo",
+    "country_iso3": null,
+    "smt_assignmentgroup": "UVI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DJA": {
+    "name": "DJA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DJA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "PES": {
+    "name": "PES",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "PES ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "LIM": {
+    "name": "LIM",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "LIM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DAM": {
+    "name": "DAM",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DAM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MOU": {
+    "name": "MOU",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MOU ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "YAO": {
+    "name": "YAO",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "YAO ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KOW": {
+    "name": "KOW",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KOW ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MEX": {
+    "name": "MEX",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MEX ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "PAR": {
+    "name": "PAR",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "PAR ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "LAK": {
+    "name": "LAK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "LAK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MAN": {
+    "name": "MAN",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MAN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "POP": {
+    "name": "POP",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "POP ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "WAU": {
+    "name": "WAU",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "WAU ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "CAA": {
+    "name": "CAA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "CAA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BUX": {
+    "name": "BUX",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BUX ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ABE": {
+    "name": "ABE",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ABE ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "SAR": {
+    "name": "SAR",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SAR ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MRA": {
+    "name": "MRA",
+    "region": null,
+    "country": "Cameroon",
+    "country_iso3": "CMR",
+    "smt_assignmentgroup": "MRA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DAK": {
+    "name": "DAK",
+    "region": null,
+    "country": "Mali",
+    "country_iso3": "MLI",
+    "smt_assignmentgroup": "DAK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "NEK": {
+    "name": "NEK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "NEK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ODE": {
+    "name": "ODE",
+    "region": null,
+    "country": "Ukraine",
+    "country_iso3": "UKR",
+    "smt_assignmentgroup": "ODE ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TGY": {
+    "name": "TGY",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TGY ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KHR": {
+    "name": "KHR",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KHR ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KHC": {
+    "name": "KHC",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KHC ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "OSH": {
+    "name": "OSH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "OSH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "SOK": {
+    "name": "SOK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SOK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ADE": {
+    "name": "ADE",
+    "region": null,
+    "country": "Yemen",
+    "country_iso3": "YEM",
+    "smt_assignmentgroup": "ADE ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MAZ": {
+    "name": "MAZ",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MAZ ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MAY": {
+    "name": "MAY",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MAY ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MSC": {
+    "name": "MSC",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MSC ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MOH": {
+    "name": "MOH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MOH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "AFC": {
+    "name": "AFC",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "AFC ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "COL": {
+    "name": "COL",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "COL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "HOE": {
+    "name": "HOE",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "HOE ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "OUH": {
+    "name": "OUH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "OUH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BUJ": {
+    "name": "BUJ",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BUJ ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MUB": {
+    "name": "MUB",
+    "region": null,
+    "country": "Nigeria",
+    "country_iso3": "NGA",
+    "smt_assignmentgroup": "MUB ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "YEI": {
+    "name": "YEI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "YEI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MIU": {
+    "name": "MIU",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MIU ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "LVI": {
+    "name": "LVI",
+    "region": null,
+    "country": "Ukraine",
+    "country_iso3": "UKR",
+    "smt_assignmentgroup": "LVI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MEK": {
+    "name": "MEK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MEK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ADR": {
+    "name": "ADR",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ADR ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TAC": {
+    "name": "TAC",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TAC ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ERB": {
+    "name": "ERB",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ERB ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "POA": {
+    "name": "POA",
+    "region": null,
+    "country": "Usa",
+    "country_iso3": "USA",
+    "smt_assignmentgroup": "POA ICT L2 Support",
+    "latitude": 32.9628232,
+    "longitude": -117.0358646,
+    "source": "servicenow_only"
+  },
+  "SIT": {
+    "name": "SIT",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SIT ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TUN": {
+    "name": "TUN",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TUN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TBR": {
+    "name": "TBR",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TBR ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MAP": {
+    "name": "MAP",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MAP ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TRI": {
+    "name": "TRI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TRI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DNI": {
+    "name": "DNI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DNI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TBI": {
+    "name": "TBI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TBI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "PEM": {
+    "name": "PEM",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "PEM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DEL": {
+    "name": "DEL",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DEL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TEG": {
+    "name": "TEG",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TEG ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ABI": {
+    "name": "ABI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ABI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DAT": {
+    "name": "DAT",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DAT ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MOP": {
+    "name": "MOP",
+    "region": null,
+    "country": "Mali",
+    "country_iso3": "MLI",
+    "smt_assignmentgroup": "MOP ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BUN": {
+    "name": "BUN",
+    "region": null,
+    "country": "Democratic Republic Of The Congo",
+    "country_iso3": null,
+    "smt_assignmentgroup": "BUN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ISL": {
+    "name": "ISL",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ISL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BAN": {
+    "name": "BAN",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BAN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DSS": {
+    "name": "DSS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DSS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "JER": {
+    "name": "JER",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "JER ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BIK": {
+    "name": "BIK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BIK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BLC": {
+    "name": "BLC",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BLC ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "JAL": {
+    "name": "JAL",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "JAL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "HER": {
+    "name": "HER",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "HER ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MYI": {
+    "name": "MYI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MYI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "RAM": {
+    "name": "RAM",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "RAM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "HAS": {
+    "name": "HAS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "HAS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MOG": {
+    "name": "MOG",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MOG ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "SAD": {
+    "name": "SAD",
+    "region": null,
+    "country": "Lebanon",
+    "country_iso3": "LBN",
+    "smt_assignmentgroup": "SAD ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TEH": {
+    "name": "TEH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TEH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "YOL": {
+    "name": "YOL",
+    "region": null,
+    "country": "Nigeria",
+    "country_iso3": "NGA",
+    "smt_assignmentgroup": "YOL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BRA": {
+    "name": "BRA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BRA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "PUA": {
+    "name": "PUA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "PUA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BAM": {
+    "name": "BAM",
+    "region": null,
+    "country": "Mali",
+    "country_iso3": "MLI",
+    "smt_assignmentgroup": "BAM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "GAO": {
+    "name": "GAO",
+    "region": null,
+    "country": "Mali",
+    "country_iso3": "MLI",
+    "smt_assignmentgroup": "GAO ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "FLO": {
+    "name": "FLO",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "FLO ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BEH": {
+    "name": "BEH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BEH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BEL": {
+    "name": "BEL",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BEL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KAM": {
+    "name": "KAM",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KAM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "SCI": {
+    "name": "SCI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SCI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MAL": {
+    "name": "MAL",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MAL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "EBL": {
+    "name": "EBL",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "EBL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TYR": {
+    "name": "TYR",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TYR ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "SMM": {
+    "name": "SMM",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SMM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "AMW": {
+    "name": "AMW",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "AMW ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KIS": {
+    "name": "KIS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KIS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BNI": {
+    "name": "BNI",
+    "region": null,
+    "country": "Drc",
+    "country_iso3": null,
+    "smt_assignmentgroup": "BNI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MEE": {
+    "name": "MEE",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MEE ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "HAW": {
+    "name": "HAW",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "HAW ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "NAS": {
+    "name": "NAS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "NAS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "GUL": {
+    "name": "GUL",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "GUL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "PSU": {
+    "name": "PSU",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "PSU ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MUA": {
+    "name": "MUA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MUA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "SYJ": {
+    "name": "SYJ",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SYJ ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DHA": {
+    "name": "DHA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DHA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "LOM": {
+    "name": "LOM",
+    "region": null,
+    "country": "Togo",
+    "country_iso3": "TGO",
+    "smt_assignmentgroup": "LOM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ZAH": {
+    "name": "ZAH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ZAH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DJI": {
+    "name": "DJI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DJI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KAS": {
+    "name": "KAS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KAS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KYN": {
+    "name": "KYN",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KYN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MOM": {
+    "name": "MOM",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MOM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "CTN": {
+    "name": "CTN",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "CTN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KIG": {
+    "name": "KIG",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KIG ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DAA": {
+    "name": "DAA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DAA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BGS": {
+    "name": "BGS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BGS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "SEO": {
+    "name": "SEO",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SEO ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "CAN": {
+    "name": "CAN",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "CAN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KDL": {
+    "name": "KDL",
+    "region": null,
+    "country": "Mali",
+    "country_iso3": "MLI",
+    "smt_assignmentgroup": "KDL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TOM": {
+    "name": "TOM",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TOM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "SAA": {
+    "name": "SAA",
+    "region": null,
+    "country": "Lebanon",
+    "country_iso3": "LBN",
+    "smt_assignmentgroup": "SAA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BON": {
+    "name": "BON",
+    "region": null,
+    "country": "Côte D'Ivoire",
+    "country_iso3": "CIV",
+    "smt_assignmentgroup": "BON ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MRB": {
+    "name": "MRB",
+    "region": null,
+    "country": "Yemen",
+    "country_iso3": "YEM",
+    "smt_assignmentgroup": "MRB ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "LSH": {
+    "name": "LSH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "LSH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "PAN": {
+    "name": "PAN",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "PAN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "JMH": {
+    "name": "JMH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "JMH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ALG": {
+    "name": "ALG",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ALG ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "GVA": {
+    "name": "GVA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "GVA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "PRE": {
+    "name": "PRE",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "PRE ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "LUH": {
+    "name": "LUH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "LUH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "FAI": {
+    "name": "FAI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "FAI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KYA": {
+    "name": "KYA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KYA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "PPO": {
+    "name": "PPO",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "PPO ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TOK": {
+    "name": "TOK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TOK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KUA": {
+    "name": "KUA",
+    "region": null,
+    "country": "Cameroon",
+    "country_iso3": "CMR",
+    "smt_assignmentgroup": "KUA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TRC": {
+    "name": "TRC",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TRC ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "EBA": {
+    "name": "EBA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "EBA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DOI": {
+    "name": "DOI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DOI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KOU": {
+    "name": "KOU",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KOU ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "HOM": {
+    "name": "HOM",
+    "region": null,
+    "country": "Syria",
+    "country_iso3": "SYR",
+    "smt_assignmentgroup": "HOM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "WSU": {
+    "name": "WSU",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "WSU ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DJB": {
+    "name": "DJB",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DJB ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "JIJ": {
+    "name": "JIJ",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "JIJ ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "WAS": {
+    "name": "WAS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "WAS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "HAG": {
+    "name": "HAG",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "HAG ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "CHS": {
+    "name": "CHS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "CHS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ALJ": {
+    "name": "ALJ",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ALJ ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KBA": {
+    "name": "KBA",
+    "region": null,
+    "country": "Cameroon",
+    "country_iso3": "CMR",
+    "smt_assignmentgroup": "KBA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "PAH": {
+    "name": "PAH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "PAH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "NYC": {
+    "name": "NYC",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "NYC ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BMB": {
+    "name": "BMB",
+    "region": null,
+    "country": "Mali",
+    "country_iso3": "MLI",
+    "smt_assignmentgroup": "BMB ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BGD": {
+    "name": "BGD",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BGD ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TEL": {
+    "name": "TEL",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TEL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "QUB": {
+    "name": "QUB",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "QUB ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DON": {
+    "name": "DON",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DON ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DUS": {
+    "name": "DUS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DUS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "CUC": {
+    "name": "CUC",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "CUC ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "GAR": {
+    "name": "GAR",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "GAR ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "FDA": {
+    "name": "FDA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "FDA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "RAD": {
+    "name": "RAD",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "RAD ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DAR": {
+    "name": "DAR",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DAR ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ADO": {
+    "name": "ADO",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ADO ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "JOS": {
+    "name": "JOS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "JOS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "FOZ": {
+    "name": "FOZ",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "FOZ ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "SAO": {
+    "name": "SAO",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SAO ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BAD": {
+    "name": "BAD",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BAD ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BAK": {
+    "name": "BAK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BAK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MIR": {
+    "name": "MIR",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MIR ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "MRO": {
+    "name": "MRO",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MRO ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "TSK": {
+    "name": "TSK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TSK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DAP": {
+    "name": "DAP",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DAP ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "ALC": {
+    "name": "ALC",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ALC ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "BUA": {
+    "name": "BUA",
+    "region": null,
+    "country": "Cameroon",
+    "country_iso3": "CMR",
+    "smt_assignmentgroup": "BUA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "DOU": {
+    "name": "DOU",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DOU ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "YES": {
+    "name": "YES",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "YES ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  },
+  "KUD": {
+    "name": "KUD",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KUD ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow_only"
+  }
+}

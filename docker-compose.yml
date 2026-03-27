@@ -1,0 +1,7 @@
+services:
+  henri:
+    build: .
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+    command: ["run-snow"]

@@ -1,0 +1,375 @@
+"""Generate the HENRI baseline HTML report from processed data."""
+
+from __future__ import annotations
+
+import json
+import logging
+from pathlib import Path
+from typing import Any
+
+import pandas as pd
+import numpy as np
+from jinja2 import Environment, FileSystemLoader
+
+from snow_parse.parser import load_and_parse
+from snow_parse.prometheus_parser import enrich_prometheus
+from snow_parse.human_parser import enrich_human
+from .timeseries import aggregate_incidents, detect_anomalies
+from .surge_detector import detect_surges
+
+logger = logging.getLogger(__name__)
+
+# Project root (two levels up from this file)
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _load_registry(data_dir: Path) -> dict[str, Any]:
+    """Load the delegation registry from reference/delegations.json."""
+    registry_path = data_dir / "reference" / "delegations.json"
+    if registry_path.exists():
+        with open(registry_path) as f:
+            return json.load(f)
+    logger.warning("Delegation registry not found at %s", registry_path)
+    return {}
+
+
+def _load_grafana_bandwidth(data_dir: Path) -> pd.DataFrame | None:
+    """Load bandwidth parquet if it exists."""
+    bw_path = data_dir / "processed" / "bandwidth.parquet"
+    if bw_path.exists():
+        return pd.read_parquet(bw_path)
+    return None
+
+
+def _safe_json(obj: Any) -> str:
+    """Serialize to JSON, handling Period and Timestamp types."""
+
+    def _default(o: Any) -> Any:
+        if isinstance(o, pd.Period):
+            return str(o)
+        if isinstance(o, (pd.Timestamp, np.datetime64)):
+            return str(o)
+        if isinstance(o, (np.integer,)):
+            return int(o)
+        if isinstance(o, (np.floating,)):
+            return float(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        raise TypeError(f"Object of type {type(o)} is not JSON serializable")
+
+    return json.dumps(obj, default=_default)
+
+
+def _build_summary(df: pd.DataFrame) -> dict[str, Any]:
+    """Compute top-level summary statistics."""
+    total = len(df)
+    automated = int(df["is_prometheus"].sum()) if "is_prometheus" in df.columns else 0
+    human = total - automated
+    network = int(df["is_network_related"].sum()) if "is_network_related" in df.columns else 0
+
+    return {
+        "total_tickets": total,
+        "automated_count": automated,
+        "automated_pct": round(automated / total * 100, 1) if total else 0,
+        "human_count": human,
+        "human_pct": round(human / total * 100, 1) if total else 0,
+        "network_count": network,
+        "network_pct": round(network / total * 100, 1) if total else 0,
+    }
+
+
+def _build_region_chart_data(agg: dict[str, pd.DataFrame]) -> dict[str, Any]:
+    """Prepare region monthly data for Chart.js bar chart."""
+    rm = agg.get("region_monthly")
+    if rm is None or rm.empty:
+        return {"labels": [], "datasets": []}
+
+    months = sorted(rm["month"].unique())
+    regions = sorted(rm["region"].unique())
+    labels = [str(m) for m in months]
+
+    # Color palette for regions
+    palette = [
+        "#D52B1E", "#2C5F8A", "#4CAF50", "#FF9800", "#9C27B0",
+        "#00BCD4", "#795548", "#607D8B", "#E91E63", "#3F51B5",
+    ]
+
+    datasets = []
+    for i, region in enumerate(regions):
+        region_data = rm[rm["region"] == region]
+        month_counts = {row["month"]: row["count"] for _, row in region_data.iterrows()}
+        datasets.append({
+            "label": str(region),
+            "data": [int(month_counts.get(m, 0)) for m in months],
+            "backgroundColor": palette[i % len(palette)],
+        })
+
+    return {"labels": labels, "datasets": datasets}
+
+
+def _build_top_delegations(df: pd.DataFrame, top_n: int = 20) -> list[dict]:
+    """Top N most-alerting delegations with dominant alert type."""
+    prom = df[df["is_prometheus"] & df["delegation_code"].notna()].copy()
+    if prom.empty:
+        return []
+
+    deleg_counts = prom.groupby("delegation_code").size().reset_index(name="total_count")
+    deleg_counts = deleg_counts.nlargest(top_n, "total_count")
+
+    result = []
+    for _, row in deleg_counts.iterrows():
+        code = row["delegation_code"]
+        subset = prom[prom["delegation_code"] == code]
+        dominant = subset["alert_name"].value_counts()
+        dominant_alert = dominant.index[0] if not dominant.empty else "N/A"
+        dominant_count = int(dominant.iloc[0]) if not dominant.empty else 0
+        result.append({
+            "delegation_code": code,
+            "total_count": int(row["total_count"]),
+            "dominant_alert": dominant_alert,
+            "dominant_count": dominant_count,
+        })
+
+    return result
+
+
+def _build_sitedown_heatmap(df: pd.DataFrame) -> dict[str, Any]:
+    """FortigateSiteDown heatmap: delegation x month matrix."""
+    sd = df[
+        (df["alert_name"] == "FortigateSiteDown")
+        & df["delegation_code"].notna()
+        & df["opened_dt"].notna()
+    ].copy()
+
+    if sd.empty:
+        return {"delegations": [], "months": [], "matrix": [], "max_count": 0}
+
+    sd["month"] = sd["opened_dt"].dt.to_period("M")
+
+    pivot = sd.groupby(["delegation_code", "month"]).size().reset_index(name="count")
+    months = sorted(pivot["month"].unique())
+    delegations = sorted(pivot["delegation_code"].unique())
+
+    # Build a lookup
+    lookup: dict[tuple[str, str], int] = {}
+    for _, row in pivot.iterrows():
+        lookup[(row["delegation_code"], str(row["month"]))] = int(row["count"])
+
+    month_strs = [str(m) for m in months]
+    matrix = []
+    for deleg in delegations:
+        row_data = [lookup.get((deleg, m), 0) for m in month_strs]
+        matrix.append(row_data)
+
+    max_count = max((max(r) for r in matrix if r), default=0)
+
+    return {
+        "delegations": list(delegations),
+        "months": month_strs,
+        "matrix": matrix,
+        "max_count": max_count,
+    }
+
+
+def _build_keyword_breakdown(df: pd.DataFrame) -> list[dict]:
+    """Human ticket keyword frequency by region."""
+    human = df[~df["is_prometheus"]].copy()
+    if human.empty or "matched_keywords" not in human.columns:
+        return []
+
+    # Parse matched_keywords string back to lists
+    import ast
+
+    rows = []
+    for _, row in human.iterrows():
+        try:
+            keywords = ast.literal_eval(row["matched_keywords"])
+        except (ValueError, SyntaxError):
+            keywords = []
+        region = row.get("region", "Unknown")
+        for kw in keywords:
+            rows.append({"region": region, "keyword": kw})
+
+    if not rows:
+        return []
+
+    kw_df = pd.DataFrame(rows)
+    result = (
+        kw_df.groupby(["region", "keyword"])
+        .size()
+        .reset_index(name="count")
+        .sort_values(["region", "count"], ascending=[True, False])
+    )
+
+    return result.to_dict("records")
+
+
+def _build_category_chart_data(df: pd.DataFrame) -> dict[str, Any]:
+    """Alert category distribution for Chart.js pie chart."""
+    prom = df[df["is_prometheus"] & df["alert_category"].notna()].copy()
+    if prom.empty:
+        return {"labels": [], "data": [], "colors": []}
+
+    counts = prom["alert_category"].value_counts()
+    labels = counts.index.tolist()
+    data = [int(v) for v in counts.values]
+
+    palette = [
+        "#D52B1E", "#2C5F8A", "#4CAF50", "#FF9800", "#9C27B0",
+        "#00BCD4", "#795548", "#607D8B", "#E91E63", "#3F51B5",
+        "#CDDC39", "#FF5722", "#009688", "#673AB7", "#FFC107",
+    ]
+    colors = [palette[i % len(palette)] for i in range(len(labels))]
+
+    return {"labels": labels, "data": data, "colors": colors}
+
+
+def _build_bandwidth_context(bw_df: pd.DataFrame | None) -> dict[str, Any] | None:
+    """Prepare Grafana bandwidth overview data if available."""
+    if bw_df is None or bw_df.empty:
+        return None
+
+    # Aggregate per site
+    site_agg = (
+        bw_df.groupby(["site", "direction"])
+        .agg(avg_bps=("avg_bps", "mean"), peak_bps=("peak_bps", "max"), p95_bps=("p95_bps", "mean"))
+        .reset_index()
+    )
+
+    # Top sites by throughput (average of in + out)
+    site_total = (
+        bw_df.groupby("site")["avg_bps"]
+        .mean()
+        .reset_index()
+        .sort_values("avg_bps", ascending=False)
+    )
+
+    top_sites = site_total.head(10).to_dict("records")
+    bottom_sites = site_total.tail(10).to_dict("records")
+
+    # Format bps values for display
+    def fmt_bps(val: float) -> str:
+        if val >= 1e9:
+            return f"{val / 1e9:.1f} Gbps"
+        if val >= 1e6:
+            return f"{val / 1e6:.1f} Mbps"
+        if val >= 1e3:
+            return f"{val / 1e3:.1f} Kbps"
+        return f"{val:.0f} bps"
+
+    for row in top_sites + bottom_sites:
+        row["avg_bps_fmt"] = fmt_bps(row["avg_bps"])
+
+    return {
+        "top_sites": top_sites,
+        "bottom_sites": bottom_sites,
+        "total_sites": len(site_total),
+    }
+
+
+def generate_report(data_dir: Path) -> Path:
+    """Generate the HENRI baseline HTML report.
+
+    Loads processed data from *data_dir*, runs all analysis, renders
+    the Jinja2 template, and writes the report to
+    ``data_dir/reports/baseline_report.html``.
+
+    Parameters
+    ----------
+    data_dir : Path
+        Root data directory containing ``raw/`` (or ``fixtures/``),
+        ``reference/``, and ``processed/`` subdirectories.
+
+    Returns
+    -------
+    Path
+        Path to the generated HTML report.
+    """
+    data_dir = Path(data_dir)
+
+    # Load data — prefer processed parquet, fall back to raw CSV parsing
+    parquet_path = data_dir / "processed" / "incidents_all.parquet"
+    if parquet_path.exists():
+        logger.info("Loading processed incidents from %s", parquet_path)
+        df = pd.read_parquet(parquet_path)
+    else:
+        logger.info("Loading and parsing ServiceNow data from %s", data_dir)
+        df = load_and_parse(data_dir)
+        if not df.empty:
+            df = enrich_prometheus(df)
+            df = enrich_human(df)
+
+    if df.empty:
+        logger.warning("No data loaded; generating a minimal report")
+        df = pd.DataFrame()
+
+    registry = _load_registry(data_dir)
+
+    # Assign region from registry where possible
+    if not df.empty and "delegation_code" in df.columns:
+        df["region"] = df["delegation_code"].apply(
+            lambda c: registry.get(str(c).upper() if pd.notna(c) else "", {}).get("region", "Unknown")
+        )
+
+    # Run analyses
+    summary = _build_summary(df) if not df.empty else {
+        "total_tickets": 0, "automated_count": 0, "automated_pct": 0,
+        "human_count": 0, "human_pct": 0, "network_count": 0, "network_pct": 0,
+    }
+
+    agg = aggregate_incidents(df) if not df.empty else {}
+    region_chart = _build_region_chart_data(agg)
+    top_delegations = _build_top_delegations(df) if not df.empty else []
+    sitedown_heatmap = _build_sitedown_heatmap(df) if not df.empty else {
+        "delegations": [], "months": [], "matrix": [], "max_count": 0,
+    }
+    surges = detect_surges(df, registry) if not df.empty else []
+    keyword_breakdown = _build_keyword_breakdown(df) if not df.empty else []
+    category_chart = _build_category_chart_data(df) if not df.empty else {
+        "labels": [], "data": [], "colors": [],
+    }
+
+    # Anomalies
+    anomalies = []
+    if not df.empty and "delegation_code" in df.columns:
+        try:
+            anom_df = detect_anomalies(df[df["delegation_code"].notna()], "delegation_code")
+            anomalies = anom_df.to_dict("records")
+        except Exception as exc:
+            logger.warning("Anomaly detection failed: %s", exc)
+
+    # Grafana data (optional)
+    bw_df = _load_grafana_bandwidth(data_dir)
+    bandwidth_ctx = _build_bandwidth_context(bw_df)
+
+    # Prepare template context
+    context = {
+        "summary": summary,
+        "region_chart_json": _safe_json(region_chart),
+        "top_delegations": top_delegations,
+        "sitedown_heatmap": sitedown_heatmap,
+        "surges": surges,
+        "keyword_breakdown": keyword_breakdown,
+        "category_chart_json": _safe_json(category_chart),
+        "anomalies": anomalies,
+        "has_grafana_data": bandwidth_ctx is not None,
+        "bandwidth": bandwidth_ctx,
+    }
+
+    # Render template
+    template_dir = _PROJECT_ROOT / "templates"
+    env = Environment(
+        loader=FileSystemLoader(str(template_dir)),
+        autoescape=True,
+    )
+    template = env.get_template("baseline_report.html.j2")
+    html = template.render(**context)
+
+    # Write output
+    output_dir = data_dir / "reports"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / "baseline_report.html"
+    output_path.write_text(html, encoding="utf-8")
+
+    logger.info("Baseline report written to %s", output_path)
+    return output_path

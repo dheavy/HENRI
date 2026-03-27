@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HENRI Baseline Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --red: #D52B1E;
+    --red-light: #F8E0DE;
+    --dark: #1A1A1A;
+    --gray-900: #2D2D2D;
+    --gray-700: #555;
+    --gray-500: #888;
+    --gray-300: #CCC;
+    --gray-100: #F5F5F5;
+    --white: #FFFFFF;
+    --blue: #2C5F8A;
+    --green: #4CAF50;
+    --orange: #FF9800;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--dark);
+    background: var(--gray-100);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+    font-size: 14px;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  header {
+    background: var(--white);
+    border-bottom: 4px solid var(--red);
+    padding: 24px 0;
+    margin-bottom: 32px;
+  }
+
+  header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--dark);
+  }
+
+  header h1 span {
+    color: var(--red);
+  }
+
+  header .subtitle {
+    color: var(--gray-500);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  h2.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin: 40px 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--red);
+  }
+
+  h2.section-title .num {
+    display: inline-block;
+    background: var(--red);
+    color: var(--white);
+    width: 28px;
+    height: 28px;
+    text-align: center;
+    line-height: 28px;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-right: 8px;
+  }
+
+  /* Summary cards */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .card .label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gray-500);
+    margin-bottom: 4px;
+  }
+
+  .card .value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+
+  .card .pct {
+    font-size: 14px;
+    color: var(--gray-700);
+    margin-top: 2px;
+  }
+
+  .card.accent { border-left: 4px solid var(--red); }
+  .card.blue { border-left: 4px solid var(--blue); }
+  .card.green { border-left: 4px solid var(--green); }
+  .card.orange { border-left: 4px solid var(--orange); }
+
+  /* Charts */
+  .chart-wrapper {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .chart-wrapper canvas {
+    max-height: 400px;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    margin-bottom: 24px;
+  }
+
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 13px;
+  }
+
+  th {
+    background: var(--gray-900);
+    color: var(--white);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  tr:nth-child(even) td { background: var(--gray-100); }
+  tr:hover td { background: var(--red-light); }
+
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Heatmap */
+  .heatmap-container {
+    overflow-x: auto;
+    margin-bottom: 24px;
+  }
+
+  .heatmap-container table th,
+  .heatmap-container table td {
+    text-align: center;
+    padding: 6px 10px;
+    font-size: 12px;
+    min-width: 60px;
+  }
+
+  .heatmap-container table td.heat {
+    color: var(--white);
+    font-weight: 600;
+  }
+
+  .heatmap-container table td.heat-zero {
+    background: var(--gray-100);
+    color: var(--gray-500);
+  }
+
+  /* Surge timeline */
+  .surge-card {
+    background: var(--white);
+    border-left: 4px solid var(--red);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .surge-card .region-badge {
+    display: inline-block;
+    background: var(--red);
+    color: var(--white);
+    padding: 2px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  .surge-card .meta {
+    color: var(--gray-700);
+    font-size: 13px;
+    margin-top: 6px;
+  }
+
+  .surge-card .delegations {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-top: 4px;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .tag-warn {
+    background: #FFF3E0;
+    color: #E65100;
+  }
+
+  .tag-ok {
+    background: #E8F5E9;
+    color: #2E7D32;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--gray-500);
+    font-style: italic;
+  }
+
+  /* Print */
+  @media print {
+    body { background: white; font-size: 12px; }
+    .container { max-width: 100%; padding: 0; }
+    header { border-bottom-width: 2px; }
+    .card, .chart-wrapper, table, .surge-card { break-inside: avoid; box-shadow: none; border: 1px solid var(--gray-300); }
+    h2.section-title { break-after: avoid; }
+  }
+
+  footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--gray-500);
+    font-size: 12px;
+    border-top: 1px solid var(--gray-300);
+    margin-top: 48px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div>
+      <h1><span>HENRI</span> Baseline Report</h1>
+      <div class="subtitle">Humanitarian Early-warning Network Resilience Intelligence</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- 1. Summary Statistics -->
+  <h2 class="section-title"><span class="num">1</span> Summary Statistics</h2>
+  <div class="cards">
+    <div class="card accent">
+      <div class="label">Total Tickets</div>
+      <div class="value">{{ summary.total_tickets | default(0) }}</div>
+    </div>
+    <div class="card blue">
+      <div class="label">Automated (Prometheus)</div>
+      <div class="value">{{ summary.automated_count | default(0) }}</div>
+      <div class="pct">{{ summary.automated_pct | default(0) }}%</div>
+    </div>
+    <div class="card green">
+      <div class="label">Human-filed</div>
+      <div class="value">{{ summary.human_count | default(0) }}</div>
+      <div class="pct">{{ summary.human_pct | default(0) }}%</div>
+    </div>
+    <div class="card orange">
+      <div class="label">Network-related</div>
+      <div class="value">{{ summary.network_count | default(0) }}</div>
+      <div class="pct">{{ summary.network_pct | default(0) }}%</div>
+    </div>
+  </div>
+
+  <!-- 2. Per-region Monthly Incident Volume -->
+  <h2 class="section-title"><span class="num">2</span> Per-region Monthly Incident Volume</h2>
+  <div class="chart-wrapper">
+    <canvas id="regionChart"></canvas>
+  </div>
+
+  <!-- 3. Top 20 Most-alerting Delegations -->
+  <h2 class="section-title"><span class="num">3</span> Top 20 Most-alerting Delegations</h2>
+  {% if top_delegations %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Delegation</th>
+        <th>Total Alerts</th>
+        <th>Dominant Alert Type</th>
+        <th>Dominant Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in top_delegations %}
+      <tr>
+        <td class="num">{{ loop.index }}</td>
+        <td>{{ d.delegation_code }}</td>
+        <td class="num">{{ d.total_count }}</td>
+        <td>{{ d.dominant_alert }}</td>
+        <td class="num">{{ d.dominant_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">No delegation alert data available.</div>
+  {% endif %}
+
+  <!-- 4. FortigateSiteDown Heatmap -->
+  <h2 class="section-title"><span class="num">4</span> FortigateSiteDown Heatmap</h2>
+  {% if sitedown_heatmap.delegations %}
+  <div class="heatmap-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Delegation</th>
+          {% for m in sitedown_heatmap.months %}
+          <th>{{ m }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in range(sitedown_heatmap.delegations | length) %}
+        <tr>
+          <td><strong>{{ sitedown_heatmap.delegations[i] }}</strong></td>
+          {% for val in sitedown_heatmap.matrix[i] %}
+          {% if val == 0 %}
+          <td class="heat-zero">0</td>
+          {% else %}
+          {% set intensity = (val / sitedown_heatmap.max_count * 0.85 + 0.15) if sitedown_heatmap.max_count > 0 else 0.15 %}
+          <td class="heat" style="background-color: rgba(213, 43, 30, {{ intensity | round(2) }});">{{ val }}</td>
+          {% endif %}
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No FortigateSiteDown events found.</div>
+  {% endif %}
+
+  <!-- 5. Regional Surge Timeline -->
+  <h2 class="section-title"><span class="num">5</span> Regional Surge Timeline</h2>
+  {% if surges %}
+  {% for s in surges %}
+  <div class="surge-card">
+    <span class="region-badge">{{ s.region }}</span>
+    <strong>Score: {{ s.score }}</strong>
+    {% if s.preceded_by_latency %}
+    <span class="tag tag-warn">Preceded by WAN latency</span>
+    {% else %}
+    <span class="tag tag-ok">No latency precursor</span>
+    {% endif %}
+    <div class="meta">
+      {{ s.start_time }} &mdash; {{ s.end_time }}
+      &middot; {{ s.affected_delegations | length }} delegations affected
+    </div>
+    <div class="delegations">
+      Delegations: {{ s.affected_delegations | join(', ') }}
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="empty-state">No regional surge clusters detected.</div>
+  {% endif %}
+
+  <!-- 6. Human Ticket Keyword Frequency -->
+  <h2 class="section-title"><span class="num">6</span> Human Ticket Keyword Frequency by Region</h2>
+  {% if keyword_breakdown %}
+  <table>
+    <thead>
+      <tr>
+        <th>Region</th>
+        <th>Keyword</th>
+        <th>Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in keyword_breakdown %}
+      <tr>
+        <td>{{ row.region }}</td>
+        <td>{{ row.keyword }}</td>
+        <td class="num">{{ row.count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">No keyword matches found in human-filed tickets.</div>
+  {% endif %}
+
+  <!-- 7. Alert Category Distribution -->
+  <h2 class="section-title"><span class="num">7</span> Alert Category Distribution</h2>
+  <div class="chart-wrapper">
+    <canvas id="categoryChart" style="max-height: 350px;"></canvas>
+  </div>
+
+  <!-- 8. Grafana Bandwidth Overview (conditional) -->
+  {% if has_grafana_data and bandwidth %}
+  <h2 class="section-title"><span class="num">8</span> Bandwidth Overview (Grafana)</h2>
+
+  <div class="cards">
+    <div class="card accent">
+      <div class="label">Total Monitored Sites</div>
+      <div class="value">{{ bandwidth.total_sites }}</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top: 24px; font-size: 15px;">Top 10 Sites by Average Throughput</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Site</th>
+        <th>Avg Throughput</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in bandwidth.top_sites %}
+      <tr>
+        <td class="num">{{ loop.index }}</td>
+        <td>{{ s.site }}</td>
+        <td>{{ s.avg_bps_fmt }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3 style="margin-top: 24px; font-size: 15px;">Bottom 10 Sites by Average Throughput</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Site</th>
+        <th>Avg Throughput</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in bandwidth.bottom_sites %}
+      <tr>
+        <td class="num">{{ loop.index }}</td>
+        <td>{{ s.site }}</td>
+        <td>{{ s.avg_bps_fmt }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+</div>
+
+<footer>
+  HENRI &mdash; Humanitarian Early-warning Network Resilience Intelligence &middot; Generated automatically
+</footer>
+
+<script>
+(function() {
+  // Region monthly bar chart
+  const regionData = {{ region_chart_json | safe }};
+  if (regionData.labels && regionData.labels.length > 0) {
+    new Chart(document.getElementById('regionChart'), {
+      type: 'bar',
+      data: {
+        labels: regionData.labels,
+        datasets: regionData.datasets
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: false },
+          legend: { position: 'top' }
+        },
+        scales: {
+          x: { stacked: true, title: { display: true, text: 'Month' } },
+          y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Incident Count' } }
+        }
+      }
+    });
+  } else {
+    document.getElementById('regionChart').parentElement.innerHTML =
+      '<div class="empty-state">No regional data available for chart.</div>';
+  }
+
+  // Category pie chart
+  const catData = {{ category_chart_json | safe }};
+  if (catData.labels && catData.labels.length > 0) {
+    new Chart(document.getElementById('categoryChart'), {
+      type: 'pie',
+      data: {
+        labels: catData.labels,
+        datasets: [{
+          data: catData.data,
+          backgroundColor: catData.colors,
+          borderWidth: 1,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'right' },
+          title: { display: false }
+        }
+      }
+    });
+  } else {
+    document.getElementById('categoryChart').parentElement.innerHTML =
+      '<div class="empty-state">No alert category data available for chart.</div>';
+  }
+})();
+</script>
+
+</body>
+</html>

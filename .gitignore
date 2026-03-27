@@ -1,6 +1,9 @@
 data/raw
 data/processed
 data/reports
+data/grafana_dashboards
 .env
+.venv/
+__pycache__/
 
 .DS_Store
