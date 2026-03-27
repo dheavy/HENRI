@@ -7,7 +7,7 @@ load_dotenv()
 
 @dataclass
 class SnowConfig:
-    instance_url: str = field(default_factory=lambda: os.getenv("SNOW_INSTANCE_URL", "https://smt.ext.icrc.org/"))
+    instance_url: str = field(default_factory=lambda: os.getenv("SNOW_INSTANCE_URL", ""))
     username: str = field(default_factory=lambda: os.getenv("SNOW_USERNAME", ""))
     password: str = field(default_factory=lambda: os.getenv("SNOW_PASSWORD", ""))
     export_fields: str = field(default_factory=lambda: os.getenv("SNOW_EXPORT_FIELDS", "sys_id,number,short_description,priority,urgency,impact,state,category,subcategory,opened_at,resolved_at,closed_at,location,cmdb_ci,assignment_group,sys_updated_on"))

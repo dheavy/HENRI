@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -9,6 +10,8 @@ import pandas as pd
 from .client import GrafanaClient
 
 logger = logging.getLogger(__name__)
+
+_SAFE_LABEL_RE = re.compile(r"^[A-Za-z0-9_. -]+$")
 
 
 def pull_bandwidth(
@@ -40,6 +43,10 @@ def pull_bandwidth(
     all_rows: list[dict[str, Any]] = []
 
     for site in sites:
+        if not _SAFE_LABEL_RE.match(site):
+            logger.warning("Skipping site with unsafe label value: %s", site)
+            continue
+
         logger.info("Pulling bandwidth for site %s (%d days)", site, days)
 
         in_query = (

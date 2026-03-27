@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import logging
+import os
 from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
+from urllib.parse import quote
 
 from playwright.async_api import async_playwright, BrowserContext
 
@@ -52,7 +54,7 @@ class SnowExporter:
 
         page = await self._context.new_page()
         login_url = f"{self.config.instance_url.rstrip('/')}/login.do"
-        logger.info("Navigating to %s", login_url)
+        logger.info("Authenticating to ServiceNow...")
         await page.goto(login_url, wait_until="networkidle")
 
         await page.fill("#user_name", self.config.username)
@@ -61,7 +63,8 @@ class SnowExporter:
         await page.wait_for_load_state("networkidle")
 
         await self._context.storage_state(path=str(self._storage_state_path))
-        logger.info("Authenticated and session saved to %s", self._storage_state_path)
+        self._storage_state_path.chmod(0o600)
+        logger.info("Authenticated and session saved.")
         await page.close()
 
     # -- incident export (full range, batched by month) ------------------------
@@ -156,8 +159,8 @@ class SnowExporter:
         """Build a CSV export URL for *table* with *query* and download it."""
         url = (
             f"{self.config.instance_url.rstrip('/')}/{table}_list.do"
-            f"?CSV&sysparm_fields={self.config.export_fields}"
-            f"&sysparm_query={query}"
+            f"?CSV&sysparm_fields={quote(self.config.export_fields, safe=',')}"
+            f"&sysparm_query={quote(query, safe='')}"
         )
         await self._download_to_file(url, dest)
 
@@ -173,6 +176,7 @@ class SnowExporter:
                 raise RuntimeError(f"No response received for {url}")
             body = await response.body()
             dest.write_bytes(body)
+            dest.chmod(0o600)
         finally:
             await page.close()
 
@@ -180,6 +184,7 @@ class SnowExporter:
 
     def _write_last_run(self, ts: datetime) -> None:
         self._last_run_path.write_text(ts.isoformat())
+        self._last_run_path.chmod(0o600)
         logger.debug("Last run timestamp written: %s", ts.isoformat())
 
     def _read_last_run(self) -> Optional[datetime]:

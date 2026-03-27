@@ -57,9 +57,10 @@ def export_dashboards(
             logger.warning("Failed to fetch dashboard %s", uid)
             continue
 
-        # Save full dashboard JSON
+        # Save full dashboard JSON — sanitise both title and uid for safe filenames
         safe_title = re.sub(r"[^\w\-.]", "_", title)
-        dash_file = output_dir / f"{safe_title}_{uid}.json"
+        safe_uid = re.sub(r"[^\w\-]", "_", uid)
+        dash_file = output_dir / f"{safe_title}_{safe_uid}.json"
         dash_file.write_text(json.dumps(dash_data, indent=2), encoding="utf-8")
         logger.debug("Saved dashboard JSON to %s", dash_file)
 

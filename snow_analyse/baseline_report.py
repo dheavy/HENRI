@@ -42,7 +42,11 @@ def _load_grafana_bandwidth(data_dir: Path) -> pd.DataFrame | None:
 
 
 def _safe_json(obj: Any) -> str:
-    """Serialize to JSON, handling Period and Timestamp types."""
+    """Serialize to JSON safe for embedding in <script> tags.
+
+    Escapes ``</`` sequences to prevent script injection when used with
+    Jinja2's ``| safe`` filter.
+    """
 
     def _default(o: Any) -> Any:
         if isinstance(o, pd.Period):
@@ -57,7 +61,8 @@ def _safe_json(obj: Any) -> str:
             return o.tolist()
         raise TypeError(f"Object of type {type(o)} is not JSON serializable")
 
-    return json.dumps(obj, default=_default)
+    # Escape </ to prevent </script> injection in HTML context
+    return json.dumps(obj, default=_default).replace("</", r"<\/")
 
 
 def _build_summary(df: pd.DataFrame) -> dict[str, Any]:
@@ -177,14 +182,11 @@ def _build_keyword_breakdown(df: pd.DataFrame) -> list[dict]:
     if human.empty or "matched_keywords" not in human.columns:
         return []
 
-    # Parse matched_keywords string back to lists
-    import ast
-
     rows = []
     for _, row in human.iterrows():
         try:
-            keywords = ast.literal_eval(row["matched_keywords"])
-        except (ValueError, SyntaxError):
+            keywords = json.loads(row["matched_keywords"])
+        except (json.JSONDecodeError, TypeError):
             keywords = []
         region = row.get("region", "Unknown")
         for kw in keywords:

@@ -19,8 +19,14 @@ RUN uv sync --frozen --no-dev
 # Install Playwright browsers
 RUN uv run playwright install chromium
 
+# Create non-root user
+RUN useradd -m -u 1000 henri
+RUN chown -R henri:henri /app
+
 # Copy source
-COPY . .
+COPY --chown=henri:henri . .
+
+USER henri
 
 # Default command
 ENTRYPOINT ["uv", "run", "python", "cli.py"]

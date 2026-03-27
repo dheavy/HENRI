@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from typing import Sequence
 
@@ -84,7 +85,7 @@ def enrich_human(df: pd.DataFrame) -> pd.DataFrame:
 
         desc = row.get("short_description", "")
         hits = _match_keywords(desc)
-        matched.append(str(hits))
+        matched.append(json.dumps(hits))
         network_flags.append(len(hits) > 0)
 
     df = df.copy()
