@@ -114,3 +114,46 @@ class TestBuildRegistry:
         locations_df = pd.DataFrame()
         registry = build_registry(incidents_df, locations_df, grafana_available=True)
         assert registry["JUB"]["source"] == "servicenow+grafana"
+
+    def test_curated_lookup_used(self):
+        """Known delegations get city name and country from curated data."""
+        incidents_df = pd.DataFrame({"assignment_group": [
+            "GVA ICT L2 Support",
+            "BAG ICT L2 Support",
+            "KYI ICT L2 Support",
+        ]})
+        registry = build_registry(incidents_df, pd.DataFrame())
+        assert registry["GVA"]["name"] == "Geneva"
+        assert registry["GVA"]["country"] == "Switzerland"
+        assert registry["GVA"]["country_iso3"] == "CHE"
+        assert registry["BAG"]["name"] == "Baghdad"
+        assert registry["BAG"]["country"] == "Iraq"
+        assert registry["KYI"]["name"] == "Kyiv"
+        assert registry["KYI"]["country"] == "Ukraine"
+
+    def test_location_gps_enrichment(self):
+        """GPS comes from cmn_location when curated lookup has no coords."""
+        incidents_df = pd.DataFrame({"assignment_group": ["JUB ICT L2 Support"]})
+        locations_df = pd.DataFrame({
+            "city": ["Juba"],
+            "country_clean": ["South Sudan"],
+            "latitude": [4.85],
+            "longitude": [31.61],
+        })
+        registry = build_registry(incidents_df, locations_df)
+        # Country from curated, GPS from location
+        assert registry["JUB"]["country"] == "South Sudan"
+        assert registry["JUB"]["latitude"] == 4.85
+
+    def test_prefix_matching(self):
+        """Delegation code that is a prefix of a city name should match."""
+        incidents_df = pd.DataFrame({"assignment_group": ["MAR ICT L2 Support"]})
+        locations_df = pd.DataFrame({
+            "city": ["Maroua", "Marrakech"],
+            "country_clean": ["Cameroon", "Morocco"],
+            "latitude": [10.59, 31.63],
+            "longitude": [14.32, -8.0],
+        })
+        registry = build_registry(incidents_df, locations_df)
+        # MAR is in curated list as Maroua/Cameroon, so curated takes priority
+        assert registry["MAR"]["country"] == "Cameroon"
