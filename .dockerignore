@@ -1,0 +1,13 @@
+.venv/
+.git/
+.claude/
+.khoregos/
+.env
+data/raw/
+data/processed/
+data/reports/
+data/grafana_dashboards/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store

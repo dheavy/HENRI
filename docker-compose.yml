@@ -1,6 +1,9 @@
 services:
   henri:
-    build: .
+    build:
+      context: .
+      network: host
+    network_mode: host
     env_file: .env
     volumes:
       - ./data:/app/data
