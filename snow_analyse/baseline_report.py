@@ -307,11 +307,13 @@ def generate_report(data_dir: Path) -> Path:
 
     registry = _load_registry(data_dir)
 
-    # Assign region from registry where possible
-    if not df.empty and "delegation_code" in df.columns:
-        df["region"] = df["delegation_code"].apply(
-            lambda c: registry.get(str(c).upper() if pd.notna(c) else "", {}).get("region", "Unknown")
-        )
+    # Assign region from registry — use parent_code if available for better mapping
+    if not df.empty:
+        lookup_col = "parent_code" if "parent_code" in df.columns else "delegation_code"
+        if lookup_col in df.columns:
+            df["region"] = df[lookup_col].apply(
+                lambda c: registry.get(str(c).upper() if pd.notna(c) else "", {}).get("region") or "Unknown"
+            )
 
     # Run analyses
     summary = _build_summary(df) if not df.empty else {

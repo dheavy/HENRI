@@ -37,6 +37,26 @@ class TestMatchKeywords:
         assert _match_keywords("Printer paper jam") == []
         assert _match_keywords("Password reset request") == []
 
+    def test_short_keyword_word_boundary(self):
+        # "red" (Spanish for network) should NOT match inside "required"
+        assert "red" not in _match_keywords("Access required for new employee")
+        assert "red" not in _match_keywords("Redirect not working")
+        # But should match as standalone word
+        assert "red" in _match_keywords("Problema con la red")
+        assert "red" in _match_keywords("Red no funciona")
+
+    def test_dns_word_boundary(self):
+        # "dns" should NOT match inside "Wednesday"
+        assert "dns" not in _match_keywords("Meeting on Wednesday")
+        # But should match standalone
+        assert "dns" in _match_keywords("DNS not resolving")
+        assert "dns" in _match_keywords("Check the dns settings")
+
+    def test_vpn_word_boundary(self):
+        # "vpn" is 3 chars, should use boundary
+        assert "vpn" in _match_keywords("VPN connection failed")
+        assert "vpn" in _match_keywords("Cannot connect to vpn")
+
     def test_non_string_input(self):
         assert _match_keywords(None) == []
         assert _match_keywords(42) == []

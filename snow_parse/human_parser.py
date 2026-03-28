@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from typing import Sequence
 
 import pandas as pd
@@ -58,13 +59,24 @@ _ALL_KEYWORDS: list[str] = sorted(
     key=lambda k: (-len(k), k),
 )
 
+# Pre-compile regex patterns: use word boundaries for short keywords (<=3 chars)
+# to avoid false matches (e.g. "red" inside "required", "dns" inside "Wednesday")
+_KEYWORD_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+    (kw, re.compile(r"\b" + re.escape(kw) + r"\b", re.IGNORECASE) if len(kw) <= 3
+     else re.compile(re.escape(kw), re.IGNORECASE))
+    for kw in _ALL_KEYWORDS
+]
+
 
 def _match_keywords(text: str) -> list[str]:
-    """Return the list of matched keywords found in *text* (case-insensitive)."""
+    """Return the list of matched keywords found in *text* (case-insensitive).
+
+    Short keywords (3 chars or fewer) use word-boundary matching to avoid
+    false positives (e.g. 'red' matching inside 'required').
+    """
     if not isinstance(text, str):
         return []
-    lower = text.lower()
-    return [kw for kw in _ALL_KEYWORDS if kw in lower]
+    return [kw for kw, pattern in _KEYWORD_PATTERNS if pattern.search(text)]
 
 
 def enrich_human(df: pd.DataFrame) -> pd.DataFrame:

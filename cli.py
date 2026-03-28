@@ -87,7 +87,7 @@ def snow_parse() -> None:
     from snow_parse.prometheus_parser import enrich_prometheus
     from snow_parse.human_parser import enrich_human
     from snow_parse.location_normaliser import normalise_locations
-    from snow_parse.delegation_registry import build_registry
+    from snow_parse.delegation_registry import build_registry, build_subsite_map
 
     data_dir = _data_dir()
 
@@ -123,14 +123,24 @@ def snow_parse() -> None:
         locations_df = normalise_locations(locations_csv, processed_dir / "locations_clean.csv")
         click.echo(f"  {len(locations_df):,} locations normalised")
 
-    # 5. Build delegation registry
+    # 5. Build delegation registry and sub-site map
     click.echo("Building delegation registry...")
     registry = build_registry(df, locations_df, grafana_available=False)
+    subsite_map = build_subsite_map(df)
     ref_dir = data_dir / "reference"
     ref_dir.mkdir(parents=True, exist_ok=True)
     with open(ref_dir / "delegations.json", "w") as f:
         json.dump(registry, f, indent=2, ensure_ascii=False)
-    click.echo(f"  {len(registry)} delegation codes registered")
+    with open(ref_dir / "subsite_map.json", "w") as f:
+        json.dump(subsite_map, f, indent=2, ensure_ascii=False)
+    subsites = sum(1 for k, v in subsite_map.items() if k != v)
+    click.echo(f"  {len(registry)} delegation codes registered, {subsites} sub-sites mapped")
+
+    # Map sub-site delegation codes to parent codes
+    if "delegation_code" in df.columns:
+        df["parent_code"] = df["delegation_code"].map(
+            lambda c: subsite_map.get(str(c).upper(), c) if pd.notna(c) else None
+        )
 
     # 6. Save processed data
     processed_dir = data_dir / "processed"

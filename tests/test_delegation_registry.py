@@ -3,7 +3,7 @@
 import pandas as pd
 import pytest
 
-from snow_parse.delegation_registry import _extract_codes_from_groups, _iso3_for_country, build_registry
+from snow_parse.delegation_registry import _extract_codes_from_groups, _iso3_for_country, build_registry, build_subsite_map
 
 
 class TestExtractCodesFromGroups:
@@ -157,3 +157,54 @@ class TestBuildRegistry:
         registry = build_registry(incidents_df, locations_df)
         # MAR is in curated list as Maroua/Cameroon, so curated takes priority
         assert registry["MAR"]["country"] == "Cameroon"
+
+    def test_curated_region_assigned(self):
+        """Curated delegations should have region populated."""
+        incidents_df = pd.DataFrame({"assignment_group": [
+            "JUB ICT L2 Support",
+            "BAG ICT L2 Support",
+            "GVA ICT L2 Support",
+        ]})
+        registry = build_registry(incidents_df, pd.DataFrame())
+        assert registry["JUB"]["region"] == "AFRICA East"
+        assert registry["BAG"]["region"] == "NAME"
+        assert registry["GVA"]["region"] == "HQ"
+
+    def test_sub_sites_listed(self):
+        """Registry entries should list their sub-site codes."""
+        incidents_df = pd.DataFrame({
+            "delegation_code": ["WJUB", "RJUB", "JUB"],
+            "assignment_group": [
+                "JUB ICT L2 Support",
+                "JUB ICT L2 Support",
+                "JUB ICT L2 Support",
+            ],
+        })
+        registry = build_registry(incidents_df, pd.DataFrame())
+        assert "RJUB" in registry["JUB"]["sub_sites"]
+        assert "WJUB" in registry["JUB"]["sub_sites"]
+
+
+class TestBuildSubsiteMap:
+    def test_maps_subsite_to_parent(self):
+        df = pd.DataFrame({
+            "delegation_code": ["WJUB", "RJUB", "JUB", "ABE"],
+            "assignment_group": [
+                "JUB ICT L2 Support",
+                "JUB ICT L2 Support",
+                "JUB ICT L2 Support",
+                "ABE ICT L2 Support",
+            ],
+        })
+        m = build_subsite_map(df)
+        assert m["WJUB"] == "JUB"
+        assert m["RJUB"] == "JUB"
+        assert m["JUB"] == "JUB"  # parent maps to itself
+        assert m["ABE"] == "ABE"
+
+    def test_empty_df(self):
+        assert build_subsite_map(pd.DataFrame()) == {}
+
+    def test_missing_columns(self):
+        df = pd.DataFrame({"other": ["data"]})
+        assert build_subsite_map(df) == {}
