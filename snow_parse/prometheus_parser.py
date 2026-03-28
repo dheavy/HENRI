@@ -11,7 +11,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 # Known device-type suffixes (order matters — longer first)
-_DEVICE_SUFFIXES = ("FGT", "SPM", "SWI", "RTR", "UPS", "AP")
+_DEVICE_SUFFIXES = ("FGT", "SPM", "SWI", "RTR", "UPS", "FEM", "AP")
 
 # Alert-name → category mapping
 _ALERT_CATEGORIES: dict[str, str] = {
@@ -82,11 +82,12 @@ _NETWORK_CATEGORIES = frozenset(
 # Regex: matches an IPv4 address
 _IP_RE = re.compile(r"^\d{1,3}(?:\.\d{1,3}){3}$")
 
-# Regex: FQDN like gvacfsp2app03p.gva.icrc.priv
-_FQDN_RE = re.compile(r"^[A-Za-z0-9-]+\.([a-z]{3,})\.icrc\.priv$")
+# Regex: FQDN like gvacfsp2app03p.gva.icrc.priv (supports multi-level subdomains)
+_FQDN_RE = re.compile(r"^[A-Za-z0-9.-]+\.([a-z]{3,})\.icrc\.priv$")
 
-# Regex: hostname like ABED21.gva.icrc.priv
-_HOST_DOMAIN_RE = re.compile(r"^([A-Z]{3,})[A-Z0-9]+\.[a-z]+\.icrc\.priv$", re.IGNORECASE)
+# Regex: hostname like ABED21.gva.icrc.priv → delegation = first 3 letters
+# Pattern: <3-letter code><type char><digits>.<domain>.icrc.priv
+_HOST_DOMAIN_RE = re.compile(r"^([A-Z]{3})[A-Z][A-Z0-9]*\.[a-z]+\.icrc\.priv$", re.IGNORECASE)
 
 
 def _extract_delegation(hostname: str) -> Optional[str]:
@@ -97,31 +98,39 @@ def _extract_delegation(hostname: str) -> Optional[str]:
     if _IP_RE.match(hostname):
         return None
 
+    # Hostname.domain like ABED21.gva.icrc.priv → ABE (check before FQDN)
+    # These start with an uppercase delegation code prefix
+    m = _HOST_DOMAIN_RE.match(hostname)
+    if m:
+        return m.group(1).upper()
+
     # FQDN with domain segment (e.g. gvacfsp2app03p.gva.icrc.priv → gva)
     m = _FQDN_RE.match(hostname)
     if m:
         return m.group(1).upper()
 
-    # Hostname.domain like ABED21.gva.icrc.priv → ABE
-    m = _HOST_DOMAIN_RE.match(hostname)
-    if m:
-        return m.group(1)[:3].upper()
-
     # Remove domain parts if present (not matching above patterns)
     bare = hostname.split(".")[0].strip()
 
-    # Device-code pattern: ABEFGT, JUBSPM, etc.
+    # Device-code pattern: ABEFGT, ABAM01FGT, LSHSPM01, ADOUPS01, etc.
     upper = bare.upper()
     for suffix in _DEVICE_SUFFIXES:
-        if upper.endswith(suffix):
-            code = upper[: -len(suffix)]
-            if code and code.isalpha():
-                return code.upper()
+        # Match suffix possibly followed by trailing digits (e.g. SPM01, UPS02)
+        m = re.match(rf"^([A-Z]{{2,5}})(?:\d{{0,2}}){suffix}\d*$", upper)
+        if m:
+            return m.group(1).upper()
 
-    # "ABE Starlink 02" → first word
+    # "ABE Starlink 02" or "ABUK1 ISP1 STARLINK 01" → first word, strip digits
     parts = bare.split()
-    if len(parts) > 1 and parts[0].isalpha() and len(parts[0]) >= 2:
-        return parts[0].upper()
+    if not parts:
+        return None
+    # Also handle underscore-separated: "ADE_Starlink_05"
+    if "_" in bare and " " not in bare:
+        parts = bare.split("_")
+    if len(parts) > 1 and len(parts[0]) >= 2:
+        code = re.sub(r"\d+$", "", parts[0]).upper()
+        if code and code.isalpha():
+            return code
 
     # Short all-alpha string (likely a code itself)
     if bare.isalpha() and 2 <= len(bare) <= 5:

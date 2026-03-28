@@ -28,4 +28,5 @@ packages = ["snow_extract", "snow_parse", "snow_analyse", "grafana_client"]
 [dependency-groups]
 dev = [
     "pip-audit>=2.10.0",
+    "pytest>=9.0.2",
 ]
