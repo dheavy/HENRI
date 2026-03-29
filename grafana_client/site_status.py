@@ -8,7 +8,6 @@ from .client import GrafanaClient
 logger = logging.getLogger(__name__)
 
 CURRENT_STATUS_QUERY = 'up{job="fortigate"}'
-UPTIME_RANGE_QUERY = 'avg_over_time(up{job="fortigate"}[%dd]) * 100'
 
 
 def pull_site_status(
@@ -37,8 +36,11 @@ def pull_site_status(
     df_current = df_current.rename(columns={"value": "up"})
 
     # Query historical uptime percentage
+    if not isinstance(days, int) or days < 1 or days > 365:
+        logger.warning("Invalid days value %s, clamping to 1-365", days)
+        days = max(1, min(365, int(days)))
     logger.info("Pulling historical uptime over %d days", days)
-    uptime_query = UPTIME_RANGE_QUERY % days
+    uptime_query = f'avg_over_time(up{{job="fortigate"}}[{days}d]) * 100'
     df_uptime: pd.DataFrame = client.query_instant(uptime_query)
 
     if not df_uptime.empty:

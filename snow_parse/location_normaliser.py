@@ -6,6 +6,8 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+import csv
+
 import pandas as pd
 import pycountry
 
@@ -107,7 +109,7 @@ def normalise_locations(csv_path: Path, output_path: Path) -> pd.DataFrame:
 
     # Write output
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(output_path, index=False)
+    df.to_csv(output_path, index=False, quoting=csv.QUOTE_ALL)
     logger.info("Normalised locations written to %s", output_path)
 
     return df

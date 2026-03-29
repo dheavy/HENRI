@@ -14,10 +14,22 @@ from .config import SnowConfig
 logger = logging.getLogger(__name__)
 
 
+def _validate_instance_url(url: str) -> None:
+    """Ensure instance URL is HTTPS and looks like a ServiceNow domain."""
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    if parsed.scheme != "https":
+        raise ValueError(f"SNOW_INSTANCE_URL must use HTTPS, got: {parsed.scheme}")
+    if not parsed.netloc:
+        raise ValueError("SNOW_INSTANCE_URL has no hostname")
+
+
 class SnowExporter:
     """Playwright-based ServiceNow CSV extraction."""
 
     def __init__(self, config: SnowConfig) -> None:
+        if config.instance_url:
+            _validate_instance_url(config.instance_url)
         self.config = config
         self.raw_dir: Path = config.data_dir / "raw"
         self.raw_dir.mkdir(parents=True, exist_ok=True)

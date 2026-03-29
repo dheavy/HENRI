@@ -53,7 +53,8 @@ class GrafanaClient:
             resp.raise_for_status()
             return self._parse_vector(resp.json())
         except Exception as e:
-            logger.warning(f"Grafana query failed: {e}")
+            logger.debug("Grafana instant query error: %s", e)
+            logger.warning("Grafana instant query failed")
             return pd.DataFrame()
 
     def query_range(self, promql: str, start: float, end: float, step: str = "1h") -> pd.DataFrame:
@@ -71,7 +72,8 @@ class GrafanaClient:
             resp.raise_for_status()
             return self._parse_matrix(resp.json())
         except Exception as e:
-            logger.warning(f"Grafana range query failed: {e}")
+            logger.debug("Grafana range query error: %s", e)
+            logger.warning("Grafana range query failed")
             return pd.DataFrame()
 
     def get_datasources(self) -> list[dict]:
@@ -83,7 +85,8 @@ class GrafanaClient:
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
-            logger.warning(f"Failed to get datasources: {e}")
+            logger.debug("Datasource fetch error: %s", e)
+            logger.warning("Failed to get datasources")
             return []
 
     def search_dashboards(self) -> list[dict]:
@@ -95,7 +98,8 @@ class GrafanaClient:
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
-            logger.warning(f"Failed to search dashboards: {e}")
+            logger.debug("Dashboard search error: %s", e)
+            logger.warning("Failed to search dashboards")
             return []
 
     def get_dashboard(self, uid: str) -> dict:
@@ -107,7 +111,8 @@ class GrafanaClient:
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
-            logger.warning(f"Failed to get dashboard {uid}: {e}")
+            logger.debug("Dashboard fetch error for uid=%s: %s", uid, e)
+            logger.warning("Failed to get dashboard")
             return {}
 
     def _parse_vector(self, data: dict) -> pd.DataFrame:

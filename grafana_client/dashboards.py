@@ -50,19 +50,27 @@ def export_dashboards(
         if not uid:
             logger.debug("Skipping dashboard with no UID: %s", title)
             continue
-
-        logger.info("Exporting dashboard: %s (uid=%s)", title, uid)
-        dash_data: dict = client.get_dashboard(uid)
-        if not dash_data:
-            logger.warning("Failed to fetch dashboard %s", uid)
+        # Validate UID format (alphanumeric, hyphens, underscores only)
+        if not re.match(r"^[\w-]+$", uid):
+            logger.warning("Skipping dashboard with suspicious UID format")
             continue
 
-        # Save full dashboard JSON — sanitise both title and uid for safe filenames
-        safe_title = re.sub(r"[^\w\-.]", "_", title)
+        logger.info("Exporting dashboard: %s", title)
+        dash_data: dict = client.get_dashboard(uid)
+        if not dash_data:
+            logger.warning("Failed to fetch dashboard")
+            continue
+
+        # Sanitise title and uid for safe filenames (no dots to prevent traversal)
+        safe_title = re.sub(r"[^\w\-]", "_", title)
         safe_uid = re.sub(r"[^\w\-]", "_", uid)
         dash_file = output_dir / f"{safe_title}_{safe_uid}.json"
+        # Verify the resolved path stays within output_dir
+        if not dash_file.resolve().is_relative_to(output_dir.resolve()):
+            logger.warning("Skipping dashboard with path traversal in name")
+            continue
         dash_file.write_text(json.dumps(dash_data, indent=2), encoding="utf-8")
-        logger.debug("Saved dashboard JSON to %s", dash_file)
+        logger.debug("Saved dashboard JSON")
 
         # Extract PromQL queries from panels
         queries = _extract_promql(dash_data)
