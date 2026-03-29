@@ -253,7 +253,7 @@ External data that provides context about the broader connectivity and security 
 
 | Source | What it provides | API | Free? | Update frequency |
 |---|---|---|---|---|
-| **IODA** (Georgia Tech) | Macroscopic internet outage detection using BGP, network telescope, and active probing. Country and ASN-level. | `api.ioda.inetintel.cc.gatech.edu/v2/` | Yes, no auth | ~5 min |
+| **IODA** (Georgia Tech) | Macroscopic internet outage detection using BGP (visible prefix count), active probing (reachable /24 blocks), and network telescope. Country and ASN-level. 5-minute resolution. | Signals: `api.ioda.inetintel.cc.gatech.edu/v2/signals/raw/{entityType}/{entityCode}` · Outage alerts: `/v2/outages/alerts?entityType=country&entityCode={CC}` · Outage summary (ranked by severity): `/v2/outages/summary?entityType=country&orderBy=score/desc` · Entity lookup: `/v2/entities/query?entityType=asn&relatedTo=country/{CC}` · ⚠ Events endpoint (`/v2/outages/events`) intermittently returns 500. | Yes, no auth | ~5 min |
 | **OONI** | Crowdsourced censorship measurement: website blocking, app blocking (WhatsApp, Telegram, Signal), middlebox detection. Per-country, per-ASN. | `api.ooni.io` + S3 bulk | Yes | Daily (API) |
 | **Cloudflare Radar** | Traffic anomaly detection, DDoS stats, BGP routing events. Outage Center (CROC) archives verified events. | `api.cloudflare.com/client/v4/radar/` | Yes (free token) | Near real-time |
 | **RIPE Atlas** | Active measurements (ping, traceroute, DNS, HTTP) from 12,000+ hardware probes worldwide. | `atlas.ripe.net/api/v2/` + WebSocket streaming | Yes (read) | Real-time |
@@ -474,12 +474,13 @@ Grafana gives us live metrics. NetBox gives us the denominator: committed circui
 
 ### Phase 2 — OSINT ingestion
 
-Start with IODA + ACLED as the core correlation pair (both have well-documented free APIs returning JSON with geographic identifiers).
+Start with IODA + ACLED + Cloudflare Radar as the core OSINT triad. All three APIs have been validated with test data in `data/fixtures/`.
 
 **Deliverables:**
-- [ ] IODA client: pull outage signals by country and ASN
-- [ ] ACLED client: pull conflict events by country and date range
-- [ ] Correlation prototype: ACLED events × IODA outage signals × ServiceNow ticket surges for overlapping regions and time windows
+- [ ] IODA client: pull outage summary (`/v2/outages/summary` — ranked countries by severity), outage alerts (`/v2/outages/alerts` — per-country anomaly detections with critical/normal transitions), raw signals (`/v2/signals/raw/{entityType}/{entityCode}` — 5-min resolution BGP/ping/telescope), and ASN discovery (`/v2/entities/query?entityType=asn&relatedTo=country/{CC}`)
+- [ ] ACLED client: pull conflict events by country and date range via OAuth (`acleddata.com/api/acled/read`). Handle 5,000-row pagination. Key fields: `event_date`, `country`, `latitude`, `longitude`, `event_type`, `fatalities`
+- [ ] Cloudflare Radar client: pull CROC outages (`/radar/annotations/outages`), NetFlows per country (`/radar/netflows/timeseries`), BGP hijacks (`/radar/bgp/hijacks/events`), BGP leaks (`/radar/bgp/leaks/events`)
+- [ ] Correlation prototype: ACLED conflict escalation × IODA outage alerts × Cloudflare outages × ServiceNow FortigateSiteDown surges, joined on ISO country code + timestamp windows
 - [ ] Access Now STOP dataset as ground-truth validation for the correlation model
 
 ### Phase 3 — LLM report generation (MVP)
