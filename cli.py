@@ -244,13 +244,16 @@ def grafana_export_dashboards() -> None:
 # ── Analysis ─────────────────────────────────────────────────────────
 
 @cli.command()
-def analyse() -> None:
+@click.option("--field-only", is_flag=True, default=False,
+              help="Exclude HQ and UNASSIGNED tickets from charts (field regions only)")
+def analyse(field_only: bool) -> None:
     """Run analysis and generate the baseline report."""
     from snow_analyse.baseline_report import generate_report
 
     data_dir = _data_dir()
-    click.echo("Generating baseline report...")
-    output = generate_report(data_dir)
+    mode = "field-only" if field_only else "full"
+    click.echo(f"Generating baseline report ({mode})...")
+    output = generate_report(data_dir, field_only=field_only)
     click.echo(f"Report written to {output}")
 
 
@@ -259,25 +262,29 @@ def analyse() -> None:
 @cli.command()
 @click.option("--start", type=click.DateTime(["%Y-%m-%d"]), default="2024-01-01")
 @click.option("--end", type=click.DateTime(["%Y-%m-%d"]), default=str(date.today()))
+@click.option("--field-only", is_flag=True, default=False,
+              help="Exclude HQ and UNASSIGNED tickets from charts")
 @click.pass_context
-def run_snow(ctx: click.Context, start: datetime, end: datetime) -> None:
+def run_snow(ctx: click.Context, start: datetime, end: datetime, field_only: bool) -> None:
     """ServiceNow pipeline: parse fixtures/raw -> analyse -> report."""
     ctx.invoke(snow_parse)
-    ctx.invoke(analyse)
+    ctx.invoke(analyse, field_only=field_only)
 
 
 @cli.command()
 @click.option("--start", type=click.DateTime(["%Y-%m-%d"]), default="2024-01-01")
 @click.option("--end", type=click.DateTime(["%Y-%m-%d"]), default=str(date.today()))
+@click.option("--field-only", is_flag=True, default=False,
+              help="Exclude HQ and UNASSIGNED tickets from charts")
 @click.pass_context
-def run_all(ctx: click.Context, start: datetime, end: datetime) -> None:
+def run_all(ctx: click.Context, start: datetime, end: datetime, field_only: bool) -> None:
     """Full pipeline: all sources -> parse -> analyse -> report."""
     ctx.invoke(snow_parse)
     # Grafana steps degrade gracefully if unconfigured
     ctx.invoke(grafana_build_registry)
     ctx.invoke(grafana_bandwidth, days=7)
     ctx.invoke(grafana_site_status, days=30)
-    ctx.invoke(analyse)
+    ctx.invoke(analyse, field_only=field_only)
 
 
 if __name__ == "__main__":

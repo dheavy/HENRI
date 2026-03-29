@@ -52,24 +52,25 @@ def detect_surges(
             del_to_region[code.upper()] = region
 
     # Filter to FortigateSiteDown events with valid timestamps and delegation codes
+    code_col = "parent_code" if "parent_code" in df.columns else "delegation_code"
     site_down = df[
         (df["alert_name"] == "FortigateSiteDown")
         & df["opened_dt"].notna()
-        & df["delegation_code"].notna()
+        & df[code_col].notna()
     ].copy()
 
     if site_down.empty:
         logger.info("No FortigateSiteDown events found")
         return []
 
-    # Assign region from registry; fall back to dataframe column if present
+    # Assign region from registry using parent code for reliable mapping
     if "region" in site_down.columns:
         site_down["ict_region"] = site_down.apply(
-            lambda r: del_to_region.get(str(r["delegation_code"]).upper(), r.get("region", "")),
+            lambda r: del_to_region.get(str(r[code_col]).upper(), r.get("region", "")),
             axis=1,
         )
     else:
-        site_down["ict_region"] = site_down["delegation_code"].apply(
+        site_down["ict_region"] = site_down[code_col].apply(
             lambda c: del_to_region.get(str(c).upper(), "")
         )
 
@@ -103,11 +104,12 @@ def detect_surges(
         while i < len(events):
             cluster_start = events[i].opened_dt
             cluster_end = cluster_start
-            affected: set[str] = {events[i].delegation_code}
+            _get_code = lambda e: getattr(e, code_col)
+            affected: set[str] = {_get_code(events[i])}
             j = i + 1
 
             while j < len(events) and (events[j].opened_dt - cluster_start) <= window_td:
-                affected.add(events[j].delegation_code)
+                affected.add(_get_code(events[j]))
                 if events[j].opened_dt > cluster_end:
                     cluster_end = events[j].opened_dt
                 j += 1

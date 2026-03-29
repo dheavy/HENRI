@@ -113,18 +113,24 @@ def _build_region_chart_data(agg: dict[str, pd.DataFrame]) -> dict[str, Any]:
 
 
 def _build_top_delegations(df: pd.DataFrame, top_n: int = 20) -> list[dict]:
-    """Top N most-alerting delegations with dominant alert type."""
-    prom = df[df["is_prometheus"] & df["delegation_code"].notna()].copy()
+    """Top N most-alerting **parent** delegations with dominant alert type.
+
+    Uses ``parent_code`` when available so that sub-site alerts roll up
+    to their parent delegation (e.g. RBUX → YAO).
+    """
+    prom = df[df["is_prometheus"]].copy()
+    code_col = "parent_code" if "parent_code" in prom.columns else "delegation_code"
+    prom = prom[prom[code_col].notna()]
     if prom.empty:
         return []
 
-    deleg_counts = prom.groupby("delegation_code").size().reset_index(name="total_count")
+    deleg_counts = prom.groupby(code_col).size().reset_index(name="total_count")
     deleg_counts = deleg_counts.nlargest(top_n, "total_count")
 
     result = []
     for _, row in deleg_counts.iterrows():
-        code = row["delegation_code"]
-        subset = prom[prom["delegation_code"] == code]
+        code = row[code_col]
+        subset = prom[prom[code_col] == code]
         dominant = subset["alert_name"].value_counts()
         dominant_alert = dominant.index[0] if not dominant.empty else "N/A"
         dominant_count = int(dominant.iloc[0]) if not dominant.empty else 0
@@ -139,10 +145,14 @@ def _build_top_delegations(df: pd.DataFrame, top_n: int = 20) -> list[dict]:
 
 
 def _build_sitedown_heatmap(df: pd.DataFrame) -> dict[str, Any]:
-    """FortigateSiteDown heatmap: delegation x month matrix."""
+    """FortigateSiteDown heatmap: parent delegation x month matrix.
+
+    Uses ``parent_code`` to roll up sub-site events to their parent.
+    """
+    code_col = "parent_code" if "parent_code" in df.columns else "delegation_code"
     sd = df[
         (df["alert_name"] == "FortigateSiteDown")
-        & df["delegation_code"].notna()
+        & df[code_col].notna()
         & df["opened_dt"].notna()
     ].copy()
 
@@ -151,14 +161,14 @@ def _build_sitedown_heatmap(df: pd.DataFrame) -> dict[str, Any]:
 
     sd["month"] = sd["opened_dt"].dt.to_period("M")
 
-    pivot = sd.groupby(["delegation_code", "month"]).size().reset_index(name="count")
+    pivot = sd.groupby([code_col, "month"]).size().reset_index(name="count")
     months = sorted(pivot["month"].unique())
-    delegations = sorted(pivot["delegation_code"].unique())
+    delegations = sorted(pivot[code_col].unique())
 
     # Build a lookup
     lookup: dict[tuple[str, str], int] = {}
     for _, row in pivot.iterrows():
-        lookup[(row["delegation_code"], str(row["month"]))] = int(row["count"])
+        lookup[(row[code_col], str(row["month"]))] = int(row["count"])
 
     month_strs = [str(m) for m in months]
     matrix = []
@@ -269,7 +279,7 @@ def _build_bandwidth_context(bw_df: pd.DataFrame | None) -> dict[str, Any] | Non
     }
 
 
-def generate_report(data_dir: Path) -> Path:
+def generate_report(data_dir: Path, *, field_only: bool = False) -> Path:
     """Generate the HENRI baseline HTML report.
 
     Loads processed data from *data_dir*, runs all analysis, renders
@@ -281,6 +291,10 @@ def generate_report(data_dir: Path) -> Path:
     data_dir : Path
         Root data directory containing ``raw/`` (or ``fixtures/``),
         ``reference/``, and ``processed/`` subdirectories.
+    field_only : bool
+        If True, filter out HQ and UNASSIGNED tickets from charts and
+        tables (summary cards still show totals). Produces a report
+        focused on the six field ICT regions.
 
     Returns
     -------
@@ -307,7 +321,7 @@ def generate_report(data_dir: Path) -> Path:
 
     registry = _load_registry(data_dir)
 
-    # Assign region from registry — use parent_code if available for better mapping
+    # Assign region from registry, with hostname-based HQ detection and L1 tagging
     if not df.empty:
         lookup_col = "parent_code" if "parent_code" in df.columns else "delegation_code"
         if lookup_col in df.columns:
@@ -315,29 +329,66 @@ def generate_report(data_dir: Path) -> Path:
                 lambda c: registry.get(str(c).upper() if pd.notna(c) else "", {}).get("region") or "Unknown"
             )
 
-    # Run analyses
+        # Fix 1: Hostname-based HQ detection — tickets with GVA hostnames
+        # in non-L2 groups (e.g. "TI EXPR LOGFIN") are HQ infrastructure
+        if "hostname" in df.columns:
+            gva_mask = (
+                df["region"].eq("Unknown")
+                & (
+                    df["hostname"].str.contains(".gva.icrc.priv", case=False, na=False)
+                    | df["hostname"].str.lower().str.startswith("gva", na=False)
+                )
+            )
+            df.loc[gva_mask, "region"] = "HQ"
+            df.loc[gva_mask, "parent_code"] = df.loc[gva_mask, "parent_code"].fillna("GVA")
+            gva_count = gva_mask.sum()
+            if gva_count:
+                logger.info("Reclassified %d tickets as HQ via hostname detection", gva_count)
+
+        # Fix 2: Tag L1 ServiceDesk tickets as UNASSIGNED (not "Unknown")
+        if "assignment_group" in df.columns:
+            l1_mask = (
+                df["assignment_group"].str.contains(r"L1|Service.?Desk", case=False, na=False, regex=True)
+                & df["region"].eq("Unknown")
+            )
+            df.loc[l1_mask, "region"] = "UNASSIGNED"
+            l1_count = l1_mask.sum()
+            if l1_count:
+                logger.info("Tagged %d L1/ServiceDesk tickets as UNASSIGNED", l1_count)
+
+    # Summary always uses full data
     summary = _build_summary(df) if not df.empty else {
         "total_tickets": 0, "automated_count": 0, "automated_pct": 0,
         "human_count": 0, "human_pct": 0, "network_count": 0, "network_pct": 0,
     }
 
-    agg = aggregate_incidents(df) if not df.empty else {}
+    # For charts/tables, optionally filter to field regions only
+    _EXCLUDED_REGIONS = {"HQ", "UNASSIGNED", "Unknown"} if field_only else set()
+    chart_df = df
+    if field_only and not df.empty and "region" in df.columns:
+        chart_df = df[~df["region"].isin(_EXCLUDED_REGIONS)].copy()
+        logger.info(
+            "Field-only mode: %d of %d tickets in scope (excluded HQ/UNASSIGNED/Unknown)",
+            len(chart_df), len(df),
+        )
+
+    agg = aggregate_incidents(chart_df) if not chart_df.empty else {}
     region_chart = _build_region_chart_data(agg)
-    top_delegations = _build_top_delegations(df) if not df.empty else []
-    sitedown_heatmap = _build_sitedown_heatmap(df) if not df.empty else {
+    top_delegations = _build_top_delegations(chart_df) if not chart_df.empty else []
+    sitedown_heatmap = _build_sitedown_heatmap(chart_df) if not chart_df.empty else {
         "delegations": [], "months": [], "matrix": [], "max_count": 0,
     }
-    surges = detect_surges(df, registry) if not df.empty else []
-    keyword_breakdown = _build_keyword_breakdown(df) if not df.empty else []
-    category_chart = _build_category_chart_data(df) if not df.empty else {
+    surges = detect_surges(chart_df, registry) if not chart_df.empty else []
+    keyword_breakdown = _build_keyword_breakdown(chart_df) if not chart_df.empty else []
+    category_chart = _build_category_chart_data(chart_df) if not chart_df.empty else {
         "labels": [], "data": [], "colors": [],
     }
 
     # Anomalies
     anomalies = []
-    if not df.empty and "delegation_code" in df.columns:
+    if not chart_df.empty and "delegation_code" in chart_df.columns:
         try:
-            anom_df = detect_anomalies(df[df["delegation_code"].notna()], "delegation_code")
+            anom_df = detect_anomalies(chart_df[chart_df["delegation_code"].notna()], "delegation_code")
             anomalies = anom_df.to_dict("records")
         except Exception as exc:
             logger.warning("Anomaly detection failed: %s", exc)
@@ -358,6 +409,7 @@ def generate_report(data_dir: Path) -> Path:
         "anomalies": anomalies,
         "has_grafana_data": bandwidth_ctx is not None,
         "bandwidth": bandwidth_ctx,
+        "field_only": field_only,
     }
 
     # Render template
@@ -372,7 +424,8 @@ def generate_report(data_dir: Path) -> Path:
     # Write output
     output_dir = data_dir / "reports"
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = output_dir / "baseline_report.html"
+    filename = "baseline_report_field.html" if field_only else "baseline_report.html"
+    output_path = output_dir / filename
     output_path.write_text(html, encoding="utf-8")
 
     logger.info("Baseline report written to %s", output_path)

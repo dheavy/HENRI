@@ -17,6 +17,102 @@ from snow_analyse.baseline_report import (
 )
 
 
+class TestHQDetectionAndL1Tagging:
+    """Test hostname-based HQ detection and L1 ServiceDesk tagging."""
+
+    def test_gva_hostname_reclassified_as_hq(self, tmp_path: Path):
+        """Tickets with .gva.icrc.priv hostnames should be tagged HQ."""
+        df = pd.DataFrame({
+            "is_prometheus": [True, True],
+            "hostname": ["srv01.gva.icrc.priv", "KADFGT"],
+            "delegation_code": [None, "KAD"],
+            "parent_code": [None, "KAD"],
+            "assignment_group": ["TI EXPR LOGFIN", "KAD ICT L2 Support"],
+            "short_description": ["? Prometheus - srv01.gva.icrc.priv - X", "? Prometheus - KADFGT - Y"],
+            "opened_dt": pd.to_datetime(["2026-01-01", "2026-01-01"], utc=True),
+            "is_network_related": [False, True],
+            "alert_name": ["WindowsServerDown", "FortigateSiteDown"],
+            "alert_category": ["server", "site_down"],
+            "matched_keywords": ["[]", "[]"],
+        })
+        processed = tmp_path / "processed"
+        processed.mkdir()
+        df.to_parquet(processed / "incidents_all.parquet")
+        ref = tmp_path / "reference"
+        ref.mkdir()
+        (ref / "delegations.json").write_text('{"KAD": {"region": "AFRICA West"}}')
+        reports = tmp_path / "reports"
+        reports.mkdir()
+
+        from snow_analyse.baseline_report import generate_report
+        generate_report(tmp_path)
+        report = (reports / "baseline_report.html").read_text()
+        assert "HQ" in report
+
+    def test_l1_servicedesk_tagged_unassigned(self, tmp_path: Path):
+        """L1 ServiceDesk tickets should be tagged UNASSIGNED."""
+        df = pd.DataFrame({
+            "is_prometheus": [False],
+            "hostname": [None],
+            "delegation_code": [None],
+            "parent_code": [None],
+            "assignment_group": ["L1 ServiceDesk"],
+            "short_description": ["Password reset"],
+            "opened_dt": pd.to_datetime(["2026-01-01"], utc=True),
+            "is_network_related": [False],
+            "alert_name": [None],
+            "alert_category": [None],
+            "matched_keywords": ["[]"],
+        })
+        processed = tmp_path / "processed"
+        processed.mkdir()
+        df.to_parquet(processed / "incidents_all.parquet")
+        ref = tmp_path / "reference"
+        ref.mkdir()
+        (ref / "delegations.json").write_text("{}")
+        reports = tmp_path / "reports"
+        reports.mkdir()
+
+        from snow_analyse.baseline_report import generate_report
+        generate_report(tmp_path)
+        report = (reports / "baseline_report.html").read_text()
+        assert "UNASSIGNED" in report
+
+
+class TestFieldOnlyMode:
+    def test_field_only_excludes_hq(self, tmp_path: Path):
+        """Field-only mode should exclude HQ from charts."""
+        df = pd.DataFrame({
+            "is_prometheus": [True, True],
+            "hostname": ["srv01.gva.icrc.priv", "JUBFGT"],
+            "delegation_code": ["GVA", "JUB"],
+            "parent_code": ["GVA", "JUB"],
+            "assignment_group": ["GVA ICT L2 Support", "JUB ICT L2 Support"],
+            "short_description": ["? Prometheus - x - Y", "? Prometheus - y - Z"],
+            "opened_dt": pd.to_datetime(["2026-01-01", "2026-01-01"], utc=True),
+            "is_network_related": [True, True],
+            "alert_name": ["FortigateSiteDown", "FortigateSiteDown"],
+            "alert_category": ["site_down", "site_down"],
+            "matched_keywords": ["[]", "[]"],
+        })
+        processed = tmp_path / "processed"
+        processed.mkdir()
+        df.to_parquet(processed / "incidents_all.parquet")
+        ref = tmp_path / "reference"
+        ref.mkdir()
+        (ref / "delegations.json").write_text(
+            '{"GVA": {"region": "HQ"}, "JUB": {"region": "AFRICA East"}}'
+        )
+        reports = tmp_path / "reports"
+        reports.mkdir()
+
+        from snow_analyse.baseline_report import generate_report
+        generate_report(tmp_path, field_only=True)
+        report = (reports / "baseline_report_field.html").read_text()
+        assert "Field Regions" in report
+        assert "AFRICA East" in report
+
+
 class TestSafeJson:
     def test_basic_dict(self):
         result = _safe_json({"key": "value", "num": 42})
