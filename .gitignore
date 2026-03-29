@@ -7,3 +7,8 @@ data/grafana_dashboards
 __pycache__/
 
 .DS_Store
+
+.claude
+
+# Khoregos: .khoregos/ is versioned intentionally — do not ignore it.
+# Runtime artifacts inside it are excluded by .khoregos/.gitignore.
