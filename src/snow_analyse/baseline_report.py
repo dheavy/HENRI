@@ -19,8 +19,8 @@ from .surge_detector import detect_surges
 
 logger = logging.getLogger(__name__)
 
-# Project root (two levels up from this file)
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+# Project root (three levels up: baseline_report.py → snow_analyse → src → project)
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
 def _load_registry(data_dir: Path) -> dict[str, Any]:
