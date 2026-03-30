@@ -13,89 +13,126 @@ logger = logging.getLogger(__name__)
 
 _SAFE_LABEL_RE = re.compile(r"^[A-Za-z0-9_. -]+$")
 
+# Hardcoded PromQL queries — no user input, no injection risk
+_PROMQL_IN = "sum by (location_site) (rate(ifHCInOctets[1h])) * 8"
+_PROMQL_OUT = "sum by (location_site) (rate(ifHCOutOctets[1h])) * 8"
+
+
+def _parse_direction(df_raw: pd.DataFrame, direction: str) -> pd.DataFrame:
+    """Convert a raw matrix DataFrame into per-site timeseries rows.
+
+    Expects columns: ``location_site``, ``timestamp``, ``value``.
+    Returns a DataFrame with columns: site, direction, timestamp, bps.
+    """
+    if df_raw.empty:
+        return pd.DataFrame(columns=["site", "direction", "timestamp", "bps"])
+
+    result = pd.DataFrame({
+        "site": df_raw["location_site"],
+        "direction": direction,
+        "timestamp": df_raw["timestamp"],
+        "bps": df_raw["value"],
+    })
+    return result
+
+
+def _aggregate_daily(ts_df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate per-site timeseries into daily avg / peak / p95.
+
+    Input columns: site, direction, timestamp, bps.
+    Output columns: site, direction, date, avg_bps, peak_bps, p95_bps.
+    """
+    if ts_df.empty:
+        return pd.DataFrame(columns=["site", "direction", "date", "avg_bps", "peak_bps", "p95_bps"])
+
+    ts_df = ts_df.copy()
+    ts_df["datetime"] = pd.to_datetime(ts_df["timestamp"], unit="s")
+    ts_df["date"] = ts_df["datetime"].dt.date
+
+    agg = (
+        ts_df.groupby(["site", "direction", "date"])["bps"]
+        .agg(
+            avg_bps="mean",
+            peak_bps="max",
+            p95_bps=lambda x: np.percentile(x, 95),
+        )
+        .reset_index()
+    )
+    return agg
+
 
 def pull_bandwidth(
     client: GrafanaClient,
-    sites: list[str],
+    sites: list[str] | None = None,
     days: int = 7,
     output_path: Path | None = None,
 ) -> pd.DataFrame:
-    """Pull bandwidth metrics for the given sites over the specified period.
+    """Pull bandwidth metrics for all sites via two aggregated PromQL queries.
 
-    For each site, queries inbound and outbound interface octet rates via
-    Grafana/Prometheus datasource proxy, then aggregates per-site daily
-    average, peak, and 95th-percentile bandwidth in bits/s.
+    Uses ``sum by (location_site)`` to fetch every site in a single query
+    per direction (in/out), instead of one query per site. This reduces
+    the number of API calls from 2*N to just 2.
 
-    Returns an empty DataFrame if Grafana is unavailable.
-    If *output_path* is provided the result is also saved as Parquet.
+    Parameters
+    ----------
+    client : GrafanaClient
+        Configured Grafana client.
+    sites : list[str] | None
+        Optional list of site codes. If provided, the result is filtered
+        to only these sites. The queries themselves always fetch all sites.
+    days : int
+        Number of days of history to pull (default 7).
+    output_path : Path | None
+        If given, save the result as Parquet.
+
+    Returns
+    -------
+    pd.DataFrame
+        Aggregated daily bandwidth data with columns:
+        site, direction, date, avg_bps, peak_bps, p95_bps.
+        Empty DataFrame if Grafana is unavailable.
     """
     if not client.is_available:
         logger.warning("Grafana client not available; returning empty bandwidth DataFrame")
         return pd.DataFrame()
 
-    if not sites:
-        logger.warning("No sites provided for bandwidth pull")
-        return pd.DataFrame()
-
     end_ts: float = time.time()
     start_ts: float = end_ts - (days * 86400)
 
-    all_rows: list[dict[str, Any]] = []
+    logger.info("Pulling aggregated bandwidth data (%d days, 2 queries)", days)
 
-    for site in sites:
-        if not _SAFE_LABEL_RE.match(site):
-            logger.warning("Skipping site with unsafe label value: %s", site)
-            continue
+    df_in: pd.DataFrame = client.query_range(
+        _PROMQL_IN, start=start_ts, end=end_ts, step="1h"
+    )
+    df_out: pd.DataFrame = client.query_range(
+        _PROMQL_OUT, start=start_ts, end=end_ts, step="1h"
+    )
 
-        logger.info("Pulling bandwidth for site %s (%d days)", site, days)
+    ts_in = _parse_direction(df_in, "in")
+    ts_out = _parse_direction(df_out, "out")
 
-        in_query = (
-            f'rate(ifHCInOctets{{location_site="{site}"}}[1h]) * 8'
-        )
-        out_query = (
-            f'rate(ifHCOutOctets{{location_site="{site}"}}[1h]) * 8'
-        )
+    ts_all = pd.concat([ts_in, ts_out], ignore_index=True)
 
-        df_in: pd.DataFrame = client.query_range(
-            in_query, start=start_ts, end=end_ts, step="1h"
-        )
-        df_out: pd.DataFrame = client.query_range(
-            out_query, start=start_ts, end=end_ts, step="1h"
-        )
-
-        for direction, df in [("in", df_in), ("out", df_out)]:
-            if df.empty:
-                logger.debug("No %s data for site %s", direction, site)
-                continue
-
-            df["datetime"] = pd.to_datetime(df["timestamp"], unit="s")
-            df["date"] = df["datetime"].dt.date
-
-            daily = df.groupby("date")["value"].agg(
-                daily_avg="mean",
-                daily_peak="max",
-            )
-            daily["daily_p95"] = df.groupby("date")["value"].quantile(0.95)
-
-            for date_val, row in daily.iterrows():
-                all_rows.append(
-                    {
-                        "site": site,
-                        "direction": direction,
-                        "date": date_val,
-                        "avg_bps": row["daily_avg"],
-                        "peak_bps": row["daily_peak"],
-                        "p95_bps": row["daily_p95"],
-                    }
-                )
-
-    if not all_rows:
-        logger.warning("No bandwidth data collected for any site")
+    if ts_all.empty:
+        logger.warning("No bandwidth data returned from Grafana")
         return pd.DataFrame()
 
-    result = pd.DataFrame(all_rows)
+    # Filter to requested sites if provided
+    if sites:
+        ts_all = ts_all[ts_all["site"].isin(sites)]
+        if ts_all.empty:
+            logger.warning("No bandwidth data for requested sites")
+            return pd.DataFrame()
+
+    unique_sites = ts_all["site"].nunique()
+    logger.info("Received bandwidth data for %d sites", unique_sites)
+
+    result = _aggregate_daily(ts_all)
+
     logger.info(
-        "Collected %d bandwidth records across %d sites", len(result), len(sites)
+        "Collected %d bandwidth records across %d sites",
+        len(result),
+        unique_sites,
     )
 
     if output_path is not None:

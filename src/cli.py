@@ -262,21 +262,30 @@ def grafana_build_registry() -> None:
 @cli.command()
 @click.option("--days", default=7, help="Number of days to pull")
 def grafana_bandwidth(days: int) -> None:
-    """Pull bandwidth data from Grafana for all sites."""
+    """Pull bandwidth data from Grafana for all sites (aggregated query)."""
     from grafana_client.bandwidth import pull_bandwidth
 
     client = _get_grafana_client()
     if not client:
         return
+
+    # Optionally filter to known sites from the registry
+    sites: list[str] | None = None
     registry_path = _data_dir() / "reference" / "delegations.json"
     if registry_path.exists():
         with open(registry_path) as f:
             sites = list(json.load(f).keys())
+        click.echo(f"Filtering bandwidth to {len(sites)} registered sites")
     else:
-        click.echo("No delegation registry found. Run grafana-build-registry first.", err=True)
-        return
+        click.echo("No delegation registry found; pulling all sites from Grafana")
+
     output = _data_dir() / "processed" / "bandwidth_by_site.parquet"
-    pull_bandwidth(client, sites, days=days)
+    result = pull_bandwidth(client, sites=sites, days=days, output_path=output)
+    if not result.empty:
+        n_sites = result["site"].nunique()
+        click.echo(f"Saved bandwidth data: {len(result)} records, {n_sites} sites → {output}")
+    else:
+        click.echo("No bandwidth data returned from Grafana.")
     client.close()
 
 
@@ -330,8 +339,21 @@ def analyse(field_only: bool) -> None:
               help="Exclude HQ and UNASSIGNED tickets from charts")
 @click.pass_context
 def run_snow(ctx: click.Context, start: datetime, end: datetime, field_only: bool) -> None:
-    """ServiceNow pipeline: parse fixtures/raw -> analyse -> report."""
+    """ServiceNow pipeline: parse fixtures/raw -> analyse -> report.
+
+    If GRAFANA_URL and GRAFANA_API_TOKEN are set, also pulls live
+    bandwidth data after parsing (degrades gracefully if unavailable).
+    """
     ctx.invoke(snow_parse)
+
+    # Pull bandwidth if Grafana is configured
+    import os
+    if os.getenv("GRAFANA_URL") and os.getenv("GRAFANA_API_TOKEN"):
+        click.echo("Grafana configured — pulling bandwidth data...")
+        ctx.invoke(grafana_bandwidth, days=7)
+    else:
+        click.echo("Grafana not configured; skipping bandwidth pull.")
+
     ctx.invoke(analyse, field_only=field_only)
 
 

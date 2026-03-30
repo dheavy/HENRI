@@ -16,6 +16,7 @@ from snow_parse.prometheus_parser import enrich_prometheus
 from snow_parse.human_parser import enrich_human
 from .timeseries import aggregate_incidents, detect_anomalies
 from .surge_detector import detect_surges
+from osint.risk_scorer import compute_risk_cards
 
 logger = logging.getLogger(__name__)
 
@@ -34,10 +35,16 @@ def _load_registry(data_dir: Path) -> dict[str, Any]:
 
 
 def _load_grafana_bandwidth(data_dir: Path) -> pd.DataFrame | None:
-    """Load bandwidth parquet if it exists."""
-    bw_path = data_dir / "processed" / "bandwidth.parquet"
-    if bw_path.exists():
-        return pd.read_parquet(bw_path)
+    """Load bandwidth parquet if it exists.
+
+    Checks for both the aggregated ``bandwidth_by_site.parquet`` (preferred)
+    and the legacy ``bandwidth.parquet`` file.
+    """
+    for name in ("bandwidth_by_site.parquet", "bandwidth.parquet"):
+        bw_path = data_dir / "processed" / name
+        if bw_path.exists():
+            logger.info("Loading bandwidth data from %s", bw_path)
+            return pd.read_parquet(bw_path)
     return None
 
 
@@ -325,6 +332,32 @@ def _build_data_completeness(data_dir: Path, registry: dict) -> dict[str, Any] |
     }
 
 
+def _build_threat_landscape(
+    data_dir: Path,
+    registry: dict[str, Any],
+) -> list[dict[str, Any]] | None:
+    """Build threat landscape data from OSINT fixtures.
+
+    Returns a list of risk cards sorted by combined risk score descending,
+    or None if no OSINT fixtures are available.
+    """
+    fixtures_dir = data_dir / "fixtures"
+    if not fixtures_dir.exists():
+        logger.info("No fixtures directory found; skipping threat landscape")
+        return None
+
+    try:
+        cards = compute_risk_cards(data_dir, registry)
+    except Exception as exc:
+        logger.warning("Threat landscape computation failed: %s", exc)
+        return None
+
+    if not cards:
+        return None
+
+    return cards
+
+
 def generate_report(data_dir: Path, *, field_only: bool = False) -> Path:
     """Generate the HENRI baseline HTML report.
 
@@ -457,6 +490,9 @@ def generate_report(data_dir: Path, *, field_only: bool = False) -> Path:
     # Data completeness (NetBox + Grafana coverage)
     completeness = _build_data_completeness(data_dir, registry)
 
+    # External threat landscape (OSINT)
+    threat_landscape = _build_threat_landscape(data_dir, registry)
+
     # Prepare template context
     context = {
         "summary": summary,
@@ -471,6 +507,7 @@ def generate_report(data_dir: Path, *, field_only: bool = False) -> Path:
         "bandwidth": bandwidth_ctx,
         "field_only": field_only,
         "completeness": completeness,
+        "threat_landscape": threat_landscape,
     }
 
     # Render template

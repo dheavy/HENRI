@@ -522,6 +522,46 @@
   {% endif %}
   {% endif %}
 
+  <!-- 9. External Threat Landscape -->
+  {% if threat_landscape %}
+  <h2 class="section-title"><span class="num">9</span> External Threat Landscape</h2>
+  <p style="color: var(--gray-700); margin-bottom: 16px;">
+    Combined risk assessment from ACLED conflict data, IODA internet outage monitoring,
+    Cloudflare Radar verified outages, and ServiceNow FortigateSiteDown incidents.
+    Sorted by combined risk score (weighted composite of all signals).
+  </p>
+  <div style="overflow-x: auto;">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Country</th>
+        <th>ACLED Events</th>
+        <th>ACLED Fatalities</th>
+        <th>IODA Score</th>
+        <th>CF Outages</th>
+        <th>SNOW SiteDown</th>
+        <th>Combined Risk</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for card in threat_landscape %}
+      <tr style="{% if card.combined_risk > 70 %}background-color: #FFCDD2;{% elif card.combined_risk > 40 %}background-color: #FFE0B2;{% else %}background-color: #C8E6C9;{% endif %}">
+        <td class="num">{{ loop.index }}</td>
+        <td>{{ card.country }}</td>
+        <td class="num">{{ card.acled_events }}</td>
+        <td class="num">{{ card.acled_fatalities }}</td>
+        <td class="num">{{ "{:,.0f}".format(card.ioda_score) }}</td>
+        <td class="num">{{ card.cf_outages }}</td>
+        <td class="num">{{ card.snow_sitedown }}</td>
+        <td class="num"><strong>{{ card.combined_risk }}</strong></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+
 </div>
 
 <footer>
