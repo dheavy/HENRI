@@ -345,6 +345,17 @@ def generate_report(data_dir: Path, *, field_only: bool = False) -> Path:
             if gva_count:
                 logger.info("Reclassified %d tickets as HQ via hostname detection", gva_count)
 
+        # Central infrastructure teams (no delegation code) → HQ
+        if "assignment_group" in df.columns:
+            central_mask = (
+                df["region"].eq("Unknown")
+                & df["assignment_group"].str.match(r"^TI\s", case=False, na=False)
+            )
+            df.loc[central_mask, "region"] = "HQ"
+            central_count = central_mask.sum()
+            if central_count:
+                logger.info("Reclassified %d central IT tickets as HQ", central_count)
+
         # Fix 2: Tag L1 ServiceDesk tickets as UNASSIGNED (not "Unknown")
         if "assignment_group" in df.columns:
             l1_mask = (

@@ -124,11 +124,47 @@ def snow_parse() -> None:
         click.echo(f"  {len(locations_df):,} locations normalised")
 
     # 5. Build delegation registry and sub-site map
+    #    Priority: Grafana fixture > Grafana live API > ServiceNow-only
     click.echo("Building delegation registry...")
-    registry = build_registry(df, locations_df, grafana_available=False)
-    subsite_map = build_subsite_map(df)
+    grafana_fixture = data_dir / "fixtures" / "grafana_registry.json"
+    grafana_registry = {}
+    grafana_subsite = {}
+
+    if grafana_fixture.exists():
+        from grafana_client.registry_builder import build_registry_from_fixture
+        grafana_registry, grafana_subsite = build_registry_from_fixture(grafana_fixture)
+        click.echo(f"  Grafana fixture: {len(grafana_registry)} parent delegations, "
+                    f"{len(grafana_subsite)} site codes")
+
+    # ServiceNow-derived registry (fills in country/GPS from curated data + locations)
+    snow_registry = build_registry(df, locations_df, grafana_available=bool(grafana_registry))
+    snow_subsite = build_subsite_map(df)
+
+    # Merge: Grafana is authoritative for region and sub-site mapping;
+    # ServiceNow/curated fills in country, GPS, and codes not in Grafana
     ref_dir = data_dir / "reference"
     ref_dir.mkdir(parents=True, exist_ok=True)
+
+    if grafana_registry:
+        # Enrich Grafana registry with country/GPS from ServiceNow registry
+        for code, g_entry in grafana_registry.items():
+            s_entry = snow_registry.get(code, {})
+            if s_entry.get("country") and not g_entry.get("country"):
+                g_entry["country"] = s_entry["country"]
+                g_entry["country_iso3"] = s_entry.get("country_iso3")
+            if s_entry.get("latitude") and not g_entry.get("latitude"):
+                g_entry["latitude"] = s_entry["latitude"]
+                g_entry["longitude"] = s_entry.get("longitude")
+        # Add ServiceNow-only codes not present in Grafana
+        for code, s_entry in snow_registry.items():
+            if code not in grafana_registry:
+                grafana_registry[code] = s_entry
+        registry = grafana_registry
+        subsite_map = {**snow_subsite, **grafana_subsite}  # Grafana wins on conflicts
+    else:
+        registry = snow_registry
+        subsite_map = snow_subsite
+
     with open(ref_dir / "delegations.json", "w") as f:
         json.dump(registry, f, indent=2, ensure_ascii=False)
     with open(ref_dir / "subsite_map.json", "w") as f:
