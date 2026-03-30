@@ -279,6 +279,52 @@ def _build_bandwidth_context(bw_df: pd.DataFrame | None) -> dict[str, Any] | Non
     }
 
 
+def _build_data_completeness(data_dir: Path, registry: dict) -> dict[str, Any] | None:
+    """Build data completeness context: NetBox/Grafana coverage stats."""
+    ref = data_dir / "reference"
+    nb_map_path = ref / "netbox_site_map.json"
+    circuits_path = ref / "circuits.json"
+
+    if not nb_map_path.exists():
+        return None
+
+    with open(nb_map_path) as f:
+        nb_site_map = json.load(f)
+
+    grafana_sites = {k for k, v in registry.items() if v.get("source", "").startswith("grafana")}
+    nb_matched = set(nb_site_map.keys())
+    nb_matched_grafana = nb_matched & grafana_sites
+
+    circuits: list[dict] = []
+    if circuits_path.exists():
+        with open(circuits_path) as f:
+            circuits = json.load(f)
+
+    total_circuits = len(circuits)
+    with_site = sum(1 for c in circuits if c.get("site_code"))
+    with_rate = sum(1 for c in circuits if c.get("commit_rate_kbps"))
+
+    # Per-provider circuit breakdown
+    provider_counts: dict[str, int] = {}
+    for c in circuits:
+        p = c.get("provider", "Unknown")
+        if p:
+            provider_counts[p] = provider_counts.get(p, 0) + 1
+    top_providers = sorted(provider_counts.items(), key=lambda x: -x[1])[:10]
+
+    return {
+        "grafana_total_sites": len(grafana_sites),
+        "netbox_matched": len(nb_matched_grafana),
+        "netbox_total": len(nb_site_map),
+        "netbox_pct": round(len(nb_matched_grafana) / len(grafana_sites) * 100, 1) if grafana_sites else 0,
+        "total_circuits": total_circuits,
+        "circuits_with_site": with_site,
+        "circuits_with_rate": with_rate,
+        "circuits_rate_pct": round(with_rate / total_circuits * 100, 1) if total_circuits else 0,
+        "top_providers": top_providers,
+    }
+
+
 def generate_report(data_dir: Path, *, field_only: bool = False) -> Path:
     """Generate the HENRI baseline HTML report.
 
@@ -408,6 +454,9 @@ def generate_report(data_dir: Path, *, field_only: bool = False) -> Path:
     bw_df = _load_grafana_bandwidth(data_dir)
     bandwidth_ctx = _build_bandwidth_context(bw_df)
 
+    # Data completeness (NetBox + Grafana coverage)
+    completeness = _build_data_completeness(data_dir, registry)
+
     # Prepare template context
     context = {
         "summary": summary,
@@ -421,6 +470,7 @@ def generate_report(data_dir: Path, *, field_only: bool = False) -> Path:
         "has_grafana_data": bandwidth_ctx is not None,
         "bandwidth": bandwidth_ctx,
         "field_only": field_only,
+        "completeness": completeness,
     }
 
     # Render template

@@ -23,3 +23,12 @@ class GrafanaConfig:
     @property
     def is_configured(self) -> bool:
         return bool(self.url and self.api_token)
+
+@dataclass
+class NetBoxConfig:
+    url: str = field(default_factory=lambda: os.getenv("NETBOX_URL", ""))
+    token: str = field(default_factory=lambda: os.getenv("NETBOX_TOKEN", ""))
+
+    @property
+    def is_configured(self) -> bool:
+        return bool(self.url and self.token)

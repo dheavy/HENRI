@@ -490,6 +490,38 @@
   </table>
   {% endif %}
 
+  <!-- 8. Data Completeness (UC-3) -->
+  {% if completeness %}
+  <h2 class="section-title"><span class="num">8</span> Data Completeness</h2>
+  <div class="cards">
+    <div class="card">
+      <div class="label">NetBox Site Coverage</div>
+      <div class="value">{{ completeness.netbox_matched }} / {{ completeness.grafana_total_sites }}</div>
+      <div class="pct">{{ completeness.netbox_pct }}% of Grafana sites</div>
+    </div>
+    <div class="card">
+      <div class="label">Circuits Total</div>
+      <div class="value">{{ completeness.total_circuits }}</div>
+      <div class="pct">{{ completeness.circuits_with_site }} with site code</div>
+    </div>
+    <div class="card">
+      <div class="label">Circuits with Commit Rate</div>
+      <div class="value">{{ completeness.circuits_with_rate }} / {{ completeness.total_circuits }}</div>
+      <div class="pct">{{ completeness.circuits_rate_pct }}%</div>
+    </div>
+  </div>
+  {% if completeness.top_providers %}
+  <table>
+    <thead><tr><th>ISP Provider</th><th>Circuits</th></tr></thead>
+    <tbody>
+    {% for name, count in completeness.top_providers %}
+      <tr><td>{{ name }}</td><td>{{ count }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  {% endif %}
+
 </div>
 
 <footer>

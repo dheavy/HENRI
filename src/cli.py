@@ -172,6 +172,34 @@ def snow_parse() -> None:
     subsites = sum(1 for k, v in subsite_map.items() if k != v)
     click.echo(f"  {len(registry)} delegation codes registered, {subsites} sub-sites mapped")
 
+    # 5b. NetBox enrichment (if fixture available)
+    netbox_sites_fixture = data_dir / "fixtures" / "netbox_sites.json"
+    netbox_circuits_fixture = data_dir / "fixtures" / "netbox_circuits.json"
+    if netbox_sites_fixture.exists() and netbox_circuits_fixture.exists():
+        from netbox_client.site_matcher import build_site_map
+        from netbox_client.circuit_enrichment import (
+            load_circuits_from_fixture, enrich_circuits,
+        )
+        grafana_codes = set(subsite_map.keys())
+        nb_site_map = build_site_map(netbox_sites_fixture, grafana_codes)
+        click.echo(f"  NetBox sites matched: {len(nb_site_map)} of {len(grafana_codes)} Grafana codes")
+
+        raw_circuits = load_circuits_from_fixture(netbox_circuits_fixture)
+        enriched_circuits = enrich_circuits(raw_circuits, subsite_map)
+        circuits_path = ref_dir / "circuits.json"
+        with open(circuits_path, "w") as f:
+            json.dump(enriched_circuits, f, indent=2, ensure_ascii=False)
+        with_site = sum(1 for c in enriched_circuits if c["site_code"])
+        with_rate = sum(1 for c in enriched_circuits if c["commit_rate_kbps"])
+        click.echo(f"  Circuits: {len(enriched_circuits)} total, {with_site} with site code, "
+                    f"{with_rate} with commit_rate")
+
+        # Save netbox site map for report
+        nb_map_out = {code: {"slug": s.get("slug"), "name": s.get("name")}
+                      for code, s in nb_site_map.items()}
+        with open(ref_dir / "netbox_site_map.json", "w") as f:
+            json.dump(nb_map_out, f, indent=2, ensure_ascii=False)
+
     # Map sub-site delegation codes to parent codes
     if "delegation_code" in df.columns:
         df["parent_code"] = df["delegation_code"].map(
