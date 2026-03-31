@@ -37,7 +37,14 @@ def main() -> None:
 
     if command == "run_all":
         from henri.run_all import run_pipeline
-        sources = set(args.source.split(",")) if args.source else None
+        _VALID_SOURCES = {"snow", "grafana", "netbox", "osint"}
+        sources = None
+        if args.source:
+            sources = set(args.source.split(","))
+            invalid = sources - _VALID_SOURCES
+            if invalid:
+                parser.error(f"Invalid sources: {', '.join(sorted(invalid))}. "
+                             f"Valid: {', '.join(sorted(_VALID_SOURCES))}")
         result = run_pipeline(
             dry=args.dry,
             fixtures=args.fixtures,

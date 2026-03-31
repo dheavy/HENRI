@@ -119,6 +119,7 @@ def save_risk_scores(scores: list[dict[str, Any]], data_dir: Path) -> Path:
         with open(tmp_fd, "w") as f:
             json.dump(payload, f, indent=2, ensure_ascii=False)
         Path(tmp_path).replace(output_path)
+        output_path.chmod(0o600)
     except Exception:
         Path(tmp_path).unlink(missing_ok=True)
         raise

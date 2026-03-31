@@ -303,7 +303,7 @@
       {{ alert.previous_score }} &rarr; {{ alert.current_score }}
       (<span style="color: #B71C1C;">{{ "%+.1f"|format(alert.delta) }}</span>)
       {% if alert.signals_changed %}
-      <br><span style="color: #555; font-size: 13px;">Driven by: {{ alert.signals_changed | join(", ") }}</span>
+      <br><span style="color: #555; font-size: 13px;">Driven by: {{ alert.signals_changed | map('e') | join(", ") }}</span>
       {% endif %}
     </div>
     {% elif alert.alert_type == "DE-ESCALATION" %}
@@ -313,7 +313,7 @@
       {{ alert.previous_score }} &rarr; {{ alert.current_score }}
       (<span style="color: #1B5E20;">{{ "%+.1f"|format(alert.delta) }}</span>)
       {% if alert.signals_changed %}
-      <br><span style="color: #555; font-size: 13px;">Driven by: {{ alert.signals_changed | join(", ") }}</span>
+      <br><span style="color: #555; font-size: 13px;">Driven by: {{ alert.signals_changed | map('e') | join(", ") }}</span>
       {% endif %}
     </div>
     {% endif %}
