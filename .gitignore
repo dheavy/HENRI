@@ -10,6 +10,7 @@ __pycache__/
 .DS_Store
 
 .claude
+.mcp.json
 
 # Khoregos: .khoregos/ is versioned intentionally — do not ignore it.
 # Runtime artifacts inside it are excluded by .khoregos/.gitignore.
