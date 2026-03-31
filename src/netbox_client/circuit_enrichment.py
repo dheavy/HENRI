@@ -105,6 +105,10 @@ def enrich_circuits(
         cid = circ.get("cid", "")
         site_code = _extract_site_from_cid(cid)
         parent_code = subsite_map.get(site_code, site_code) if site_code else None
+        # Validate parent_code is alphanumeric (guard against poisoned subsite_map)
+        if parent_code and not parent_code.replace("_", "").replace("-", "").isalnum():
+            logger.warning("Invalid parent_code from subsite_map: skipping")
+            parent_code = site_code
 
         provider_obj = circ.get("provider") or {}
         provider_name = provider_obj.get("name", "") if isinstance(provider_obj, dict) else str(provider_obj)

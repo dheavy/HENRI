@@ -93,63 +93,70 @@ def fetch_cloudflare_live(
     all_annotations: list[dict] = []
     headers = {"Authorization": f"Bearer {token}"}
 
-    with httpx.Client(timeout=20.0) as client:
-        # Outage annotations
+    def _safe_fetch(url: str, params: dict) -> dict | None:
+        """Fetch with auth check, rate-limit handling, and response validation."""
         try:
-            resp = client.get(
-                f"{_CF_BASE}/radar/annotations/outages",
-                headers=headers,
-                params={"dateRange": "90d", "limit": 500},
-            )
+            resp = client.get(url, headers=headers, params=params)
+            if resp.status_code in (401, 403):
+                logger.warning("Cloudflare: auth rejected (%d)", resp.status_code)
+                return None
+            if resp.status_code == 429:
+                logger.warning("Cloudflare: rate limited (429)")
+                return None
             resp.raise_for_status()
             data = resp.json()
-            anns = data.get("result", {}).get("annotations", [])
-            all_annotations.extend(anns)
-            logger.debug("CF outages: %d annotations", len(anns))
-        except Exception as e:
-            logger.debug("CF outage fetch error: %s", e)
+            if not isinstance(data, dict):
+                return None
+            return data
+        except httpx.HTTPStatusError:
+            return None
+        except httpx.RequestError as e:
+            logger.debug("CF network error: %s", e)
+            return None
+
+    def _parse_bgp_events(events: list, event_type: str, asn_key: str) -> None:
+        """Parse BGP hijack/leak events with type validation."""
+        for event in events:
+            if not isinstance(event, dict):
+                continue
+            codes = event.get("country_codes", [])
+            if not isinstance(codes, list):
+                continue
+            asn_val = str(event.get(asn_key, "?"))[:20]
+            all_annotations.append({
+                "eventType": event_type,
+                "locations": [str(cc) for cc in codes],
+                "startDate": event.get("detected_ts"),
+                "endDate": event.get("finished_ts"),
+                "scope": f"AS{asn_val}",
+            })
+
+    with httpx.Client(timeout=20.0) as client:
+        # Outage annotations
+        data = _safe_fetch(f"{_CF_BASE}/radar/annotations/outages", {"dateRange": "90d", "limit": 500})
+        if data:
+            result = data.get("result")
+            if isinstance(result, dict):
+                anns = result.get("annotations", [])
+                if isinstance(anns, list):
+                    all_annotations.extend(anns)
+                    logger.debug("CF outages: %d annotations", len(anns))
+        else:
             logger.warning("Cloudflare: outage fetch failed")
 
         # BGP hijacks
-        try:
-            resp = client.get(
-                f"{_CF_BASE}/radar/bgp/hijacks/events",
-                headers=headers,
-                params={"dateRange": "90d", "per_page": 100},
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            for event in data.get("result", {}).get("asn_events", []):
-                # Convert BGP hijack to annotation-like format
-                all_annotations.append({
-                    "eventType": "BGP_HIJACK",
-                    "locations": [cc for cc in event.get("country_codes", [])],
-                    "startDate": event.get("detected_ts"),
-                    "endDate": event.get("finished_ts"),
-                    "scope": f"AS{event.get('victim_asn', '?')}",
-                })
-        except Exception as e:
-            logger.debug("CF BGP hijack fetch error: %s", e)
+        data = _safe_fetch(f"{_CF_BASE}/radar/bgp/hijacks/events", {"dateRange": "90d", "per_page": 100})
+        if data:
+            result = data.get("result")
+            if isinstance(result, dict):
+                _parse_bgp_events(result.get("asn_events", []), "BGP_HIJACK", "victim_asn")
 
         # BGP leaks
-        try:
-            resp = client.get(
-                f"{_CF_BASE}/radar/bgp/leaks/events",
-                headers=headers,
-                params={"dateRange": "90d", "per_page": 100},
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            for event in data.get("result", {}).get("asn_events", []):
-                all_annotations.append({
-                    "eventType": "BGP_LEAK",
-                    "locations": [cc for cc in event.get("country_codes", [])],
-                    "startDate": event.get("detected_ts"),
-                    "endDate": event.get("finished_ts"),
-                    "scope": f"AS{event.get('leaker_asn', '?')}",
-                })
-        except Exception as e:
-            logger.debug("CF BGP leak fetch error: %s", e)
+        data = _safe_fetch(f"{_CF_BASE}/radar/bgp/leaks/events", {"dateRange": "90d", "per_page": 100})
+        if data:
+            result = data.get("result")
+            if isinstance(result, dict):
+                _parse_bgp_events(result.get("asn_events", []), "BGP_LEAK", "leaker_asn")
 
     results = _parse_annotations(all_annotations, iso3_to_country)
     logger.info("Cloudflare live: %d ICRC countries with events", len(results))

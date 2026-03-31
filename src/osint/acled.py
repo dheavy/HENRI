@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 from collections import Counter
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -99,6 +100,7 @@ def fetch_acled_live(
 
     with httpx.Client(timeout=30.0) as client:
         for country_lower, (country_name, _) in sorted(icrc_countries.items()):
+            time.sleep(1.0)  # Rate limit: max 1 req/s
             try:
                 resp = client.get(
                     _API_URL,
@@ -110,15 +112,28 @@ def fetch_acled_live(
                         "event_date_where": "BETWEEN",
                     },
                 )
+                if resp.status_code == 429:
+                    logger.warning("ACLED: rate limited (429); backing off 60s")
+                    time.sleep(60)
+                    continue
+                if resp.status_code in (401, 403):
+                    logger.warning("ACLED: auth rejected (%d); aborting pull", resp.status_code)
+                    return []
                 resp.raise_for_status()
                 data = resp.json()
+                if not isinstance(data, dict):
+                    continue
                 events = data.get("data", [])
+                if not isinstance(events, list):
+                    continue
                 all_events.extend(events)
                 if events:
                     logger.debug("ACLED: %s → %d events", country_name, len(events))
-            except Exception as e:
-                logger.debug("ACLED fetch error for %s: %s", country_name, e)
-                logger.warning("ACLED: failed to fetch %s", country_name)
+            except httpx.HTTPStatusError as e:
+                logger.debug("ACLED HTTP error for %s: %d", country_name, e.response.status_code)
+            except httpx.RequestError as e:
+                logger.debug("ACLED network error for %s: %s", country_name, e)
+                logger.warning("ACLED: network error fetching %s", country_name)
 
     logger.info("ACLED live: %d events across %d countries", len(all_events), len(icrc_countries))
 

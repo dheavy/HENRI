@@ -93,10 +93,20 @@ def fetch_ioda_live(
                 f"{_IODA_BASE}/outages/summary",
                 params={"from": str(week_ago), "until": str(now)},
             )
+            if resp.status_code == 429:
+                logger.warning("IODA: rate limited (429)")
+                return []
             resp.raise_for_status()
             data = resp.json()
-    except Exception as e:
-        logger.debug("IODA API error: %s", e)
+            if not isinstance(data, dict):
+                logger.warning("IODA: unexpected response type")
+                return []
+    except httpx.HTTPStatusError as e:
+        logger.debug("IODA HTTP error: %d", e.response.status_code)
+        logger.warning("IODA: live fetch failed")
+        return []
+    except httpx.RequestError as e:
+        logger.debug("IODA network error: %s", e)
         logger.warning("IODA: live fetch failed")
         return []
 
