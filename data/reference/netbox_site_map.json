@@ -1,0 +1,126 @@
+{
+  "ABI": {
+    "slug": "abi",
+    "name": "ABI"
+  },
+  "ALO": {
+    "slug": "alo",
+    "name": "ALO"
+  },
+  "AMM": {
+    "slug": "amm",
+    "name": "AMM"
+  },
+  "APP": {
+    "slug": "app",
+    "name": "APP"
+  },
+  "BAD": {
+    "slug": "bad",
+    "name": "BAD"
+  },
+  "BAG": {
+    "slug": "bag",
+    "name": "BAG"
+  },
+  "BOG": {
+    "slug": "bog",
+    "name": "BOG"
+  },
+  "BUU": {
+    "slug": "buu",
+    "name": "BUU"
+  },
+  "CAI": {
+    "slug": "CAI",
+    "name": "CAI"
+  },
+  "DAM": {
+    "slug": "dam",
+    "name": "DAM"
+  },
+  "DEZ": {
+    "slug": "dez",
+    "name": "DEZ"
+  },
+  "DSS": {
+    "slug": "dss",
+    "name": "DSS"
+  },
+  "ERB": {
+    "slug": "erb",
+    "name": "ERB"
+  },
+  "FAI": {
+    "slug": "fai",
+    "name": "FAI"
+  },
+  "HAS": {
+    "slug": "has",
+    "name": "HAS"
+  },
+  "HOM": {
+    "slug": "hom",
+    "name": "HOM"
+  },
+  "KA1": {
+    "slug": "ka1",
+    "name": "KA1"
+  },
+  "KA2": {
+    "slug": "ka2",
+    "name": "KA2"
+  },
+  "KAB": {
+    "slug": "kab",
+    "name": "KAB"
+  },
+  "KHS": {
+    "slug": "khs",
+    "name": "KHS"
+  },
+  "KYN": {
+    "slug": "kyn",
+    "name": "KYN"
+  },
+  "LA1": {
+    "slug": "la1",
+    "name": "LA1"
+  },
+  "LVI": {
+    "slug": "lvi",
+    "name": "LVI"
+  },
+  "MAZ": {
+    "slug": "maz",
+    "name": "MAZ"
+  },
+  "MIU": {
+    "slug": "miu",
+    "name": "MIU"
+  },
+  "MOS": {
+    "slug": "mos",
+    "name": "MOS"
+  },
+  "MUB": {
+    "slug": "mub",
+    "name": "MUB"
+  },
+  "OPA": {
+    "slug": "opa",
+    "name": "OPA"
+  },
+  "PSU": {
+    "slug": "psu",
+    "name": "PSU"
+  },
+  "SIT": {
+    "slug": "sit",
+    "name": "SIT"
+  },
+  "ZAM": {
+    "slug": "zam",
+    "name": "ZAM"
+  }
+}
