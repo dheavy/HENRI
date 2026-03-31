@@ -3,6 +3,7 @@ data/processed
 data/reports
 data/grafana_dashboards
 .env
+data/.acled_token.json
 .venv/
 __pycache__/
 

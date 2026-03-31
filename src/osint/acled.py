@@ -1,9 +1,12 @@
 """ACLED conflict event data — live API pull and fixture loading.
 
 Live API flow:
-1. POST https://acleddata.com/oauth/token → bearer token
+1. POST https://acleddata.com/oauth/token (grant_type=password) → bearer token
 2. GET  https://acleddata.com/api/acled/read?country=<name>&limit=5000
         &event_date=<start>|<end>&event_date_where=BETWEEN
+
+Token refresh: access_token expires in 24h; refresh via grant_type=refresh_token
+(refresh_token valid 14 days). Cached to data/.acled_token.json.
 
 Paginated by country to stay within 5000-row API limit.
 Results saved to data/processed/acled_events.parquet.
@@ -27,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 _TOKEN_URL = "https://acleddata.com/oauth/token"
 _API_URL = "https://acleddata.com/api/acled/read"
+_CLIENT_ID = "acled"
 
 
 def _get_icrc_countries(registry: dict[str, dict[str, Any]]) -> dict[str, tuple[str, str]]:
@@ -36,39 +40,145 @@ def _get_icrc_countries(registry: dict[str, dict[str, Any]]) -> dict[str, tuple[
         country = entry.get("country")
         iso3 = entry.get("country_iso3")
         region = entry.get("region", "")
-        # Only field regions — exclude HQ
         if country and iso3 and region and region != "HQ":
             countries[country.lower()] = (country, iso3)
     return countries
 
 
-def _authenticate() -> str | None:
-    """Obtain an OAuth bearer token from ACLED.
+class _AcledTokenManager:
+    """Manage ACLED OAuth tokens with caching and automatic refresh.
 
-    Requires ACLED_EMAIL and ACLED_KEY environment variables.
+    Tokens are cached to ``<data_dir>/.acled_token.json`` (chmod 0o600).
+    The access_token expires in 24 h; the refresh_token in 14 days.
     """
-    email = os.getenv("ACLED_EMAIL", "")
-    key = os.getenv("ACLED_KEY", "")
-    if not email or not key:
-        logger.warning("ACLED_EMAIL and ACLED_KEY not set — cannot authenticate")
-        return None
 
-    try:
-        resp = httpx.post(
-            _TOKEN_URL,
-            data={"email": email, "key": key},
-            timeout=15.0,
-        )
-        resp.raise_for_status()
-        token = resp.json().get("access_token")
-        if token:
-            logger.info("ACLED: authenticated successfully")
-            return token
-        logger.warning("ACLED: no access_token in response")
-        return None
-    except Exception as e:
-        logger.debug("ACLED auth error: %s", e)
-        logger.warning("ACLED: authentication failed")
+    def __init__(self, data_dir: Path | None = None) -> None:
+        self._cache_path = (data_dir or Path("data")) / ".acled_token.json"
+        self._access_token: str | None = None
+        self._refresh_token: str | None = None
+        self._expires_at: float = 0.0
+        self._load_cache()
+
+    def _load_cache(self) -> None:
+        if not self._cache_path.exists():
+            return
+        try:
+            with open(self._cache_path) as f:
+                cached = json.load(f)
+            self._access_token = cached.get("access_token")
+            self._refresh_token = cached.get("refresh_token")
+            self._expires_at = cached.get("expires_at", 0.0)
+        except (json.JSONDecodeError, OSError):
+            logger.debug("Could not load ACLED token cache")
+
+    def _save_cache(self) -> None:
+        try:
+            self._cache_path.parent.mkdir(parents=True, exist_ok=True)
+            self._cache_path.write_text(json.dumps({
+                "access_token": self._access_token,
+                "refresh_token": self._refresh_token,
+                "expires_at": self._expires_at,
+            }))
+            self._cache_path.chmod(0o600)
+        except OSError:
+            logger.debug("Could not save ACLED token cache")
+
+    def _parse_token_response(self, data: dict) -> bool:
+        token = data.get("access_token")
+        if not token:
+            return False
+        self._access_token = token
+        self._refresh_token = data.get("refresh_token", self._refresh_token)
+        expires_in = int(data.get("expires_in", 86400))
+        # Expire 5 minutes early to avoid edge cases
+        self._expires_at = time.time() + expires_in - 300
+        self._save_cache()
+        return True
+
+    def _password_grant(self) -> bool:
+        """Authenticate with username/password (initial login)."""
+        email = os.getenv("ACLED_EMAIL", "")
+        password = os.getenv("ACLED_PASSWORD", "")
+        if not email or not password:
+            logger.warning("ACLED_EMAIL and ACLED_PASSWORD not set")
+            return False
+        try:
+            resp = httpx.post(
+                _TOKEN_URL,
+                data={
+                    "username": email,
+                    "password": password,
+                    "grant_type": "password",
+                    "client_id": _CLIENT_ID,
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                timeout=15.0,
+            )
+            if resp.status_code in (401, 403):
+                logger.warning("ACLED: credentials rejected (%d)", resp.status_code)
+                return False
+            resp.raise_for_status()
+            data = resp.json()
+            if not isinstance(data, dict):
+                return False
+            if self._parse_token_response(data):
+                logger.info("ACLED: authenticated via password grant")
+                return True
+            logger.warning("ACLED: no access_token in response")
+            return False
+        except httpx.RequestError as e:
+            logger.debug("ACLED auth network error: %s", e)
+            logger.warning("ACLED: authentication failed (network)")
+            return False
+        except httpx.HTTPStatusError:
+            logger.warning("ACLED: authentication failed")
+            return False
+
+    def _refresh_grant(self) -> bool:
+        """Refresh the access token using the stored refresh_token."""
+        if not self._refresh_token:
+            return False
+        try:
+            resp = httpx.post(
+                _TOKEN_URL,
+                data={
+                    "refresh_token": self._refresh_token,
+                    "grant_type": "refresh_token",
+                    "client_id": _CLIENT_ID,
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                timeout=15.0,
+            )
+            if resp.status_code in (401, 403):
+                logger.info("ACLED: refresh token expired; re-authenticating")
+                self._refresh_token = None
+                return False
+            resp.raise_for_status()
+            data = resp.json()
+            if not isinstance(data, dict):
+                return False
+            if self._parse_token_response(data):
+                logger.info("ACLED: token refreshed successfully")
+                return True
+            return False
+        except (httpx.RequestError, httpx.HTTPStatusError):
+            logger.debug("ACLED: refresh grant failed")
+            return False
+
+    def get_token(self) -> str | None:
+        """Return a valid access token, refreshing or re-authenticating as needed."""
+        # 1. Cached token still valid?
+        if self._access_token and time.time() < self._expires_at:
+            return self._access_token
+
+        # 2. Try refresh
+        if self._refresh_token and self._refresh_grant():
+            return self._access_token
+
+        # 3. Full password grant
+        if self._password_grant():
+            return self._access_token
+
         return None
 
 
@@ -76,13 +186,16 @@ def fetch_acled_live(
     registry: dict[str, dict[str, Any]],
     days: int = 90,
     output_path: Path | None = None,
+    data_dir: Path | None = None,
 ) -> list[dict[str, Any]]:
     """Pull ACLED events for all ICRC countries over the last *days* days.
 
+    Uses OAuth password grant with automatic token refresh.
     Paginates by country (5000 per call). Saves to parquet if *output_path* given.
     Returns the raw event list, or [] if auth fails / API unavailable.
     """
-    token = _authenticate()
+    token_mgr = _AcledTokenManager(data_dir)
+    token = token_mgr.get_token()
     if not token:
         return []
 
@@ -96,15 +209,19 @@ def fetch_acled_live(
     date_range = f"{start_date}|{end_date}"
 
     all_events: list[dict] = []
-    headers = {"Authorization": f"Bearer {token}"}
 
     with httpx.Client(timeout=30.0) as client:
         for country_lower, (country_name, _) in sorted(icrc_countries.items()):
             time.sleep(1.0)  # Rate limit: max 1 req/s
+            # Refresh token if needed before each request
+            current_token = token_mgr.get_token()
+            if not current_token:
+                logger.warning("ACLED: token expired and refresh failed; aborting")
+                break
             try:
                 resp = client.get(
                     _API_URL,
-                    headers=headers,
+                    headers={"Authorization": f"Bearer {current_token}"},
                     params={
                         "country": country_name,
                         "limit": 5000,
@@ -117,8 +234,13 @@ def fetch_acled_live(
                     time.sleep(60)
                     continue
                 if resp.status_code in (401, 403):
-                    logger.warning("ACLED: auth rejected (%d); aborting pull", resp.status_code)
-                    return []
+                    # Token may have been invalidated server-side; try refresh once
+                    token_mgr._expires_at = 0  # Force refresh
+                    refreshed = token_mgr.get_token()
+                    if not refreshed:
+                        logger.warning("ACLED: auth rejected and refresh failed; aborting")
+                        return []
+                    continue  # Retry this country on next iteration
                 resp.raise_for_status()
                 data = resp.json()
                 if not isinstance(data, dict):
@@ -255,7 +377,7 @@ def load_or_fetch_acled(
             if c and iso3:
                 icrc_countries[c.lower()] = (c, iso3)
 
-    if not use_fixtures and os.getenv("ACLED_EMAIL") and os.getenv("ACLED_KEY"):
+    if not use_fixtures and os.getenv("ACLED_EMAIL") and os.getenv("ACLED_PASSWORD"):
         # Try live parquet first (from a previous pull)
         parquet_path = data_dir / "processed" / "acled_events.parquet"
         if parquet_path.exists():
@@ -268,6 +390,7 @@ def load_or_fetch_acled(
         events = fetch_acled_live(
             registry, days=90,
             output_path=data_dir / "processed" / "acled_events.parquet",
+            data_dir=data_dir,
         )
         if events:
             return _summarise_events(events, icrc_countries)
