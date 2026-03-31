@@ -321,6 +321,18 @@
   </div>
   {% endif %}
 
+  <!-- Forward-looking precursor warnings -->
+  {% if forward_alerts %}
+  <div style="margin-bottom: 32px;">
+    {% for fw in forward_alerts %}
+    <div style="background: #FFF3E0; border-left: 4px solid #E65100; padding: 16px; margin-bottom: 12px; border-radius: 4px;">
+      <strong style="color: #E65100;">&#9888; PRECURSOR DETECTED</strong><br>
+      <span>{{ fw.message | e }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <!-- 1. Summary Statistics -->
   <h2 class="section-title"><span class="num">1</span> Summary Statistics</h2>
   <div class="cards">
@@ -592,6 +604,73 @@
     </tbody>
   </table>
   </div>
+  {% endif %}
+
+  <!-- 10. Precursor Analysis -->
+  {% if precursor %}
+  <h2 class="section-title"><span class="num">10</span> Precursor Analysis</h2>
+  <div class="cards" style="margin-bottom: 16px;">
+    <div class="card accent">
+      <div class="label">Surges with External Precursors</div>
+      <div class="value">{{ precursor.stats.surges_with_precursors }} / {{ precursor.stats.total_surges }}</div>
+      <div class="pct">{{ precursor.stats.pct_with_precursors }}%</div>
+    </div>
+    <div class="card blue">
+      <div class="label">Surges with Internal Precursors</div>
+      <div class="value">{{ precursor.stats.surges_with_internal }}</div>
+      <div class="pct">WAN latency before site-down</div>
+    </div>
+    <div class="card green">
+      <div class="label">Average Lead Time</div>
+      <div class="value">{{ precursor.stats.avg_lead_time_hours }}h</div>
+      <div class="pct">Most reliable: {{ precursor.stats.most_reliable_source }}</div>
+    </div>
+  </div>
+  {% if precursor.stats.detection_rates %}
+  <p style="color: var(--gray-700); margin-bottom: 12px; font-size: 13px;">
+    Detection rates: {% for src, pct in precursor.stats.detection_rates.items() %}{{ src }}: {{ pct }}%{% if not loop.last %} · {% endif %}{% endfor %}
+  </p>
+  {% endif %}
+  {% if precursor.surges %}
+  <div style="overflow-x: auto;">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Region</th>
+        <th>Delegations</th>
+        <th>Score</th>
+        <th>ACLED</th>
+        <th>CF</th>
+        <th>Internal</th>
+        <th>Lead Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in precursor.surges %}
+      <tr>
+        <td>{{ s.date }}</td>
+        <td>{{ s.region }}</td>
+        <td>{{ s.delegations | join(", ") }}</td>
+        <td class="num">{{ s.surge_score | round(1) }}</td>
+        <td style="{% if s.acled_precursor.detected %}background: #FFCDD2;{% endif %}">
+          {% if s.acled_precursor.detected %}{{ s.acled_precursor.event_count }} events ({{ s.acled_precursor.ratio }}x){% else %}&mdash;{% endif %}
+        </td>
+        <td style="{% if s.cf_precursor.detected %}background: #FFE0B2;{% endif %}">
+          {% if s.cf_precursor.detected %}{{ s.cf_precursor.event_count }} events{% else %}&mdash;{% endif %}
+        </td>
+        <td style="{% if s.internal_precursor.detected %}background: #FFF9C4;{% endif %}">
+          {% if s.internal_precursor.detected %}{{ s.internal_precursor.latency_alerts }} alerts{% else %}&mdash;{% endif %}
+        </td>
+        <td class="num" style="{% if s.earliest_lead_time_hours and s.earliest_lead_time_hours > 48 %}background: #C8E6C9;{% elif s.earliest_lead_time_hours and s.earliest_lead_time_hours > 12 %}background: #FFF9C4;{% elif s.earliest_lead_time_hours %}background: #FFCDD2;{% else %}background: #eee;{% endif %}">
+          {% if s.earliest_lead_time_hours %}{{ s.earliest_lead_time_hours | round(0) | int }}h{% else %}&mdash;{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
   {% endif %}
 
 </div>

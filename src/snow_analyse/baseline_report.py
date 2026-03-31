@@ -501,6 +501,28 @@ def generate_report(
     # External threat landscape (OSINT)
     threat_landscape = _build_threat_landscape(data_dir, registry, use_fixtures=use_fixtures)
 
+    # Precursor analysis
+    precursor_ctx = None
+    try:
+        from snow_analyse.precursor import analyse_precursors, compute_precursor_stats
+        if surges:
+            precursor_data = analyse_precursors(surges, registry, data_dir)
+            precursor_stats = compute_precursor_stats(precursor_data)
+            # Only include surges that had precursors for the report
+            precursor_with = [p for p in precursor_data if p["any_external_precursor"] or p["internal_precursor"]["detected"]]
+            if precursor_data:
+                precursor_ctx = {"stats": precursor_stats, "surges": precursor_with[:30]}
+    except Exception as exc:
+        logger.warning("Precursor analysis failed: %s", exc)
+
+    # Forward-looking alerts
+    forward_alerts: list[dict] = []
+    try:
+        from henri.forward_alert import check_forward_alerts
+        forward_alerts = check_forward_alerts(data_dir, registry)
+    except Exception as exc:
+        logger.warning("Forward alert check failed: %s", exc)
+
     # Prepare template context
     context = {
         "summary": summary,
@@ -518,6 +540,8 @@ def generate_report(
         "threat_landscape": threat_landscape,
         "delta_alerts": deltas or [],
         "has_deltas": bool(deltas),
+        "precursor": precursor_ctx,
+        "forward_alerts": forward_alerts,
     }
 
     # Render template
