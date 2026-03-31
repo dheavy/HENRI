@@ -23,4 +23,4 @@ COPY --chown=henri:henri . .
 USER henri
 
 # Default command
-ENTRYPOINT ["uv", "run", "python", "src/cli.py"]
+ENTRYPOINT ["uv", "run", "python", "-m", "henri"]

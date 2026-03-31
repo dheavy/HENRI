@@ -1,0 +1,56 @@
+"""Entry point for ``python -m henri``."""
+
+from __future__ import annotations
+
+import argparse
+import logging
+import sys
+
+from dotenv import load_dotenv
+
+
+def main() -> None:
+    load_dotenv()
+
+    parser = argparse.ArgumentParser(prog="henri", description="HENRI pipeline")
+    sub = parser.add_subparsers(dest="command")
+
+    p_run = sub.add_parser("run_all", help="Full pipeline: extract → analyse → report")
+    p_run.add_argument("--dry", action="store_true", help="Show plan without executing")
+    p_run.add_argument("--fixtures", action="store_true", help="Use fixture data only")
+    p_run.add_argument("--source", type=str, default=None,
+                       help="Comma-separated sources: snow,grafana,netbox,osint")
+    p_run.add_argument("--field-only", action="store_true",
+                       help="Generate field-region report only")
+
+    p_report = sub.add_parser("report", help="Regenerate report from existing data")
+    p_report.add_argument("--field-only", action="store_true")
+
+    args = parser.parse_args()
+    command = args.command or "run_all"
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
+    if command == "run_all":
+        from henri.run_all import run_pipeline
+        sources = set(args.source.split(",")) if args.source else None
+        result = run_pipeline(
+            dry=args.dry,
+            fixtures=args.fixtures,
+            sources=sources,
+            field_only=getattr(args, "field_only", False),
+        )
+        if result["steps_failed"]:
+            sys.exit(1)
+
+    elif command == "report":
+        from henri.run_all import regenerate_reports
+        regenerate_reports(field_only_only=getattr(args, "field_only", False))
+
+
+if __name__ == "__main__":
+    main()

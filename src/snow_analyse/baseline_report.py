@@ -364,12 +364,14 @@ def generate_report(
     *,
     field_only: bool = False,
     use_fixtures: bool = False,
+    deltas: list[dict] | None = None,
+    output_name: str | None = None,
 ) -> Path:
     """Generate the HENRI baseline HTML report.
 
     Loads processed data from *data_dir*, runs all analysis, renders
     the Jinja2 template, and writes the report to
-    ``data_dir/reports/baseline_report.html``.
+    ``data_dir/reports/<output_name>`` (or the default name).
 
     Parameters
     ----------
@@ -514,6 +516,8 @@ def generate_report(
         "field_only": field_only,
         "completeness": completeness,
         "threat_landscape": threat_landscape,
+        "delta_alerts": deltas or [],
+        "has_deltas": bool(deltas),
     }
 
     # Render template
@@ -528,7 +532,12 @@ def generate_report(
     # Write output
     output_dir = data_dir / "reports"
     output_dir.mkdir(parents=True, exist_ok=True)
-    filename = "baseline_report_field.html" if field_only else "baseline_report.html"
+    if output_name:
+        filename = output_name
+    elif field_only:
+        filename = "baseline_report_field.html"
+    else:
+        filename = "baseline_report.html"
     output_path = output_dir / filename
     output_path.write_text(html, encoding="utf-8")
 

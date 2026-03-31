@@ -291,6 +291,36 @@
 
 <div class="container">
 
+  <!-- 0. Significant Changes (delta alerts) -->
+  {% if has_deltas %}
+  <div style="margin-bottom: 32px;">
+    <h2 class="section-title"><span class="num" style="background: #D32F2F;">!</span> Significant Changes Since Last Run</h2>
+    {% for alert in delta_alerts %}
+    {% if alert.alert_type == "ESCALATION" %}
+    <div style="background: #FFCDD2; border-left: 4px solid #D32F2F; padding: 16px; margin-bottom: 12px; border-radius: 4px;">
+      <strong style="color: #B71C1C;">ESCALATION</strong> &mdash;
+      <strong>{{ alert.country }}</strong>:
+      {{ alert.previous_score }} &rarr; {{ alert.current_score }}
+      (<span style="color: #B71C1C;">{{ "%+.1f"|format(alert.delta) }}</span>)
+      {% if alert.signals_changed %}
+      <br><span style="color: #555; font-size: 13px;">Driven by: {{ alert.signals_changed | join(", ") }}</span>
+      {% endif %}
+    </div>
+    {% elif alert.alert_type == "DE-ESCALATION" %}
+    <div style="background: #C8E6C9; border-left: 4px solid #388E3C; padding: 16px; margin-bottom: 12px; border-radius: 4px;">
+      <strong style="color: #1B5E20;">DE-ESCALATION</strong> &mdash;
+      <strong>{{ alert.country }}</strong>:
+      {{ alert.previous_score }} &rarr; {{ alert.current_score }}
+      (<span style="color: #1B5E20;">{{ "%+.1f"|format(alert.delta) }}</span>)
+      {% if alert.signals_changed %}
+      <br><span style="color: #555; font-size: 13px;">Driven by: {{ alert.signals_changed | join(", ") }}</span>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <!-- 1. Summary Statistics -->
   <h2 class="section-title"><span class="num">1</span> Summary Statistics</h2>
   <div class="cards">
