@@ -31,9 +31,14 @@ COPY --chown=henri:henri . .
 # Drop to non-root
 USER henri
 
+# uv: cache in writable tmpfs, skip sync at runtime (deps frozen at build)
+ENV UV_CACHE_DIR=/tmp/uv-cache
+ENV UV_NO_SYNC=1
+ENV PYTHONPATH=/app/src
+
 # Health check — verify Python can import the package
 HEALTHCHECK --interval=300s --timeout=10s --retries=1 \
     CMD ["python", "-c", "import henri"]
 
 # Default entry point
-ENTRYPOINT ["uv", "run", "python", "-m", "henri"]
+ENTRYPOINT [".venv/bin/python", "-m", "henri"]
