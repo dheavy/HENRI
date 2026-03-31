@@ -319,14 +319,17 @@ def grafana_export_dashboards() -> None:
 @cli.command()
 @click.option("--field-only", is_flag=True, default=False,
               help="Exclude HQ and UNASSIGNED tickets from charts (field regions only)")
-def analyse(field_only: bool) -> None:
+@click.option("--fixtures", is_flag=True, default=False,
+              help="Use fixture files for OSINT data instead of live API calls")
+def analyse(field_only: bool, fixtures: bool) -> None:
     """Run analysis and generate the baseline report."""
     from snow_analyse.baseline_report import generate_report
 
     data_dir = _data_dir()
     mode = "field-only" if field_only else "full"
-    click.echo(f"Generating baseline report ({mode})...")
-    output = generate_report(data_dir, field_only=field_only)
+    osint = "fixtures" if fixtures else "live"
+    click.echo(f"Generating baseline report ({mode}, OSINT: {osint})...")
+    output = generate_report(data_dir, field_only=field_only, use_fixtures=fixtures)
     click.echo(f"Report written to {output}")
 
 
@@ -337,12 +340,15 @@ def analyse(field_only: bool) -> None:
 @click.option("--end", type=click.DateTime(["%Y-%m-%d"]), default=str(date.today()))
 @click.option("--field-only", is_flag=True, default=False,
               help="Exclude HQ and UNASSIGNED tickets from charts")
+@click.option("--fixtures", is_flag=True, default=False,
+              help="Use fixture files for OSINT data instead of live APIs")
 @click.pass_context
-def run_snow(ctx: click.Context, start: datetime, end: datetime, field_only: bool) -> None:
+def run_snow(ctx: click.Context, start: datetime, end: datetime, field_only: bool, fixtures: bool) -> None:
     """ServiceNow pipeline: parse fixtures/raw -> analyse -> report.
 
     If GRAFANA_URL and GRAFANA_API_TOKEN are set, also pulls live
     bandwidth data after parsing (degrades gracefully if unavailable).
+    OSINT sources use live APIs by default; pass --fixtures for offline mode.
     """
     ctx.invoke(snow_parse)
 
@@ -354,7 +360,7 @@ def run_snow(ctx: click.Context, start: datetime, end: datetime, field_only: boo
     else:
         click.echo("Grafana not configured; skipping bandwidth pull.")
 
-    ctx.invoke(analyse, field_only=field_only)
+    ctx.invoke(analyse, field_only=field_only, fixtures=fixtures)
 
 
 @cli.command()
@@ -362,15 +368,17 @@ def run_snow(ctx: click.Context, start: datetime, end: datetime, field_only: boo
 @click.option("--end", type=click.DateTime(["%Y-%m-%d"]), default=str(date.today()))
 @click.option("--field-only", is_flag=True, default=False,
               help="Exclude HQ and UNASSIGNED tickets from charts")
+@click.option("--fixtures", is_flag=True, default=False,
+              help="Use fixture files for OSINT data instead of live APIs")
 @click.pass_context
-def run_all(ctx: click.Context, start: datetime, end: datetime, field_only: bool) -> None:
+def run_all(ctx: click.Context, start: datetime, end: datetime, field_only: bool, fixtures: bool) -> None:
     """Full pipeline: all sources -> parse -> analyse -> report."""
     ctx.invoke(snow_parse)
     # Grafana steps degrade gracefully if unconfigured
     ctx.invoke(grafana_build_registry)
     ctx.invoke(grafana_bandwidth, days=7)
     ctx.invoke(grafana_site_status, days=30)
-    ctx.invoke(analyse, field_only=field_only)
+    ctx.invoke(analyse, field_only=field_only, fixtures=fixtures)
 
 
 if __name__ == "__main__":

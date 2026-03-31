@@ -335,19 +335,20 @@ def _build_data_completeness(data_dir: Path, registry: dict) -> dict[str, Any] |
 def _build_threat_landscape(
     data_dir: Path,
     registry: dict[str, Any],
+    *,
+    use_fixtures: bool = False,
 ) -> list[dict[str, Any]] | None:
-    """Build threat landscape data from OSINT fixtures.
+    """Build threat landscape data from OSINT sources.
+
+    Tries live APIs first (ACLED, IODA, Cloudflare), falls back to
+    fixtures if credentials are missing or APIs are unavailable.
+    When *use_fixtures* is True, always uses fixture files.
 
     Returns a list of risk cards sorted by combined risk score descending,
-    or None if no OSINT fixtures are available.
+    or None if no data is available.
     """
-    fixtures_dir = data_dir / "fixtures"
-    if not fixtures_dir.exists():
-        logger.info("No fixtures directory found; skipping threat landscape")
-        return None
-
     try:
-        cards = compute_risk_cards(data_dir, registry)
+        cards = compute_risk_cards(data_dir, registry, use_fixtures=use_fixtures)
     except Exception as exc:
         logger.warning("Threat landscape computation failed: %s", exc)
         return None
@@ -358,7 +359,12 @@ def _build_threat_landscape(
     return cards
 
 
-def generate_report(data_dir: Path, *, field_only: bool = False) -> Path:
+def generate_report(
+    data_dir: Path,
+    *,
+    field_only: bool = False,
+    use_fixtures: bool = False,
+) -> Path:
     """Generate the HENRI baseline HTML report.
 
     Loads processed data from *data_dir*, runs all analysis, renders
@@ -491,7 +497,7 @@ def generate_report(data_dir: Path, *, field_only: bool = False) -> Path:
     completeness = _build_data_completeness(data_dir, registry)
 
     # External threat landscape (OSINT)
-    threat_landscape = _build_threat_landscape(data_dir, registry)
+    threat_landscape = _build_threat_landscape(data_dir, registry, use_fixtures=use_fixtures)
 
     # Prepare template context
     context = {

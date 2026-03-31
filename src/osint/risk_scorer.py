@@ -1,4 +1,9 @@
-"""Combine OSINT signals into per-country risk cards."""
+"""Combine OSINT signals into per-country risk cards.
+
+Only includes countries where ICRC has **field** delegations
+(AFRICA East, AFRICA West, AMERICAS, ASIA, EURASIA, NAME).
+HQ countries and countries without delegations are excluded.
+"""
 
 from __future__ import annotations
 
@@ -9,11 +14,13 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from .acled import load_acled
-from .ioda import load_ioda
-from .cloudflare import load_cloudflare
+from .acled import load_or_fetch_acled
+from .ioda import load_or_fetch_ioda
+from .cloudflare import load_or_fetch_cloudflare
 
 logger = logging.getLogger(__name__)
+
+_FIELD_REGIONS = {"AFRICA East", "AFRICA West", "AMERICAS", "ASIA", "EURASIA", "NAME"}
 
 # Signal weights for the combined risk score
 WEIGHTS = {
@@ -33,15 +40,25 @@ def _percentile_rank(values: list[float]) -> list[float]:
     if not values:
         return []
     arr = np.array(values, dtype=float)
-    # Handle all-zero case
     if arr.max() == 0:
         return [0.0] * len(values)
-    # Percentile rank: fraction of values that are strictly less, scaled to 100
     n = len(arr)
     ranks = np.zeros(n)
     for i, v in enumerate(arr):
         ranks[i] = np.sum(arr < v) / max(n - 1, 1) * 100
     return ranks.tolist()
+
+
+def _get_field_countries(registry: dict[str, dict[str, Any]]) -> dict[str, str]:
+    """Return {iso3: country_name} for ICRC field delegations only."""
+    result: dict[str, str] = {}
+    for entry in registry.values():
+        iso3 = entry.get("country_iso3")
+        country = entry.get("country")
+        region = entry.get("region", "")
+        if iso3 and country and region in _FIELD_REGIONS:
+            result[iso3] = country
+    return result
 
 
 def _load_snow_sitedown_counts(
@@ -69,7 +86,6 @@ def _load_snow_sitedown_counts(
     if sd.empty:
         return {}
 
-    # Map delegation codes to country_iso3 via registry
     code_col = "parent_code" if "parent_code" in sd.columns else "delegation_code"
     if code_col not in sd.columns:
         return {}
@@ -88,8 +104,10 @@ def _load_snow_sitedown_counts(
 def compute_risk_cards(
     data_dir: Path,
     registry: dict[str, dict[str, Any]],
+    *,
+    use_fixtures: bool = False,
 ) -> list[dict[str, Any]]:
-    """Compute combined risk cards for all ICRC delegation countries.
+    """Compute combined risk cards for ICRC field delegation countries.
 
     Parameters
     ----------
@@ -97,33 +115,41 @@ def compute_risk_cards(
         Root data directory containing ``fixtures/`` and ``processed/``.
     registry:
         Delegation registry keyed by delegation code.
+    use_fixtures:
+        If True, always use fixture files instead of live API calls.
 
     Returns
     -------
     list of risk cards sorted by combined risk score descending.
+    Each source that fails gracefully contributes 0 for its signals.
     """
-    fixtures = data_dir / "fixtures"
+    # Only field countries
+    field_countries = _get_field_countries(registry)
+    if not field_countries:
+        # Fall back to all countries with ISO3
+        for entry in registry.values():
+            iso3 = entry.get("country_iso3")
+            country = entry.get("country")
+            if iso3 and country:
+                field_countries[iso3] = country
 
-    acled_data = load_acled(fixtures / "acled_sample.json", registry)
-    ioda_data = load_ioda(fixtures / "ioda_summary_7d.json", registry)
-    cf_data = load_cloudflare(fixtures / "cf_outages_90d.json", registry)
+    if not field_countries:
+        logger.warning("No countries found in registry for risk scoring")
+        return []
+
+    # Load each OSINT source — each degrades gracefully
+    acled_data = load_or_fetch_acled(data_dir, registry, use_fixtures=use_fixtures)
+    ioda_data = load_or_fetch_ioda(data_dir, registry, use_fixtures=use_fixtures)
+    cf_data = load_or_fetch_cloudflare(data_dir, registry, use_fixtures=use_fixtures)
     snow_counts = _load_snow_sitedown_counts(data_dir, registry)
-
-    # Collect all ICRC countries with ISO3 codes
-    all_countries: dict[str, str] = {}  # iso3 -> country name
-    for entry in registry.values():
-        iso3 = entry.get("country_iso3")
-        country = entry.get("country")
-        if iso3 and country:
-            all_countries[iso3] = country
 
     # Index OSINT data by iso3
     acled_by_iso3 = {r["country_iso3"]: r for r in acled_data}
     ioda_by_iso3 = {r["country_iso3"]: r for r in ioda_data}
     cf_by_iso3 = {r["country_iso3"]: r for r in cf_data}
 
-    # Build raw signal vectors
-    iso3_list = sorted(all_countries.keys())
+    # Build raw signal vectors — only for field countries
+    iso3_list = sorted(field_countries.keys())
     raw_signals: dict[str, list[float]] = {
         "acled_events": [],
         "acled_fatalities": [],
@@ -136,7 +162,6 @@ def compute_risk_cards(
         acled = acled_by_iso3.get(iso3, {})
         ioda = ioda_by_iso3.get(iso3, {})
         cf = cf_by_iso3.get(iso3, {})
-
         raw_signals["acled_events"].append(float(acled.get("events_30d", 0)))
         raw_signals["acled_fatalities"].append(float(acled.get("fatalities_30d", 0)))
         raw_signals["ioda_outage"].append(float(ioda.get("outage_score", 0)))
@@ -148,20 +173,21 @@ def compute_risk_cards(
     for key, values in raw_signals.items():
         normalized[key] = _percentile_rank(values)
 
+    # Track which sources have data
+    has_acled = bool(acled_data)
+    has_ioda = bool(ioda_data)
+    has_cf = bool(cf_data)
+
     # Compute weighted combined score
     cards = []
     for i, iso3 in enumerate(iso3_list):
-        score = sum(
-            WEIGHTS[key] * normalized[key][i]
-            for key in WEIGHTS
-        )
-
+        score = sum(WEIGHTS[key] * normalized[key][i] for key in WEIGHTS)
         acled = acled_by_iso3.get(iso3, {})
         ioda = ioda_by_iso3.get(iso3, {})
         cf = cf_by_iso3.get(iso3, {})
 
         cards.append({
-            "country": all_countries[iso3],
+            "country": field_countries[iso3],
             "country_iso3": iso3,
             "acled_events": int(acled.get("events_30d", 0)),
             "acled_fatalities": int(acled.get("fatalities_30d", 0)),
@@ -170,8 +196,12 @@ def compute_risk_cards(
             "cf_outages": int(cf.get("outage_count", 0)),
             "snow_sitedown": snow_counts.get(iso3, 0),
             "combined_risk": round(score, 1),
+            # Data availability flags
+            "acled_available": has_acled,
+            "ioda_available": has_ioda,
+            "cf_available": has_cf,
         })
 
     cards.sort(key=lambda c: c["combined_risk"], reverse=True)
-    logger.info("Risk scorer: %d country cards computed", len(cards))
+    logger.info("Risk scorer: %d field country cards computed", len(cards))
     return cards
