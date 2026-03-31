@@ -171,7 +171,9 @@
   }
 
   tr:nth-child(even) td { background: var(--gray-100); }
+  tr.risk-row td, tr.risk-row:nth-child(even) td { background: inherit !important; }
   tr:hover td { background: var(--red-light); }
+  tr.risk-row:hover td { background: inherit !important; }
 
   td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
@@ -546,7 +548,7 @@
     </thead>
     <tbody>
       {% for card in threat_landscape %}
-      <tr style="{% if card.combined_risk > 70 %}background-color: #FFCDD2;{% elif card.combined_risk > 40 %}background-color: #FFE0B2;{% else %}background-color: #C8E6C9;{% endif %}">
+      <tr class="risk-row" style="{% if card.combined_risk >= 70 %}background-color: #FFCDD2;{% elif card.combined_risk >= 50 %}background-color: #FFE0B2;{% elif card.combined_risk >= 25 %}background-color: #FFF9C4;{% else %}background-color: #C8E6C9;{% endif %}">
         <td class="num">{{ loop.index }}</td>
         <td>{{ card.country }}</td>
         <td class="num">{{ card.acled_events }}</td>
