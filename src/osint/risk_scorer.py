@@ -22,6 +22,9 @@ logger = logging.getLogger(__name__)
 
 _FIELD_REGIONS = {"AFRICA East", "AFRICA West", "AMERICAS", "ASIA", "EURASIA", "NAME"}
 
+# Only exclude countries that map exclusively to HQ region
+_EXCLUDED_COUNTRIES = {"CHE"}
+
 # Signal weights for the combined risk score
 WEIGHTS = {
     "acled_events": 0.30,
@@ -50,13 +53,17 @@ def _percentile_rank(values: list[float]) -> list[float]:
 
 
 def _get_field_countries(registry: dict[str, dict[str, Any]]) -> dict[str, str]:
-    """Return {iso3: country_name} for ICRC field delegations only."""
+    """Return {iso3: country_name} for ICRC field delegations only.
+
+    Excludes HQ region and HQ-adjacent countries (UK, France, US, etc.)
+    whose domestic OSINT data is noise for field network intelligence.
+    """
     result: dict[str, str] = {}
     for entry in registry.values():
         iso3 = entry.get("country_iso3")
         country = entry.get("country")
         region = entry.get("region", "")
-        if iso3 and country and region in _FIELD_REGIONS:
+        if iso3 and country and region in _FIELD_REGIONS and iso3 not in _EXCLUDED_COUNTRIES:
             result[iso3] = country
     return result
 
@@ -123,18 +130,10 @@ def compute_risk_cards(
     list of risk cards sorted by combined risk score descending.
     Each source that fails gracefully contributes 0 for its signals.
     """
-    # Only field countries
+    # Only field countries — no fallback to all countries
     field_countries = _get_field_countries(registry)
     if not field_countries:
-        # Fall back to all countries with ISO3
-        for entry in registry.values():
-            iso3 = entry.get("country_iso3")
-            country = entry.get("country")
-            if iso3 and country:
-                field_countries[iso3] = country
-
-    if not field_countries:
-        logger.warning("No countries found in registry for risk scoring")
+        logger.warning("No field delegation countries found in registry")
         return []
 
     # Load each OSINT source — each degrades gracefully

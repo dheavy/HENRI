@@ -365,10 +365,18 @@ def load_or_fetch_acled(
     *,
     use_fixtures: bool = False,
 ) -> list[dict[str, Any]]:
-    """Load ACLED data — live API if credentials exist, else fixture fallback.
+    """Load ACLED data — live parquet → live API → fixture fallback.
 
-    When *use_fixtures* is True, always use the fixture file.
+    Priority:
+    1. If *use_fixtures*: use fixture file only
+    2. Processed parquet from a previous live pull (always checked)
+    3. Live API pull (requires ACLED_EMAIL + ACLED_PASSWORD)
+    4. Fixture file as last resort
     """
+    if use_fixtures:
+        fixture = data_dir / "fixtures" / "acled_sample.json"
+        return load_acled(fixture, registry)
+
     icrc_countries = _get_icrc_countries(registry)
     if not icrc_countries:
         for entry in registry.values():
@@ -377,25 +385,28 @@ def load_or_fetch_acled(
             if c and iso3:
                 icrc_countries[c.lower()] = (c, iso3)
 
-    if not use_fixtures and os.getenv("ACLED_EMAIL") and os.getenv("ACLED_PASSWORD"):
-        # Try live parquet first (from a previous pull)
-        parquet_path = data_dir / "processed" / "acled_events.parquet"
-        if parquet_path.exists():
-            logger.info("Loading ACLED from processed parquet")
-            df = pd.read_parquet(parquet_path)
-            events = df.to_dict("records")
-            return _summarise_events(events, icrc_countries)
+    # 1. Try processed parquet from a previous pull (regardless of creds)
+    parquet_path = data_dir / "processed" / "acled_events.parquet"
+    if parquet_path.exists():
+        logger.info("Loading ACLED from processed parquet")
+        df = pd.read_parquet(parquet_path)
+        events = df.to_dict("records")
+        result = _summarise_events(events, icrc_countries)
+        if result:
+            return result
 
-        # Live pull
+    # 2. Live API pull (requires credentials)
+    if os.getenv("ACLED_EMAIL") and os.getenv("ACLED_PASSWORD"):
         events = fetch_acled_live(
             registry, days=90,
-            output_path=data_dir / "processed" / "acled_events.parquet",
+            output_path=parquet_path,
             data_dir=data_dir,
         )
         if events:
             return _summarise_events(events, icrc_countries)
-        logger.warning("ACLED live pull returned no data; falling back to fixture")
+        logger.warning("ACLED live pull returned no data")
 
-    # Fixture fallback
+    # 3. Fixture fallback
+    logger.info("Falling back to ACLED fixture")
     fixture = data_dir / "fixtures" / "acled_sample.json"
     return load_acled(fixture, registry)
