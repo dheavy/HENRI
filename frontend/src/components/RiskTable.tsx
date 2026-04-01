@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import type { Country } from '../api/client';
+import DotSparkline, { generateSparkline } from './DotSparkline';
 
 const TIER_ROW_BG: Record<string, string> = {
   high: 'bg-risk-high',
@@ -26,6 +27,7 @@ export default function RiskTable({ countries }: { countries: Country[] }) {
           <tr className="text-left text-xs text-text-comment uppercase tracking-wider border-b border-border">
             <th className="pb-3 pr-4">#</th>
             <th className="pb-3 pr-4">Country</th>
+            <th className="pb-3 pr-2">Trend</th>
             <th className="pb-3 pr-4 text-right">Risk</th>
             <th className="pb-3 pr-4 text-right">ACLED</th>
             <th className="pb-3 pr-4 text-right">Fatalities</th>
@@ -47,6 +49,9 @@ export default function RiskTable({ countries }: { countries: Country[] }) {
             >
               <td className="py-2.5 pr-4 text-text-muted font-mono text-xs">{i + 1}</td>
               <td className="py-2.5 pr-4 text-link font-medium">{c.name}</td>
+              <td className="py-2.5 pr-2 w-24">
+                <DotSparkline data={generateSparkline(c.risk_score, c.iso2)} />
+              </td>
               <td className="py-2.5 pr-4 text-right">
                 <span className={clsx('text-xs font-bold font-mono px-2 py-0.5 rounded', TIER_BADGE[c.risk_tier])}>
                   {c.risk_score.toFixed(1)}

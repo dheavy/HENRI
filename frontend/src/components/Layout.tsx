@@ -14,7 +14,7 @@ export default function Layout() {
     <div className="flex h-screen">
       <nav className="w-56 shrink-0 bg-bg-deepest border-r border-border flex flex-col">
         <div className="p-4 border-b border-border">
-          <h1 className="text-lg font-bold font-mono tracking-tight text-text-primary">
+          <h1 className="text-heading tracking-tight">
             <span className="text-accent">HENRI</span>
           </h1>
           <p className="text-xs text-text-muted mt-0.5">Network Intelligence</p>
