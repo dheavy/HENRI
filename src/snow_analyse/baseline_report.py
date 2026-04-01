@@ -508,10 +508,19 @@ def generate_report(
         if surges:
             precursor_data = analyse_precursors(surges, registry, data_dir)
             precursor_stats = compute_precursor_stats(precursor_data)
-            # Only include surges that had precursors for the report
-            precursor_with = [p for p in precursor_data if p["any_external_precursor"] or p["internal_precursor"]["detected"]]
+            # Sort: precursor-positive first (by lead time asc), then no-precursor by score desc
+            has_precursor = [p for p in precursor_data
+                            if p["any_external_precursor"] or p["internal_precursor"]["detected"]]
+            no_precursor = [p for p in precursor_data
+                           if not p["any_external_precursor"] and not p["internal_precursor"]["detected"]]
+            has_precursor.sort(key=lambda p: p.get("earliest_lead_time_hours") or 999)
+            no_precursor.sort(key=lambda p: p.get("surge_score", 0), reverse=True)
+            # Show up to 30 precursor-positive, fill remainder with top no-precursor
+            table_rows = has_precursor[:30]
+            if len(table_rows) < 30:
+                table_rows += no_precursor[:30 - len(table_rows)]
             if precursor_data:
-                precursor_ctx = {"stats": precursor_stats, "surges": precursor_with[:30]}
+                precursor_ctx = {"stats": precursor_stats, "surges": table_rows}
     except Exception as exc:
         logger.warning("Precursor analysis failed: %s", exc)
 
