@@ -9,10 +9,13 @@ const REGIONS = ['All', 'AFRICA East', 'AFRICA West', 'AMERICAS', 'ASIA', 'EURAS
 
 function PrecursorDot({ detected, label }: { detected: boolean; label: string }) {
   return (
-    <span title={label} className={clsx(
-      'inline-block w-2.5 h-2.5 rounded-full',
-      detected ? 'bg-green-500' : 'bg-neutral-700'
-    )} />
+    <span
+      title={detected ? `${label}: precursor detected` : `${label}: no precursor`}
+      className={clsx(
+        'inline-block w-2.5 h-2.5 rounded-full cursor-help',
+        detected ? 'bg-green' : 'bg-bg-highlight'
+      )}
+    />
   );
 }
 
@@ -51,9 +54,9 @@ function SurgeRow({ surge }: { surge: Surge }) {
             {surge.delegations.length > 4 && <span className="text-xs text-text-muted">+{surge.delegations.length - 4}</span>}
           </div>
         </td>
-        <td className="py-2.5 text-right font-mono text-xs">{surge.score.toFixed(1)}</td>
-        <td className="py-2.5">
-          <div className="flex gap-1.5 items-center">
+        <td className="py-2.5 pr-6 text-right font-mono text-xs">{surge.score.toFixed(1)}</td>
+        <td className="py-2.5 pl-2">
+          <div className="flex gap-2 items-center">
             <PrecursorDot detected={p.acled.detected} label="ACLED" />
             <PrecursorDot detected={p.ioda.detected} label="IODA" />
             <PrecursorDot detected={p.cloudflare.detected} label="Cloudflare" />
@@ -122,8 +125,13 @@ export default function Surges() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <h2 className="text-2xl font-bold flex items-center gap-2">
-        <Zap size={24} className="text-accent" /> Surge Events & Precursor Analysis
+        <Zap size={24} className="text-accent" /> Surge Events and Precursor Analysis
       </h2>
+      <p className="text-sm text-text-muted">
+        Regional outage clusters where multiple delegations experienced FortigateSiteDown simultaneously.
+        Each surge is checked for external warning signals (ACLED conflict spikes, IODA BGP drops,
+        Cloudflare outages) and internal precursors (WAN latency alerts) in the hours before the event.
+      </p>
 
       {/* Stats */}
       {data?.stats && (
@@ -182,8 +190,8 @@ export default function Surges() {
                 <th className="pb-2">Date</th>
                 <th className="pb-2">Region</th>
                 <th className="pb-2">Delegations</th>
-                <th className="pb-2 text-right">Score</th>
-                <th className="pb-2">Precursors</th>
+                <th className="pb-2 pr-6 text-right">Score</th>
+                <th className="pb-2 pl-2">Precursors</th>
                 <th className="pb-2 text-right">Lead Time</th>
               </tr>
             </thead>

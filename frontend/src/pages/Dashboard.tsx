@@ -50,6 +50,15 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
+      {/* Page header */}
+      <div>
+        <h2 className="text-2xl font-bold text-text-primary">Dashboard</h2>
+        <p className="text-sm text-text-muted mt-1">
+          Real-time overview of network risk across ICRC field delegations. Active precursor warnings,
+          risk score changes, and the full country threat landscape at a glance.
+        </p>
+      </div>
+
       {/* Alert banners */}
       {alerts.length > 0 && (
         <div>

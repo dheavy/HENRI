@@ -69,6 +69,11 @@ export default function Country() {
       </Link>
 
       {/* Header */}
+      <p className="text-sm text-text-muted">
+        Country drill-down: conflict timeline, internet outage signals, ServiceNow incidents
+        by delegation, and historical surge events with precursor analysis.
+      </p>
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">{name}</h2>

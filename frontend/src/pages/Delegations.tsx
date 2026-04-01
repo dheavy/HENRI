@@ -95,6 +95,10 @@ export default function Delegations() {
       <h2 className="text-2xl font-bold flex items-center gap-2">
         <Radio size={24} className="text-accent" /> Delegation Inventory
       </h2>
+      <p className="text-sm text-text-muted">
+        All ICRC field sites with FortiGate monitoring. Shows incident counts, dominant alert types,
+        ISP circuit details, and sub-site structure. Search by site code or country, filter by region.
+      </p>
 
       {/* Search + filter */}
       <div className="flex items-center gap-4">
