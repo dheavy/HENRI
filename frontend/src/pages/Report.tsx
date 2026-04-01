@@ -25,7 +25,7 @@ function parseReports(files: string[]): ReportEntry[] {
 
 const DESCRIPTIONS: Record<string, string> = {
   full: 'The full report includes all 50,000 incidents across all regions — HQ, field delegations, and unassigned tickets. Use this for a complete operational picture.',
-  field: 'The field report filters to the six field ICT regions only (AFRICA East/West, AMERICAS, ASIA, EURASIA, NAME), excluding HQ and unassigned tickets. This is the version for the Head of Field IT Services.',
+  field: 'The field report filters to the six field ICT regions only (AFRICA East/West, AMERICAS, ASIA, EURASIA, NAME), excluding HQ and unassigned tickets.',
 };
 
 export default function Report() {
