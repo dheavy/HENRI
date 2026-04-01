@@ -131,6 +131,8 @@ export default function Surges() {
         Regional outage clusters where multiple delegations experienced FortigateSiteDown simultaneously.
         Each surge is checked for external warning signals (ACLED conflict spikes, IODA BGP drops,
         Cloudflare outages) and internal precursors (WAN latency alerts) in the hours before the event.
+        Lead time is the gap between the earliest detected warning signal and the actual outage —
+        longer lead time means more advance notice to prepare field teams.
       </p>
 
       {/* Stats */}
