@@ -198,7 +198,7 @@ export default function Dashboard() {
       </div>
 
       <div
-        style={{ gridColumn: 'span 1' }}
+        style={{ gridColumn: 'span 1', alignSelf: 'start' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
         <SourceHealthRings sources={pipeline_status.sources} lastRun={pipeline_status.last_run} />
