@@ -1,20 +1,22 @@
 import { useDashboard, useCountries, useDelegations, useSurges } from '../hooks/useApi';
-import { PrecursorBanner, DeltaBanner } from '../components/AlertBanner';
+import AlertSummary from '../components/AlertSummary';
 import RiskTable from '../components/RiskTable';
 import StatusBadge from '../components/StatusBadge';
 import EmptyState from '../components/EmptyState';
 import SurgePulse from '../components/SurgePulse';
-import MiniGlobe from '../components/MiniGlobe';
+import DotMatrixMap from '../components/DotMatrixMap';
 import SourceHealthRings from '../components/SourceHealthRings';
 import DotHistogram from '../components/DotHistogram';
 
 function StatCard({
   label,
   value,
+  description,
   accent,
 }: {
   label: string;
   value: string | number;
+  description?: string;
   accent?: boolean;
 }) {
   return (
@@ -25,6 +27,7 @@ function StatCard({
     >
       <p className="text-label">{label}</p>
       <p className="text-data-display mt-2">{value}</p>
+      {description && <p className="text-sm text-text-muted mt-2">{description}</p>}
     </div>
   );
 }
@@ -52,46 +55,55 @@ export default function Dashboard() {
   const { alerts, delta_alerts, pipeline_status } = dashboard;
 
   const stats = surgesData?.stats;
+  const totalSurges = stats?.total_surges ?? 0;
   const surgesWithPrecursors = stats?.with_external_precursor ?? 0;
-  const detectionRate = stats?.pct_with_precursor != null ? `${Math.round(stats.pct_with_precursor)}%` : '--';
-  const avgLeadTime = stats?.avg_lead_time_hours != null ? `${stats.avg_lead_time_hours.toFixed(1)}h` : '--';
+  const detectionPct = stats?.pct_with_precursor != null ? Math.round(stats.pct_with_precursor) : null;
+  const detectionRate = detectionPct != null ? `${detectionPct}%` : '--';
+  const avgLeadHours = stats?.avg_lead_time_hours ?? null;
+  const avgLeadTime = avgLeadHours != null ? `${avgLeadHours.toFixed(1)}h` : '--';
 
-  const topDelegations = delegationsData?.delegations.slice(0, 10) ?? [];
+  // Filter out HQ delegations (Fix 9)
+  const topDelegations = (delegationsData?.delegations ?? [])
+    .filter((d) => d.region !== 'HQ' && d.region !== '')
+    .slice(0, 10);
 
   return (
     <div
       className="max-w-[1440px] mx-auto"
-      style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '12px' }}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(12, 1fr)',
+        gridAutoRows: 'minmax(80px, auto)',
+        gap: '12px',
+        padding: '16px',
+        minHeight: 'calc(100vh - 32px)',
+      }}
     >
-      {/* Row 1: Alert banners — full width */}
+      {/* Alert summary — full width */}
       {(alerts.length > 0 || delta_alerts.length > 0) && (
         <div style={{ gridColumn: 'span 12' }}>
-          {alerts.map((a, i) => (
-            <PrecursorBanner key={i} alert={a} />
-          ))}
-          {delta_alerts.map((d, i) => (
-            <DeltaBanner key={i} alert={d} />
-          ))}
+          <AlertSummary alerts={alerts} deltaAlerts={delta_alerts} />
         </div>
       )}
 
-      {/* Row 2: Globe placeholder + Risk table */}
+      {/* Dot-matrix map: span 5, row-span 3 */}
       <div
-        style={{ gridColumn: 'span 5' }}
-        className="bg-bg-surface border border-border rounded-lg h-[400px] overflow-hidden"
+        style={{ gridColumn: 'span 5', gridRow: 'span 3' }}
+        className="bg-bg-surface border border-border rounded-lg overflow-hidden"
       >
         {countriesData?.countries ? (
-          <MiniGlobe countries={countriesData.countries} />
+          <DotMatrixMap countries={countriesData.countries} />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <p className="text-small">Loading globe...</p>
+            <p className="text-small">Loading map...</p>
           </div>
         )}
       </div>
 
+      {/* Risk table: span 7, row-span 3 */}
       <div
-        style={{ gridColumn: 'span 7' }}
-        className="bg-bg-surface border border-border rounded-lg p-5 h-[400px] overflow-y-auto"
+        style={{ gridColumn: 'span 7', gridRow: 'span 3' }}
+        className="bg-bg-surface border border-border rounded-lg p-5 overflow-y-auto"
       >
         <h3 className="text-label mb-3">
           Threat Landscape — {countriesData?.countries.length ?? 0} Countries
@@ -99,22 +111,43 @@ export default function Dashboard() {
         {countriesData?.countries && <RiskTable countries={countriesData.countries} />}
       </div>
 
-      {/* Row 3: 3 stat cards + Surge pulse + Source health */}
-      <div style={{ gridColumn: 'span 2' }}>
-        <StatCard label="Surges with precursors" value={surgesWithPrecursors} accent />
+      {/* 3 stat cards: span 4 each = 12 cols */}
+      <div style={{ gridColumn: 'span 4' }}>
+        <StatCard
+          label="Surges with precursors"
+          value={`${surgesWithPrecursors} / ${totalSurges}`}
+          description={`Of ${totalSurges} outage clusters, ${surgesWithPrecursors} had warning signals visible before the outage.`}
+          accent
+        />
       </div>
-      <div style={{ gridColumn: 'span 2' }}>
-        <StatCard label="Detection rate" value={detectionRate} />
+      <div style={{ gridColumn: 'span 4' }}>
+        <StatCard
+          label="Detection rate"
+          value={detectionRate}
+          description={detectionPct != null
+            ? `More than half of all network outages could have been anticipated.`
+            : undefined}
+        />
       </div>
-      <div style={{ gridColumn: 'span 2' }}>
-        <StatCard label="Avg lead time" value={avgLeadTime} />
+      <div style={{ gridColumn: 'span 4' }}>
+        <StatCard
+          label="Avg lead time"
+          value={avgLeadTime}
+          description={avgLeadHours != null
+            ? `Average warning time before connectivity loss: ~${(avgLeadHours / 24).toFixed(1)} days of advance notice.`
+            : undefined}
+        />
       </div>
+
+      {/* Surge pulse: span 5 */}
       <div
-        style={{ gridColumn: 'span 4' }}
-        className="bg-bg-surface border border-border rounded-lg p-5 h-[120px]"
+        style={{ gridColumn: 'span 5' }}
+        className="bg-bg-surface border border-border rounded-lg p-5"
       >
         <SurgePulse surges={surgesData?.surges ?? []} />
       </div>
+
+      {/* Source health: span 2 */}
       <div
         style={{ gridColumn: 'span 2' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
@@ -122,17 +155,17 @@ export default function Dashboard() {
         <SourceHealthRings sources={pipeline_status.sources} />
       </div>
 
-      {/* Row 4: Region volume + Top delegations + Pipeline status */}
+      {/* Region volume: span 5 */}
       <div
-        style={{ gridColumn: 'span 6' }}
+        style={{ gridColumn: 'span 5' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
-        <h3 className="text-label mb-2">Region Volume</h3>
         <DotHistogram />
       </div>
 
+      {/* Top delegations: span 5 */}
       <div
-        style={{ gridColumn: 'span 4' }}
+        style={{ gridColumn: 'span 5' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
         <h3 className="text-label mb-3">Top Delegations</h3>
@@ -158,6 +191,7 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Pipeline status: span 2 */}
       <div
         style={{ gridColumn: 'span 2' }}
         className="bg-bg-surface border border-border rounded-lg p-5"

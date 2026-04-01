@@ -22,7 +22,7 @@ export default function RiskTable({ countries }: { countries: Country[] }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>
         <thead>
           <tr className="text-left text-xs text-text-comment uppercase tracking-wider border-b border-border">
             <th className="pb-3 pr-4">#</th>
@@ -44,10 +44,11 @@ export default function RiskTable({ countries }: { countries: Country[] }) {
               onClick={() => navigate(`/country/${c.iso2}`)}
               className={clsx(
                 'border-b border-border/30 cursor-pointer transition-colors hover:bg-bg-elevated',
-                TIER_ROW_BG[c.risk_tier]
+                TIER_ROW_BG[c.risk_tier],
               )}
+              style={{ borderRadius: 0 }}
             >
-              <td className="py-2.5 pr-4 text-text-muted font-mono text-xs">{i + 1}</td>
+              <td className="py-2.5 pr-4 px-4 text-text-muted font-mono text-xs">{i + 1}</td>
               <td className="py-2.5 pr-4 text-link font-medium">{c.name}</td>
               <td className="py-2.5 pr-2 w-24">
                 <DotSparkline data={generateSparkline(c.risk_score, c.iso2)} />
@@ -62,7 +63,7 @@ export default function RiskTable({ countries }: { countries: Country[] }) {
               <td className="py-2.5 pr-4 text-right font-mono text-text-primary">{c.ioda_score ? c.ioda_score.toLocaleString() : '—'}</td>
               <td className="py-2.5 pr-4 text-right font-mono text-text-primary">{c.cf_outages || '—'}</td>
               <td className="py-2.5 pr-4 text-right font-mono text-text-primary">{c.snow_sitedown || '—'}</td>
-              <td className="py-2.5">
+              <td className="py-2.5 px-4">
                 <div className="flex gap-1 flex-wrap">
                   {c.delegations.slice(0, 4).map((d) => (
                     <span key={d} className="font-mono text-xs bg-bg-highlight text-text-body px-1.5 py-0.5 rounded">

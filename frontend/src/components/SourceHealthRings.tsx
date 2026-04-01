@@ -52,8 +52,9 @@ export default function SourceHealthRings({
   const handleLeave = useCallback(() => setTooltip(null), []);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      <svg viewBox="0 0 120 120" width="100%" height="100%">
+    <div className="relative w-full h-full flex flex-col items-center">
+      <p className="text-label mb-2 self-start">Source health</p>
+      <svg viewBox="0 0 120 120" width="100%" className="flex-1">
         {RINGS.map((ring) => {
           const info = sources[ring.key];
           const isOk = info?.status === 'ok';
@@ -83,6 +84,22 @@ export default function SourceHealthRings({
         {/* Center accent dot */}
         <circle cx={CX} cy={CY} r={3} fill="#D83C3B" />
       </svg>
+
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-small">
+        {RINGS.map((ring) => {
+          const info = sources[ring.key];
+          const isOk = info?.status === 'ok';
+          return (
+            <span key={ring.key} className="flex items-center gap-1">
+              <span
+                className="inline-block w-1.5 h-1.5 rounded-full"
+                style={{ backgroundColor: ring.color, opacity: isOk ? 0.9 : 0.35 }}
+              />
+              {ring.label}
+            </span>
+          );
+        })}
+      </div>
 
       {tooltip && (
         <div

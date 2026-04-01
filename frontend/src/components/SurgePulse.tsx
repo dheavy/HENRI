@@ -71,11 +71,28 @@ export default function SurgePulse({ surges }: { surges: SurgePoint[] }) {
     setTooltip(null);
   }, []);
 
+  // Build month labels for the 90-day window
+  const monthLabels: { label: string; x: number }[] = [];
+  {
+    const d = new Date(ninetyDaysAgo);
+    // Advance to 1st of next month
+    d.setUTCDate(1);
+    d.setUTCMonth(d.getUTCMonth() + 1);
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    while (d.getTime() <= now) {
+      const t = d.getTime();
+      const x = ((t - ninetyDaysAgo) / (now - ninetyDaysAgo)) * SVG_W;
+      monthLabels.push({ label: monthNames[d.getUTCMonth()], x });
+      d.setUTCMonth(d.getUTCMonth() + 1);
+    }
+  }
+
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full flex flex-col">
+      <p className="text-label mb-2">Surge activity — last 90 days</p>
       <svg
         width="100%"
-        height="100%"
+        className="flex-1"
         viewBox={`0 0 ${SVG_W} ${SVG_H}`}
         preserveAspectRatio="none"
       >
@@ -124,6 +141,28 @@ export default function SurgePulse({ surges }: { surges: SurgePoint[] }) {
           strokeDasharray="3 2"
         />
       </svg>
+
+      <div className="relative w-full" style={{ height: 14 }}>
+        {monthLabels.map((m) => (
+          <span
+            key={m.label + m.x}
+            className="absolute text-small"
+            style={{ left: `${(m.x / SVG_W) * 100}%`, transform: 'translateX(-50%)' }}
+          >
+            {m.label}
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-4 mt-2 text-small">
+        <span className="flex items-center gap-1">
+          <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: '#89DDFF' }} />
+          Had precursors
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="inline-block w-2 h-2 rounded-full" style={{ backgroundColor: '#5C5F66' }} />
+          No precursors
+        </span>
+      </div>
 
       {tooltip && (
         <div

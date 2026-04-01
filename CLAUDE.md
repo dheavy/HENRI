@@ -154,9 +154,10 @@ Every row must have a background color. No transparent rows. No CSS zebra-stripi
 
 ## What's next
 
-- [ ] **Make it operational**: Docker-compose stack, daily automated runs, delta alerting (flag countries that jumped >15 points since yesterday)
-- [ ] **Deepen correlation (UC-2)**: For each surge event, look back 7 days for ACLED spikes, 48h for IODA BGP drops, 24h for Cloudflare outages → build a precursor analysis dataset
-- [ ] **Three.js globe dashboard**: Cinematic "overview effect" aesthetic — delegation data points floating above geography, glowing by severity
+- [x] **Phase 1 — Make it operational**: Docker-compose stack, daily automated runs, delta alerting (flag countries that jumped >15 points since yesterday)
+- [ ] **Phase 2 — Temporal precursor analysis (UC-2)**: For each surge event, look back 7 days for ACLED spikes, 48h for IODA BGP drops, 24h for Cloudflare outages → build a precursor analysis dataset that proves/disproves the correlation hypothesis. Forward-looking alerts when precursor signals are detected for countries with ICRC delegations.
+- [ ] **Phase 3 — Web interface**: FastAPI backend (Python, same codebase) + Vite React SPA frontend (one container). Pages: dashboard with delta alerts, country drill-down, surge timeline with precursor mini-timelines, delegation inventory, static report view. API at `/api/v1/` serves both the React app and future integrations (Teams webhooks, email digests). Background jobs: full pipeline at 06:00 UTC, quick OSINT check every 15 min.
+- [ ] **Phase 4 — Three.js globe**: Cinematic "overview effect" aesthetic — delegation data points floating above geography, glowing by severity. Consumes `/api/v1/` from Phase 3. Lives as a route inside the React app at `/globe`.
 
 ## Living documents
 

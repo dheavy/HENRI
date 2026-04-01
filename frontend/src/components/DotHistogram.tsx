@@ -11,7 +11,7 @@ const REGION_DATA = [
 
 const MONTH_LABELS = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 const DOTS_PER_INCIDENT = 50;
-const DOT_R = 4;
+const DOT_R = 5;
 const DOT_GAP = 2;
 const DOT_STEP = DOT_R * 2 + DOT_GAP; // 10px per dot vertically
 const COL_WIDTH = 80;
@@ -37,7 +37,9 @@ export default function DotHistogram() {
   const svgH = chartH + 20; // room for labels
 
   return (
-    <svg viewBox={`0 0 ${SVG_W} ${svgH}`} width="100%" height="100%">
+    <div className="w-full h-full flex flex-col">
+      <p className="text-label mb-2">Incident volume by region</p>
+      <svg viewBox={`0 0 ${SVG_W} ${svgH}`} width="100%" className="flex-1">
       {Array.from({ length: 5 }, (_, monthIdx) => {
         const cx = monthIdx * COL_WIDTH + COL_WIDTH / 2;
         let dotIdx = 0;
@@ -80,5 +82,17 @@ export default function DotHistogram() {
         );
       })}
     </svg>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-small">
+        {REGION_DATA.map((r) => (
+          <span key={r.region} className="flex items-center gap-1">
+            <span
+              className="inline-block w-2 h-2 rounded-full"
+              style={{ backgroundColor: r.color }}
+            />
+            {r.region}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
