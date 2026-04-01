@@ -28,6 +28,11 @@ def _run_full_pipeline() -> None:
             init_db, start_pipeline_run, finish_pipeline_run,
             upsert_risk_scores,
         )
+        from henri.web.api.pipeline import _acquire_file_lock, _release_file_lock
+
+        if not _acquire_file_lock():
+            logger.warning("Scheduler: pipeline lock held, skipping this run")
+            return
 
         init_db()
         run_id = start_pipeline_run()
@@ -55,6 +60,8 @@ def _run_full_pipeline() -> None:
 
     except Exception as exc:
         logger.error("Scheduler: full pipeline failed — %s", type(exc).__name__)
+    finally:
+        _release_file_lock()
 
 
 def _run_osint_quick_check() -> None:

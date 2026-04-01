@@ -113,7 +113,7 @@ async def surge_detail(surge_id: int) -> dict:
         df = pd.read_parquet(path)
         row = df[df["surge_id"] == surge_id]
         if row.empty:
-            return {"error": f"Surge {surge_id} not found"}
+            return {"error": "Not found"}
         row = row.iloc[0]
 
         lead_h = float(row["lead_time_hours"]) if pd.notna(row.get("lead_time_hours")) else None

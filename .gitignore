@@ -4,6 +4,8 @@ data/reports
 data/grafana_dashboards
 .env
 data/.acled_token.json
+data/.pipeline.lock
+data/henri.db
 .venv/
 __pycache__/
 

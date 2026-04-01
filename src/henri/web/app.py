@@ -56,6 +56,12 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # Global exception handler — no stack traces in production
+    @app.exception_handler(Exception)
+    async def _unhandled_exception(request: object, exc: Exception) -> JSONResponse:
+        logger.error("Unhandled exception: %s", type(exc).__name__)
+        return JSONResponse({"error": "Internal server error"}, status_code=500)
+
     # API routes
     app.include_router(api_router, prefix="/api/v1")
 
@@ -82,9 +88,12 @@ def create_app() -> FastAPI:
         if ".." in filename or "/" in filename or not filename.endswith(".html"):
             return None
         path = _reports_dir / filename
-        if not path.exists() or not path.resolve().is_relative_to(_reports_dir.resolve()):
+        if path.is_symlink():
             return None
-        return path
+        resolved = path.resolve()
+        if not resolved.exists() or not resolved.is_relative_to(_reports_dir.resolve()):
+            return None
+        return resolved
 
     @app.get("/api/v1/reports/{filename}")
     async def view_report(filename: str) -> FileResponse:

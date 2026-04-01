@@ -1,14 +1,16 @@
 """Pipeline trigger and status endpoint.
 
 Allows the frontend to trigger report regeneration and poll for completion.
-Only one regeneration can run at a time.
+Rate limited: max 1 run per 5 minutes. File lock prevents scheduler/API overlap.
 """
 
 from __future__ import annotations
 
 import logging
+import os
 import threading
 import time
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter
@@ -16,18 +18,49 @@ from fastapi import APIRouter
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+_COOLDOWN_SECONDS = 300  # 5 minutes between regenerations
+
 _lock = threading.Lock()
 _state: dict[str, Any] = {
     "running": False,
     "started_at": None,
     "finished_at": None,
-    "status": "idle",  # idle | running | done | error
+    "status": "idle",
     "error": None,
 }
 
 
+def _pipeline_lock_path() -> Path:
+    return Path(os.getenv("DATA_DIR", "./data")) / ".pipeline.lock"
+
+
+def _acquire_file_lock() -> bool:
+    """Try to acquire a file-based lock. Returns True if acquired."""
+    lock = _pipeline_lock_path()
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        fd = os.open(str(lock), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        os.write(fd, str(os.getpid()).encode())
+        os.close(fd)
+        return True
+    except FileExistsError:
+        # Check if stale (older than 30 minutes = stuck pipeline)
+        try:
+            age = time.time() - lock.stat().st_mtime
+            if age > 1800:
+                lock.unlink(missing_ok=True)
+                return _acquire_file_lock()
+        except OSError:
+            pass
+        return False
+
+
+def _release_file_lock() -> None:
+    _pipeline_lock_path().unlink(missing_ok=True)
+
+
 def _run_pipeline_background() -> None:
-    """Run the pipeline in a background thread."""
+    """Run the pipeline in a background thread with file lock."""
     global _state
     try:
         from henri.run_all import run_pipeline
@@ -43,6 +76,8 @@ def _run_pipeline_background() -> None:
             _state["finished_at"] = time.time()
             _state["status"] = "error"
             _state["error"] = type(exc).__name__
+    finally:
+        _release_file_lock()
 
 
 @router.get("/status")
@@ -60,14 +95,26 @@ async def pipeline_status() -> dict:
 
 @router.post("/regenerate")
 async def regenerate() -> dict:
-    """Trigger pipeline regeneration. Returns immediately; poll /status for completion.
+    """Trigger pipeline regeneration with rate limiting and file locking.
 
-    Rejects if already running.
+    Rejects if: already running, within cooldown period, or file lock held (scheduler running).
     """
     global _state
     with _lock:
         if _state["running"]:
             return {"accepted": False, "reason": "Pipeline already running"}
+
+        # Cooldown check
+        if _state["finished_at"]:
+            elapsed = time.time() - _state["finished_at"]
+            if elapsed < _COOLDOWN_SECONDS:
+                remaining = int(_COOLDOWN_SECONDS - elapsed)
+                return {"accepted": False, "reason": f"Cooldown: retry in {remaining}s"}
+
+        # File lock (prevents scheduler/API overlap)
+        if not _acquire_file_lock():
+            return {"accepted": False, "reason": "Another pipeline process is running"}
+
         _state["running"] = True
         _state["started_at"] = time.time()
         _state["finished_at"] = None
