@@ -2,27 +2,52 @@ import { useState, useEffect } from 'react';
 import { FileText, Download } from 'lucide-react';
 import clsx from 'clsx';
 
+interface ReportEntry {
+  filename: string;
+  label: string;
+  description: string;
+}
+
+function parseReports(files: string[]): ReportEntry[] {
+  return files.map((f) => {
+    const dateMatch = f.match(/(\d{4}-\d{2}-\d{2})/);
+    const date = dateMatch ? dateMatch[1] : '';
+
+    if (f.startsWith('henri_field_'))
+      return { filename: f, label: `Field report (${date})`, description: 'field' };
+    if (f.startsWith('henri_full_'))
+      return { filename: f, label: `Full report (${date})`, description: 'full' };
+    if (f.includes('field'))
+      return { filename: f, label: 'Field report (latest)', description: 'field' };
+    return { filename: f, label: 'Full report (latest)', description: 'full' };
+  });
+}
+
+const DESCRIPTIONS: Record<string, string> = {
+  full: 'The full report includes all 50,000 incidents across all regions — HQ, field delegations, and unassigned tickets. Use this for a complete operational picture.',
+  field: 'The field report filters to the six field ICT regions only (AFRICA East/West, AMERICAS, ASIA, EURASIA, NAME), excluding HQ and unassigned tickets. This is the version for the Head of Field IT Services.',
+};
+
 export default function Report() {
-  const [reports, setReports] = useState<string[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [entries, setEntries] = useState<ReportEntry[]>([]);
+  const [selectedIdx, setSelectedIdx] = useState(0);
 
   useEffect(() => {
     fetch('/api/v1/reports')
       .then((r) => r.json())
       .then((data) => {
-        const files: string[] = data.reports ?? [];
-        setReports(files);
-        if (files.length > 0) setSelected(files[0]);
+        const parsed = parseReports(data.reports ?? []);
+        setEntries(parsed);
       })
       .catch(() => {});
   }, []);
 
-  // View URL (inline, for iframe) vs download URL (Content-Disposition: attachment)
-  const viewUrl = selected ? `/api/v1/reports/${selected}` : null;
-  const downloadUrl = selected ? `/api/v1/reports/${selected}/download` : null;
+  const selected = entries[selectedIdx] ?? null;
+  const viewUrl = selected ? `/api/v1/reports/${selected.filename}` : null;
+  const downloadUrl = selected ? `/api/v1/reports/${selected.filename}/download` : null;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <FileText size={24} className="text-accent" /> Static Reports
@@ -35,29 +60,37 @@ export default function Report() {
         )}
       </div>
 
-      {/* Report selector */}
-      {reports.length > 0 && (
+      {/* Report selector tabs */}
+      {entries.length > 0 && (
         <div className="flex gap-2 flex-wrap">
-          {reports.map((name) => (
-            <button key={name} onClick={() => setSelected(name)}
+          {entries.map((e, i) => (
+            <button key={e.filename} onClick={() => setSelectedIdx(i)}
               className={clsx('text-xs px-3 py-1.5 rounded transition-colors',
-                selected === name
+                selectedIdx === i
                   ? 'bg-accent text-white'
                   : 'bg-surface text-text-secondary hover:text-text-primary border border-border'
               )}>
-              {name}
+              {e.label}
             </button>
           ))}
         </div>
       )}
 
+      {/* Description */}
+      {selected && (
+        <p className="text-sm text-text-secondary leading-relaxed">
+          {DESCRIPTIONS[selected.description] ?? ''}
+        </p>
+      )}
+
       {/* Embedded report */}
       {viewUrl ? (
         <iframe
+          key={selected?.filename}
           src={viewUrl}
-          title={selected ?? 'Report'}
+          title={selected?.label ?? 'Report'}
           className="w-full rounded-lg border border-border"
-          style={{ height: 'calc(100vh - 220px)' }}
+          style={{ height: 'calc(100vh - 260px)' }}
         />
       ) : (
         <div className="bg-surface rounded-lg border border-border p-8 text-center text-text-secondary">
