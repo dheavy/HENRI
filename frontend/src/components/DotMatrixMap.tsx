@@ -63,7 +63,7 @@ export default function DotMatrixMap({ countries }: Props) {
 
   return (
     <div
-      className="w-full h-full flex items-center justify-center"
+      className="w-full"
       dangerouslySetInnerHTML={{ __html: svgString }}
     />
   );

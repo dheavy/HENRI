@@ -11,12 +11,13 @@ const REGION_DATA = [
 
 const MONTH_LABELS = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 const DOTS_PER_INCIDENT = 50;
-const DOT_R = 5;
+const DOT_R = 3;
 const DOT_GAP = 2;
-const DOT_STEP = DOT_R * 2 + DOT_GAP; // 10px per dot vertically
+const DOT_STEP = DOT_R * 2 + DOT_GAP; // 8px per dot vertically
 const COL_WIDTH = 80;
 const SVG_W = COL_WIDTH * 5;
-const LABEL_Y = 198;
+const LABEL_ZONE_H = 25; // space reserved at the bottom for month labels
+const LABEL_GAP = 16; // gap between lowest dot and labels
 
 export default function DotHistogram() {
   const [hovered, setHovered] = useState<string | null>(null);
@@ -34,12 +35,14 @@ export default function DotHistogram() {
     maxDots = Math.max(maxDots, total);
   }
   const chartH = maxDots * DOT_STEP + 20;
-  const svgH = chartH + 20; // room for labels
+  const baselineY = chartH; // dots grow upward from this baseline
+  const svgH = chartH + LABEL_GAP + LABEL_ZONE_H;
+  const labelY = chartH + LABEL_GAP + 12; // text baseline within label zone
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full flex flex-col">
       <p className="text-label mb-2">Incident volume by region</p>
-      <svg viewBox={`0 0 ${SVG_W} ${svgH}`} width="100%" className="flex-1">
+      <svg viewBox={`0 0 ${SVG_W} ${svgH}`} width="100%">
       {Array.from({ length: 5 }, (_, monthIdx) => {
         const cx = monthIdx * COL_WIDTH + COL_WIDTH / 2;
         let dotIdx = 0;
@@ -51,7 +54,7 @@ export default function DotHistogram() {
               const dots = Array.from({ length: dotCount }, (_, d) => {
                 const currentDot = dotIdx;
                 dotIdx++;
-                const cy = chartH - (currentDot * DOT_STEP + DOT_R);
+                const cy = baselineY - (currentDot * DOT_STEP + DOT_R);
                 return (
                   <circle
                     key={`${r.region}-${d}`}
@@ -70,7 +73,7 @@ export default function DotHistogram() {
             })}
             <text
               x={cx}
-              y={LABEL_Y}
+              y={labelY}
               textAnchor="middle"
               fill="#9A9DA6"
               fontSize="10"

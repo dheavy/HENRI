@@ -72,38 +72,49 @@ export default function Dashboard() {
       className="max-w-[1440px] mx-auto"
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(12, 1fr)',
-        gridAutoRows: 'minmax(80px, auto)',
+        gridTemplateColumns: 'repeat(3, 1fr)',
         gap: '12px',
         padding: '16px',
-        minHeight: 'calc(100vh - 32px)',
       }}
     >
       {/* Alert summary — full width */}
       {(alerts.length > 0 || delta_alerts.length > 0) && (
-        <div style={{ gridColumn: 'span 12' }}>
+        <div style={{ gridColumn: 'span 3' }}>
           <AlertSummary alerts={alerts} deltaAlerts={delta_alerts} />
         </div>
       )}
 
-      {/* Dot-matrix map: span 5, row-span 3 */}
+      {/* Dashboard title — full width */}
+      <div style={{ gridColumn: 'span 3' }}>
+        <h1 style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+          <span className="text-heading">HENRI</span>
+          <span style={{ fontSize: '20px', color: 'var(--color-text-muted)' }}>— Network intelligence</span>
+        </h1>
+        <p className="text-data" style={{ color: 'var(--color-text-muted)', marginTop: '4px' }}>
+          {dashboard.generated_at ? new Date(dashboard.generated_at).toLocaleString('en-GB', {
+            day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short'
+          }) : '—'}
+        </p>
+      </div>
+
+      {/* Dot-matrix map: span 1 */}
       <div
-        style={{ gridColumn: 'span 5', gridRow: 'span 3' }}
-        className="bg-bg-surface border border-border rounded-lg overflow-hidden"
+        style={{ gridColumn: 'span 1' }}
+        className="bg-bg-surface border border-border rounded-lg overflow-hidden p-2"
       >
         {countriesData?.countries ? (
           <DotMatrixMap countries={countriesData.countries} />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full flex items-center justify-center">
             <p className="text-small">Loading map...</p>
           </div>
         )}
       </div>
 
-      {/* Risk table: span 7, row-span 3 */}
+      {/* Risk table: span 2 */}
       <div
-        style={{ gridColumn: 'span 7', gridRow: 'span 3' }}
-        className="bg-bg-surface border border-border rounded-lg p-5 overflow-y-auto"
+        style={{ gridColumn: 'span 2', maxHeight: '500px', overflowY: 'auto' }}
+        className="bg-bg-surface border border-border rounded-lg p-5"
       >
         <h3 className="text-label mb-3">
           Threat Landscape — {countriesData?.countries.length ?? 0} Countries
@@ -111,8 +122,8 @@ export default function Dashboard() {
         {countriesData?.countries && <RiskTable countries={countriesData.countries} />}
       </div>
 
-      {/* 3 stat cards: span 4 each = 12 cols */}
-      <div style={{ gridColumn: 'span 4' }}>
+      {/* 3 stat cards: each span 1 */}
+      <div style={{ gridColumn: 'span 1' }}>
         <StatCard
           label="Surges with precursors"
           value={`${surgesWithPrecursors} / ${totalSurges}`}
@@ -120,7 +131,7 @@ export default function Dashboard() {
           accent
         />
       </div>
-      <div style={{ gridColumn: 'span 4' }}>
+      <div style={{ gridColumn: 'span 1' }}>
         <StatCard
           label="Detection rate"
           value={detectionRate}
@@ -129,7 +140,7 @@ export default function Dashboard() {
             : undefined}
         />
       </div>
-      <div style={{ gridColumn: 'span 4' }}>
+      <div style={{ gridColumn: 'span 1' }}>
         <StatCard
           label="Avg lead time"
           value={avgLeadTime}
@@ -139,33 +150,25 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Surge pulse: span 5 */}
+      {/* Surge activity: span 2 */}
       <div
-        style={{ gridColumn: 'span 5' }}
+        style={{ gridColumn: 'span 2' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
         <SurgePulse surges={surgesData?.surges ?? []} />
       </div>
 
-      {/* Source health: span 2 */}
+      {/* Incident volume: span 1 */}
       <div
-        style={{ gridColumn: 'span 2' }}
-        className="bg-bg-surface border border-border rounded-lg p-5"
-      >
-        <SourceHealthRings sources={pipeline_status.sources} />
-      </div>
-
-      {/* Region volume: span 5 */}
-      <div
-        style={{ gridColumn: 'span 5' }}
+        style={{ gridColumn: 'span 1' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
         <DotHistogram />
       </div>
 
-      {/* Top delegations: span 5 */}
+      {/* Top delegations: span 2 */}
       <div
-        style={{ gridColumn: 'span 5' }}
+        style={{ gridColumn: 'span 2' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
         <h3 className="text-label mb-3">Top Delegations</h3>
@@ -191,24 +194,27 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Pipeline status: span 2 */}
+      {/* Pipeline/source health: span 1 */}
       <div
-        style={{ gridColumn: 'span 2' }}
+        style={{ gridColumn: 'span 1' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
-        <h3 className="text-label mb-3">Pipeline Status</h3>
-        <p className="text-small mb-3">
-          {pipeline_status.last_run
-            ? new Date(pipeline_status.last_run).toLocaleString()
-            : 'Never run'}
-        </p>
-        <div className="space-y-2">
-          {Object.entries(pipeline_status.sources).map(([name, info]) => (
-            <div key={name} className="flex items-center gap-2">
-              <StatusBadge status={info.status} />
-              <span className="text-small capitalize">{name}</span>
-            </div>
-          ))}
+        <SourceHealthRings sources={pipeline_status.sources} />
+        <div className="mt-4 pt-3 border-t border-border">
+          <h3 className="text-label mb-3">Pipeline Status</h3>
+          <p className="text-small mb-3">
+            {pipeline_status.last_run
+              ? new Date(pipeline_status.last_run).toLocaleString()
+              : 'Never run'}
+          </p>
+          <div className="space-y-2">
+            {Object.entries(pipeline_status.sources).map(([name, info]) => (
+              <div key={name} className="flex items-center gap-2">
+                <StatusBadge status={info.status} />
+                <span className="text-small capitalize">{name}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

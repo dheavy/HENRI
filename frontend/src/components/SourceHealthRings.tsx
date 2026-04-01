@@ -1,126 +1,60 @@
-import { useState, useCallback } from 'react';
-
 interface SourceInfo {
   status: string;
   last_pull: string | null;
 }
 
-interface TooltipState {
-  x: number;
-  y: number;
-  name: string;
-  status: string;
-  lastPull: string | null;
+const SOURCE_META: Record<string, { label: string; color: string; metric?: string }> = {
+  servicenow: { label: 'ServiceNow', color: '#A8C97A', metric: '50,000 incidents' },
+  grafana: { label: 'Grafana', color: '#A8C97A', metric: '316 sites' },
+  netbox: { label: 'NetBox', color: '#A8C97A', metric: '46 sites' },
+  acled: { label: 'ACLED', color: '#C792EA', metric: '24,891 events' },
+  ioda: { label: 'IODA', color: '#82AAFF' },
+  cloudflare: { label: 'Cloudflare', color: '#89DDFF' },
+};
+
+function formatFreshness(lastPull: string | null): string {
+  if (!lastPull) return '\u2014';
+  const now = Date.now();
+  const pulled = new Date(lastPull).getTime();
+  const diffMs = now - pulled;
+  if (diffMs < 0) return 'just now';
+  const minutes = Math.floor(diffMs / 60_000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
-
-const RINGS: { key: string; label: string; r: number; color: string }[] = [
-  { key: 'acled', label: 'ACLED', r: 55, color: '#C792EA' },
-  { key: 'ioda', label: 'IODA', r: 47, color: '#82AAFF' },
-  { key: 'cloudflare', label: 'Cloudflare', r: 39, color: '#89DDFF' },
-  { key: 'servicenow', label: 'ServiceNow', r: 31, color: '#8A8D94' },
-  { key: 'grafana', label: 'Grafana', r: 23, color: '#8A8D94' },
-  { key: 'netbox', label: 'NetBox', r: 15, color: '#8A8D94' },
-];
-
-const CX = 60;
-const CY = 60;
-const STROKE_W = 3;
 
 export default function SourceHealthRings({
   sources,
 }: {
   sources: Record<string, SourceInfo>;
 }) {
-  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
-
-  const handleEnter = useCallback(
-    (ring: (typeof RINGS)[0], event: React.MouseEvent<SVGCircleElement>) => {
-      const svg = event.currentTarget.closest('svg') as SVGSVGElement;
-      const rect = svg.getBoundingClientRect();
-      const info = sources[ring.key];
-      setTooltip({
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
-        name: ring.label,
-        status: info?.status ?? 'unknown',
-        lastPull: info?.last_pull ?? null,
-      });
-    },
-    [sources],
-  );
-
-  const handleLeave = useCallback(() => setTooltip(null), []);
-
   return (
-    <div className="relative w-full h-full flex flex-col items-center">
-      <p className="text-label mb-2 self-start">Source health</p>
-      <svg viewBox="0 0 120 120" width="100%" className="flex-1">
-        {RINGS.map((ring) => {
-          const info = sources[ring.key];
-          const isOk = info?.status === 'ok';
-          const circumference = 2 * Math.PI * ring.r;
-
+    <div>
+      <p className="text-label mb-3">Source health</p>
+      <div className="space-y-0.5">
+        {Object.entries(sources).map(([key, info]) => {
+          const meta = SOURCE_META[key] ?? { label: key, color: '#5C5F66' };
           return (
-            <circle
-              key={ring.key}
-              cx={CX}
-              cy={CY}
-              r={ring.r}
-              fill="none"
-              stroke={ring.color}
-              strokeWidth={STROKE_W}
-              strokeLinecap="round"
-              strokeDasharray={isOk ? `${circumference}` : '4 4'}
-              strokeDashoffset={0}
-              opacity={isOk ? 0.9 : 0.35}
-              transform={`rotate(-90 ${CX} ${CY})`}
-              className="cursor-pointer"
-              onMouseEnter={(e) => handleEnter(ring, e)}
-              onMouseLeave={handleLeave}
-            />
-          );
-        })}
-
-        {/* Center accent dot */}
-        <circle cx={CX} cy={CY} r={3} fill="#D83C3B" />
-      </svg>
-
-      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-small">
-        {RINGS.map((ring) => {
-          const info = sources[ring.key];
-          const isOk = info?.status === 'ok';
-          return (
-            <span key={ring.key} className="flex items-center gap-1">
-              <span
-                className="inline-block w-1.5 h-1.5 rounded-full"
-                style={{ backgroundColor: ring.color, opacity: isOk ? 0.9 : 0.35 }}
-              />
-              {ring.label}
-            </span>
+            <div key={key} className="flex items-center justify-between py-1.5">
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-2 h-2 rounded-full inline-block shrink-0"
+                  style={{ background: info.status === 'ok' ? meta.color : '#D83C3B' }}
+                />
+                <span className="text-sm text-text-body">{meta.label}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {meta.metric && <span className="text-data text-text-primary">{meta.metric}</span>}
+                <span className="text-small">{formatFreshness(info.last_pull)}</span>
+              </div>
+            </div>
           );
         })}
       </div>
-
-      {tooltip && (
-        <div
-          className="absolute pointer-events-none bg-bg-elevated border border-border rounded px-2 py-1 text-xs z-10"
-          style={{
-            left: tooltip.x + 12,
-            top: tooltip.y - 8,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <p className="text-text-body font-medium">{tooltip.name}</p>
-          <p className="text-text-muted">
-            Status: <span className="text-text-primary">{tooltip.status}</span>
-          </p>
-          {tooltip.lastPull && (
-            <p className="text-text-muted">
-              Last pull: {new Date(tooltip.lastPull).toLocaleString()}
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 }

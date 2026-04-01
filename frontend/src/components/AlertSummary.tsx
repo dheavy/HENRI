@@ -34,9 +34,14 @@ export default function AlertSummary({ alerts, deltaAlerts }: Props) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <AlertTriangle className="text-orange shrink-0" size={18} />
-          <span className="text-text-primary text-sm font-medium">
-            {totalCount} active alert{totalCount !== 1 ? 's' : ''}
-          </span>
+          <div>
+            <span className="text-text-primary text-sm font-medium">
+              {totalCount} active alert{totalCount !== 1 ? 's' : ''}
+            </span>
+            <p className="text-sm text-text-muted mt-1">
+              Conflict activity above normal levels — network disruption possible within 24-72h
+            </p>
+          </div>
           <span className="text-text-muted text-sm">
             {Array.from(countryCounts.entries()).map(([country, count], i) => (
               <span key={country}>
