@@ -68,7 +68,7 @@ export default function Report() {
               className={clsx('text-xs px-3 py-1.5 rounded transition-colors',
                 selectedIdx === i
                   ? 'bg-accent text-white'
-                  : 'bg-surface text-text-secondary hover:text-text-primary border border-border'
+                  : 'bg-bg-surface text-text-muted hover:text-text-primary border border-border'
               )}>
               {e.label}
             </button>
@@ -78,7 +78,7 @@ export default function Report() {
 
       {/* Description */}
       {selected && (
-        <p className="text-sm text-text-secondary leading-relaxed">
+        <p className="text-sm text-text-muted leading-relaxed">
           {DESCRIPTIONS[selected.description] ?? ''}
         </p>
       )}
@@ -93,7 +93,7 @@ export default function Report() {
           style={{ height: 'calc(100vh - 260px)' }}
         />
       ) : (
-        <div className="bg-surface rounded-lg border border-border p-8 text-center text-text-secondary">
+        <div className="bg-bg-surface rounded-lg border border-border p-8 text-center text-text-muted">
           No reports generated yet. Run the pipeline first.
         </div>
       )}

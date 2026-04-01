@@ -12,12 +12,12 @@ const NAV = [
 export default function Layout() {
   return (
     <div className="flex h-screen">
-      <nav className="w-56 shrink-0 bg-surface border-r border-border flex flex-col">
+      <nav className="w-56 shrink-0 bg-bg-deepest border-r border-border flex flex-col">
         <div className="p-4 border-b border-border">
-          <h1 className="text-lg font-bold tracking-tight">
+          <h1 className="text-lg font-bold font-mono tracking-tight text-text-primary">
             <span className="text-accent">HENRI</span>
           </h1>
-          <p className="text-xs text-text-secondary mt-0.5">Network Intelligence</p>
+          <p className="text-xs text-text-muted mt-0.5">Network Intelligence</p>
         </div>
         <div className="flex-1 py-2">
           {NAV.map(({ to, icon: Icon, label }) => (
@@ -29,8 +29,8 @@ export default function Layout() {
                 clsx(
                   'flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
                   isActive
-                    ? 'text-text-primary bg-surface-hover border-r-2 border-accent'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+                    ? 'text-text-primary bg-bg-highlight border-r-2 border-accent'
+                    : 'text-text-muted hover:text-text-body hover:bg-bg-elevated'
                 )
               }
             >
@@ -39,11 +39,11 @@ export default function Layout() {
             </NavLink>
           ))}
         </div>
-        <div className="p-4 border-t border-border text-xs text-text-secondary">
+        <div className="p-4 border-t border-border text-xs text-text-muted">
           ICRC Field IT
         </div>
       </nav>
-      <main className="flex-1 overflow-y-auto p-6">
+      <main className="flex-1 overflow-y-auto p-6 bg-bg-base">
         <Outlet />
       </main>
     </div>

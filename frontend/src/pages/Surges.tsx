@@ -16,13 +16,13 @@ function PrecursorDot({ detected, label }: { detected: boolean; label: string })
 }
 
 function LeadTimeBadge({ hours }: { hours: number | null }) {
-  if (hours == null) return <span className="text-text-secondary">—</span>;
+  if (hours == null) return <span className="text-text-muted">—</span>;
   const rounded = Math.round(hours);
   return (
     <span className={clsx('font-mono text-xs px-2 py-0.5 rounded',
-      hours > 48 ? 'bg-green-950 text-green-300' :
-      hours > 12 ? 'bg-yellow-950 text-yellow-300' :
-      'bg-red-950 text-red-300'
+      hours > 48 ? 'bg-[#C3E88D22] text-green' :
+      hours > 12 ? 'bg-[#FFCB6B22] text-yellow' :
+      'bg-[#F0717822] text-red'
     )}>
       {rounded}h
     </span>
@@ -37,17 +37,17 @@ function SurgeRow({ surge }: { surge: Surge }) {
     <>
       <tr onClick={() => setExpanded(!expanded)}
         className={clsx(
-          'border-b border-border/50 cursor-pointer transition-colors',
-          surge.any_precursor ? 'hover:bg-surface-hover' : 'hover:bg-surface-hover opacity-60'
+          'border-b border-border/30 cursor-pointer transition-colors',
+          surge.any_precursor ? 'hover:bg-bg-elevated' : 'hover:bg-bg-elevated opacity-60'
         )}>
         <td className="py-2.5 font-mono text-xs">{surge.date}</td>
         <td className="py-2.5 text-xs">{surge.region}</td>
         <td className="py-2.5">
           <div className="flex gap-1 flex-wrap">
             {surge.delegations.slice(0, 4).map((d) => (
-              <span key={d} className="font-mono text-xs bg-surface px-1 py-0.5 rounded border border-border">{d}</span>
+              <span key={d} className="font-mono text-xs bg-bg-surface px-1 py-0.5 rounded border border-border">{d}</span>
             ))}
-            {surge.delegations.length > 4 && <span className="text-xs text-text-secondary">+{surge.delegations.length - 4}</span>}
+            {surge.delegations.length > 4 && <span className="text-xs text-text-muted">+{surge.delegations.length - 4}</span>}
           </div>
         </td>
         <td className="py-2.5 text-right font-mono text-xs">{surge.score.toFixed(1)}</td>
@@ -62,35 +62,35 @@ function SurgeRow({ surge }: { surge: Surge }) {
         <td className="py-2.5 text-right"><LeadTimeBadge hours={surge.lead_time_h} /></td>
       </tr>
       {expanded && (
-        <tr className="border-b border-border/50 bg-[#0a0a0a]">
+        <tr className="border-b border-border/30 bg-bg-base">
           <td colSpan={6} className="p-4">
             <div className="grid grid-cols-4 gap-4 text-xs">
               <div>
-                <span className="text-text-secondary uppercase">ACLED</span>
+                <span className="text-text-muted uppercase">ACLED</span>
                 {p.acled.detected
                   ? <p className="mt-1">{p.acled.events} events ({p.acled.ratio}x baseline)</p>
-                  : <p className="mt-1 text-text-secondary">No precursor</p>}
+                  : <p className="mt-1 text-text-muted">No precursor</p>}
               </div>
               <div>
-                <span className="text-text-secondary uppercase">IODA</span>
+                <span className="text-text-muted uppercase">IODA</span>
                 {p.ioda.detected
                   ? <p className="mt-1">{p.ioda.alerts} alerts</p>
-                  : <p className="mt-1 text-text-secondary">No precursor</p>}
+                  : <p className="mt-1 text-text-muted">No precursor</p>}
               </div>
               <div>
-                <span className="text-text-secondary uppercase">Cloudflare</span>
+                <span className="text-text-muted uppercase">Cloudflare</span>
                 {p.cloudflare.detected
                   ? <p className="mt-1">{p.cloudflare.events} outages</p>
-                  : <p className="mt-1 text-text-secondary">No precursor</p>}
+                  : <p className="mt-1 text-text-muted">No precursor</p>}
               </div>
               <div>
-                <span className="text-text-secondary uppercase">Internal (WAN)</span>
+                <span className="text-text-muted uppercase">Internal (WAN)</span>
                 {p.internal.detected
                   ? <p className="mt-1">{p.internal.latency_alerts} latency alerts</p>
-                  : <p className="mt-1 text-text-secondary">No precursor</p>}
+                  : <p className="mt-1 text-text-muted">No precursor</p>}
               </div>
             </div>
-            <div className="mt-3 text-xs text-text-secondary">
+            <div className="mt-3 text-xs text-text-muted">
               Countries: {surge.countries.join(', ')}
             </div>
           </td>
@@ -120,21 +120,21 @@ export default function Surges() {
       {/* Stats */}
       {data?.stats && (
         <div className="grid grid-cols-4 gap-4">
-          <div className="bg-surface rounded-lg border border-border p-4">
-            <p className="text-xs text-text-secondary uppercase">Total Surges</p>
+          <div className="bg-bg-surface rounded-lg border border-border p-4">
+            <p className="text-xs text-text-muted uppercase">Total Surges</p>
             <p className="text-2xl font-bold font-mono">{data.stats.total_surges}</p>
           </div>
-          <div className="bg-surface rounded-lg border border-border p-4">
-            <p className="text-xs text-text-secondary uppercase">With Precursors</p>
+          <div className="bg-bg-surface rounded-lg border border-border p-4">
+            <p className="text-xs text-text-muted uppercase">With Precursors</p>
             <p className="text-2xl font-bold font-mono text-accent">{data.stats.with_external_precursor}</p>
-            <p className="text-xs text-text-secondary">{data.stats.pct_with_precursor}%</p>
+            <p className="text-xs text-text-muted">{data.stats.pct_with_precursor}%</p>
           </div>
-          <div className="bg-surface rounded-lg border border-border p-4">
-            <p className="text-xs text-text-secondary uppercase">Avg Lead Time</p>
+          <div className="bg-bg-surface rounded-lg border border-border p-4">
+            <p className="text-xs text-text-muted uppercase">Avg Lead Time</p>
             <p className="text-2xl font-bold font-mono">{data.stats.avg_lead_time_hours}h</p>
           </div>
-          <div className="bg-surface rounded-lg border border-border p-4">
-            <p className="text-xs text-text-secondary uppercase">Precursor Legend</p>
+          <div className="bg-bg-surface rounded-lg border border-border p-4">
+            <p className="text-xs text-text-muted uppercase">Precursor Legend</p>
             <div className="flex gap-3 mt-2 text-xs">
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> Detected</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-neutral-700" /> None</span>
@@ -145,18 +145,18 @@ export default function Surges() {
 
       {/* Filters */}
       <div className="flex items-center gap-4">
-        <Filter size={16} className="text-text-secondary" />
+        <Filter size={16} className="text-text-muted" />
         <div className="flex gap-1">
           {REGIONS.map((r) => (
             <button key={r} onClick={() => setRegion(r)}
               className={clsx('text-xs px-3 py-1.5 rounded transition-colors',
-                region === r ? 'bg-accent text-white' : 'bg-surface text-text-secondary hover:text-text-primary border border-border'
+                region === r ? 'bg-accent text-white' : 'bg-bg-surface text-text-muted hover:text-text-primary border border-border'
               )}>
               {r}
             </button>
           ))}
         </div>
-        <label className="flex items-center gap-2 text-xs text-text-secondary ml-auto cursor-pointer">
+        <label className="flex items-center gap-2 text-xs text-text-muted ml-auto cursor-pointer">
           <input type="checkbox" checked={precursorOnly} onChange={(e) => setPrecursorOnly(e.target.checked)}
             className="rounded" />
           Precursor-only
@@ -164,13 +164,13 @@ export default function Surges() {
       </div>
 
       {/* Table */}
-      <div className="bg-surface rounded-lg border border-border p-4">
+      <div className="bg-bg-surface rounded-lg border border-border p-4">
         {isLoading ? (
-          <p className="text-text-secondary text-sm">Loading surges...</p>
+          <p className="text-text-muted text-sm">Loading surges...</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-text-secondary uppercase tracking-wider border-b border-border">
+              <tr className="text-left text-xs text-text-muted uppercase tracking-wider border-b border-border">
                 <th className="pb-2">Date</th>
                 <th className="pb-2">Region</th>
                 <th className="pb-2">Delegations</th>

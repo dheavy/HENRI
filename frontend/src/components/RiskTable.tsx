@@ -2,18 +2,18 @@ import { useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import type { Country } from '../api/client';
 
-const TIER_BG: Record<string, string> = {
-  high: 'bg-red-950/40',
-  medium: 'bg-orange-950/30',
-  low: 'bg-yellow-950/20',
-  minimal: 'bg-green-950/20',
+const TIER_ROW_BG: Record<string, string> = {
+  high: 'bg-risk-high',
+  medium: 'bg-risk-medium',
+  low: 'bg-risk-low',
+  minimal: 'bg-risk-minimal',
 };
 
 const TIER_BADGE: Record<string, string> = {
-  high: 'bg-risk-high text-red-900',
-  medium: 'bg-risk-medium text-orange-900',
-  low: 'bg-risk-low text-yellow-900',
-  minimal: 'bg-risk-minimal text-green-900',
+  high: 'bg-[#F0717844] text-red',
+  medium: 'bg-[#F78C6C44] text-orange',
+  low: 'bg-[#FFCB6B33] text-yellow',
+  minimal: 'bg-[#C3E88D33] text-green',
 };
 
 export default function RiskTable({ countries }: { countries: Country[] }) {
@@ -23,7 +23,7 @@ export default function RiskTable({ countries }: { countries: Country[] }) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-xs text-text-secondary uppercase tracking-wider border-b border-border">
+          <tr className="text-left text-xs text-text-comment uppercase tracking-wider border-b border-border">
             <th className="pb-3 pr-4">#</th>
             <th className="pb-3 pr-4">Country</th>
             <th className="pb-3 pr-4 text-right">Risk</th>
@@ -41,31 +41,31 @@ export default function RiskTable({ countries }: { countries: Country[] }) {
               key={c.iso2}
               onClick={() => navigate(`/country/${c.iso2}`)}
               className={clsx(
-                'border-b border-border/50 cursor-pointer transition-colors hover:bg-surface-hover',
-                TIER_BG[c.risk_tier]
+                'border-b border-border/30 cursor-pointer transition-colors hover:bg-bg-elevated',
+                TIER_ROW_BG[c.risk_tier]
               )}
             >
-              <td className="py-2.5 pr-4 text-text-secondary font-mono text-xs">{i + 1}</td>
-              <td className="py-2.5 pr-4 font-medium">{c.name}</td>
+              <td className="py-2.5 pr-4 text-text-muted font-mono text-xs">{i + 1}</td>
+              <td className="py-2.5 pr-4 text-link font-medium">{c.name}</td>
               <td className="py-2.5 pr-4 text-right">
-                <span className={clsx('text-xs font-bold px-2 py-0.5 rounded', TIER_BADGE[c.risk_tier])}>
+                <span className={clsx('text-xs font-bold font-mono px-2 py-0.5 rounded', TIER_BADGE[c.risk_tier])}>
                   {c.risk_score.toFixed(1)}
                 </span>
               </td>
-              <td className="py-2.5 pr-4 text-right font-mono">{c.acled_events.toLocaleString()}</td>
-              <td className="py-2.5 pr-4 text-right font-mono">{c.acled_fatalities.toLocaleString()}</td>
-              <td className="py-2.5 pr-4 text-right font-mono">{c.ioda_score ? c.ioda_score.toLocaleString() : '—'}</td>
-              <td className="py-2.5 pr-4 text-right font-mono">{c.cf_outages || '—'}</td>
-              <td className="py-2.5 pr-4 text-right font-mono">{c.snow_sitedown || '—'}</td>
+              <td className="py-2.5 pr-4 text-right font-mono text-text-primary">{c.acled_events.toLocaleString()}</td>
+              <td className="py-2.5 pr-4 text-right font-mono text-text-primary">{c.acled_fatalities.toLocaleString()}</td>
+              <td className="py-2.5 pr-4 text-right font-mono text-text-primary">{c.ioda_score ? c.ioda_score.toLocaleString() : '—'}</td>
+              <td className="py-2.5 pr-4 text-right font-mono text-text-primary">{c.cf_outages || '—'}</td>
+              <td className="py-2.5 pr-4 text-right font-mono text-text-primary">{c.snow_sitedown || '—'}</td>
               <td className="py-2.5">
                 <div className="flex gap-1 flex-wrap">
                   {c.delegations.slice(0, 4).map((d) => (
-                    <span key={d} className="font-mono text-xs bg-surface px-1.5 py-0.5 rounded border border-border">
+                    <span key={d} className="font-mono text-xs bg-bg-highlight text-text-body px-1.5 py-0.5 rounded">
                       {d}
                     </span>
                   ))}
                   {c.delegations.length > 4 && (
-                    <span className="text-xs text-text-secondary">+{c.delegations.length - 4}</span>
+                    <span className="text-xs text-text-muted">+{c.delegations.length - 4}</span>
                   )}
                 </div>
               </td>

@@ -10,18 +10,18 @@ function DelegationCard({ d }: { d: Delegation }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="bg-surface rounded-lg border border-border p-4 hover:border-border/80 transition-colors cursor-pointer"
+    <div className="bg-bg-surface rounded-lg border border-border p-4 hover:border-border/80 transition-colors cursor-pointer"
       onClick={() => setExpanded(!expanded)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="font-mono font-bold text-sm">{d.site_code}</span>
-          <span className="text-xs text-text-secondary">{d.country}</span>
-          <span className="text-xs bg-surface-hover px-2 py-0.5 rounded border border-border">{d.region || 'Unknown'}</span>
+          <span className="text-xs text-text-muted">{d.country}</span>
+          <span className="text-xs bg-bg-elevated px-2 py-0.5 rounded border border-border">{d.region || 'Unknown'}</span>
         </div>
         <div className="flex items-center gap-4 text-xs">
-          <span className="font-mono">{d.incident_count_30d} <span className="text-text-secondary">incidents</span></span>
+          <span className="font-mono">{d.incident_count_30d} <span className="text-text-muted">incidents</span></span>
           {d.sitedown_count_30d > 0 && (
-            <span className="font-mono text-red-400">{d.sitedown_count_30d} <span className="text-text-secondary">down</span></span>
+            <span className="font-mono text-red">{d.sitedown_count_30d} <span className="text-text-muted">down</span></span>
           )}
         </div>
       </div>
@@ -29,15 +29,15 @@ function DelegationCard({ d }: { d: Delegation }) {
       {expanded && (
         <div className="mt-4 pt-4 border-t border-border space-y-3">
           {d.dominant_alert !== 'N/A' && (
-            <p className="text-xs text-text-secondary">Dominant alert: <span className="text-text-primary">{d.dominant_alert}</span></p>
+            <p className="text-xs text-text-muted">Dominant alert: <span className="text-text-primary">{d.dominant_alert}</span></p>
           )}
 
           {d.sub_sites.length > 0 && (
             <div>
-              <p className="text-xs text-text-secondary mb-1">Sub-sites:</p>
+              <p className="text-xs text-text-muted mb-1">Sub-sites:</p>
               <div className="flex gap-1 flex-wrap">
                 {d.sub_sites.map((s) => (
-                  <span key={s} className="font-mono text-xs bg-[#0a0a0a] px-1.5 py-0.5 rounded border border-border/50">{s}</span>
+                  <span key={s} className="font-mono text-xs bg-bg-base px-1.5 py-0.5 rounded border border-border/30">{s}</span>
                 ))}
               </div>
             </div>
@@ -45,10 +45,10 @@ function DelegationCard({ d }: { d: Delegation }) {
 
           {d.circuits.length > 0 && (
             <div>
-              <p className="text-xs text-text-secondary mb-1">Circuits:</p>
+              <p className="text-xs text-text-muted mb-1">Circuits:</p>
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-text-secondary">
+                  <tr className="text-text-muted">
                     <th className="text-left pb-1">CID</th>
                     <th className="text-left pb-1">Provider</th>
                     <th className="text-right pb-1">Rate</th>
@@ -91,21 +91,21 @@ export default function Delegations() {
       {/* Search + filter */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
             type="text"
             placeholder="Search by site code, country..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-surface border border-border rounded-lg pl-9 pr-3 py-2 text-sm
-              placeholder:text-text-secondary focus:outline-none focus:border-accent transition-colors"
+            className="w-full bg-bg-surface border border-border rounded-lg pl-9 pr-3 py-2 text-sm
+              placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
           />
         </div>
         <div className="flex gap-1">
           {REGIONS.map((r) => (
             <button key={r} onClick={() => setRegion(r)}
               className={clsx('text-xs px-3 py-1.5 rounded transition-colors',
-                region === r ? 'bg-accent text-white' : 'bg-surface text-text-secondary hover:text-text-primary border border-border'
+                region === r ? 'bg-accent text-white' : 'bg-bg-surface text-text-muted hover:text-text-primary border border-border'
               )}>
               {r}
             </button>
@@ -114,13 +114,13 @@ export default function Delegations() {
       </div>
 
       {/* Count */}
-      <p className="text-sm text-text-secondary">
+      <p className="text-sm text-text-muted">
         {data?.total ?? 0} delegations{search && ` matching "${search}"`}{region !== 'All' && ` in ${region}`}
       </p>
 
       {/* Grid */}
       {isLoading ? (
-        <p className="text-text-secondary text-sm">Loading...</p>
+        <p className="text-text-muted text-sm">Loading...</p>
       ) : (
         <div className="space-y-2">
           {data?.delegations.map((d) => <DelegationCard key={d.site_code} d={d} />)}
