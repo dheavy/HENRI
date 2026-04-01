@@ -112,40 +112,102 @@ def _check_acled_for_countries(
     country_iso3_to_name: dict[str, str],
     acled_df: pd.DataFrame,
 ) -> dict[str, Any]:
-    """ACLED check using country names from registry."""
+    """ACLED check with spike-onset lead time calculation.
+
+    1. Get events in affected countries for the 7-day lookback window
+    2. Compute daily baseline (30-day mean + 2σ threshold)
+    3. Find the ONSET of the spike — first day exceeding the threshold
+    4. Lead time = surge_start - spike_onset
+    """
+    empty = {"detected": False, "event_count": 0, "fatalities": 0,
+             "baseline_avg": 0, "ratio": 0, "lead_time_hours": 0,
+             "spike_onset": None}
+
     if acled_df.empty or not country_iso3_to_name:
-        return {"detected": False, "event_count": 0, "fatalities": 0,
-                "baseline_avg": 0, "ratio": 0, "lead_time_hours": 0}
+        return empty
 
     target_names = {n.lower() for n in country_iso3_to_name.values()}
     relevant = acled_df[acled_df["country"].str.lower().isin(target_names)]
 
     if relevant.empty:
-        return {"detected": False, "event_count": 0, "fatalities": 0,
-                "baseline_avg": 0, "ratio": 0, "lead_time_hours": 0}
+        return empty
 
     surge_date = surge_start.date()
-    w_start = str(surge_date - timedelta(days=7))
-    w_end = str(surge_date)
-    b_start = str(surge_date - timedelta(days=37))
+    w_start = surge_date - timedelta(days=7)
+    b_start = surge_date - timedelta(days=37)
 
-    window = relevant[(relevant["event_date"] >= w_start) & (relevant["event_date"] < w_end)]
-    baseline = relevant[(relevant["event_date"] >= b_start) & (relevant["event_date"] < w_start)]
+    w_start_s, w_end_s = str(w_start), str(surge_date)
+    b_start_s = str(b_start)
+
+    # 7-day window events
+    window = relevant[(relevant["event_date"] >= w_start_s) & (relevant["event_date"] < w_end_s)]
+    # 30-day baseline (before the window)
+    baseline = relevant[(relevant["event_date"] >= b_start_s) & (relevant["event_date"] < w_start_s)]
 
     wc = len(window)
-    bc = len(baseline)
-    avg_7d = bc / max(30 / 7, 1)
+    if wc < 3:
+        return empty
+
+    # Daily baseline stats
+    if not baseline.empty:
+        daily_baseline = baseline.groupby("event_date").size()
+        baseline_mean = daily_baseline.mean()
+        baseline_std = daily_baseline.std() if len(daily_baseline) > 1 else 0
+    else:
+        baseline_mean = 0
+        baseline_std = 0
+
+    threshold = baseline_mean + 2 * max(baseline_std, baseline_mean * 0.5)
+    daily_avg = baseline_mean
+    avg_7d = daily_avg * 7
+
     fatalities = int(window["fatalities"].fillna(0).astype(int).sum()) if "fatalities" in window.columns else 0
+
+    # Find spike onset: first day in the window where daily count > threshold
+    daily_window = window.groupby("event_date").size().sort_index()
+    spike_onset = None
+    exceeded_at_start = False
+
+    for day_str, count in daily_window.items():
+        if count > max(threshold, 1):
+            spike_onset = day_str
+            break
+
+    # Also check the 7-day aggregate ratio as a secondary signal
     ratio = wc / max(avg_7d, 1)
-    detected = ratio >= 2.0 and wc >= 3
+
+    # Detection: either a daily spike exceeded threshold OR aggregate ratio >= 2
+    detected = spike_onset is not None or (ratio >= 2.0 and wc >= 3)
+    if not detected:
+        return empty
+
+    # Check if spike was already ongoing at window start
+    if spike_onset == str(w_start):
+        # Check the day before the window
+        day_before = str(w_start - timedelta(days=1))
+        pre_window = relevant[relevant["event_date"] == day_before]
+        if len(pre_window) > max(threshold, 1):
+            exceeded_at_start = True
+
+    # Calculate lead time
+    if spike_onset:
+        from datetime import date as date_type
+        onset_date = date_type.fromisoformat(str(spike_onset)[:10])
+        lead_td = surge_start - datetime.combine(onset_date, datetime.min.time(), tzinfo=timezone.utc)
+        lead_hours = lead_td.total_seconds() / 3600
+        if exceeded_at_start:
+            lead_hours = max(lead_hours, 168.0)  # >168h, spike predates window
+    else:
+        lead_hours = 0
 
     return {
-        "detected": detected,
+        "detected": True,
         "event_count": int(wc),
         "fatalities": fatalities,
         "baseline_avg": round(avg_7d, 1),
         "ratio": round(ratio, 1),
-        "lead_time_hours": 7 * 24 if detected else 0,
+        "lead_time_hours": round(lead_hours, 1),
+        "spike_onset": spike_onset,
     }
 
 
@@ -223,6 +285,155 @@ def _check_internal(
     }
 
 
+def _load_cf_historical(data_dir: Path) -> list[dict]:
+    """Load Cloudflare outage annotations covering the full incident date range.
+
+    Tries the live API first (with ``dateRange=180d`` to cover Nov 2025+),
+    falls back to the fixture file.
+    """
+    import os
+    token = os.getenv("CF_API_TOKEN", "")
+    if token:
+        try:
+            import httpx
+            resp = httpx.get(
+                "https://api.cloudflare.com/client/v4/radar/annotations/outages",
+                headers={"Authorization": f"Bearer {token}"},
+                params={"dateRange": "180d", "limit": 1000},
+                timeout=20.0,
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                if isinstance(data, dict):
+                    anns = data.get("result", {}).get("annotations", [])
+                    if anns:
+                        logger.info("CF historical: %d annotations (180d)", len(anns))
+                        return anns
+        except Exception as e:
+            logger.debug("CF historical fetch failed: %s", e)
+
+    # Fallback to fixture
+    cf_path = data_dir / "fixtures" / "cf_outages_90d.json"
+    if cf_path.exists():
+        with open(cf_path) as f:
+            return json.load(f).get("result", {}).get("annotations", [])
+    return []
+
+
+def _load_ioda_historical(
+    data_dir: Path,
+    registry: dict[str, dict[str, Any]],
+) -> dict[str, list[dict]]:
+    """Load IODA alerts for ICRC countries covering the incident date range.
+
+    Returns ``{iso3: [alert_dicts]}`` keyed by country alpha-3.
+    Uses epoch timestamps to query the alerts endpoint.
+    """
+    import os
+    import time as _time
+
+    # Determine the date range from incidents
+    incidents_path = data_dir / "processed" / "incidents_all.parquet"
+    if not incidents_path.exists():
+        return {}
+    try:
+        df = pd.read_parquet(incidents_path, columns=["opened_dt"])
+        min_dt = df["opened_dt"].min()
+        max_dt = df["opened_dt"].max()
+        if pd.isna(min_dt) or pd.isna(max_dt):
+            return {}
+        from_ts = int(min_dt.timestamp())
+        until_ts = int(max_dt.timestamp())
+    except Exception:
+        return {}
+
+    # Get unique ICRC country alpha-2 codes
+    import pycountry
+    iso3_set: set[str] = set()
+    for entry in registry.values():
+        iso3 = entry.get("country_iso3")
+        if iso3:
+            iso3_set.add(iso3)
+
+    # Query IODA alerts for each country (rate limited)
+    alerts_by_iso3: dict[str, list[dict]] = {}
+    try:
+        import httpx
+        with httpx.Client(timeout=15.0) as client:
+            for iso3 in sorted(iso3_set):
+                try:
+                    c = pycountry.countries.get(alpha_3=iso3)
+                    if not c:
+                        continue
+                    alpha2 = c.alpha_2
+                except (AttributeError, LookupError):
+                    continue
+
+                _time.sleep(0.5)  # Rate limit
+                try:
+                    resp = client.get(
+                        f"https://api.ioda.inetintel.cc.gatech.edu/v2/outages/alerts",
+                        params={
+                            "from": str(from_ts),
+                            "until": str(until_ts),
+                            "entityType": "country",
+                            "entityCode": alpha2,
+                        },
+                    )
+                    if resp.status_code != 200:
+                        continue
+                    data = resp.json()
+                    if not isinstance(data, dict):
+                        continue
+                    entries = data.get("data", [])
+                    if isinstance(entries, list) and entries:
+                        alerts_by_iso3[iso3] = entries
+                except Exception:
+                    continue
+    except Exception as e:
+        logger.debug("IODA historical fetch failed: %s", e)
+
+    total = sum(len(v) for v in alerts_by_iso3.values())
+    if total:
+        logger.info("IODA historical: %d alerts across %d countries", total, len(alerts_by_iso3))
+    return alerts_by_iso3
+
+
+def _check_ioda(
+    surge_start: datetime,
+    country_iso3: set[str],
+    ioda_alerts_by_iso3: dict[str, list[dict]],
+) -> dict[str, Any]:
+    """Check IODA alerts for affected countries in 48h before surge."""
+    if not ioda_alerts_by_iso3 or not country_iso3:
+        return {"detected": False, "score": 0, "alert_count": 0}
+
+    lookback = surge_start - timedelta(hours=48)
+    lookback_ts = lookback.timestamp()
+    surge_ts = surge_start.timestamp()
+
+    matching = 0
+    for iso3 in country_iso3:
+        alerts = ioda_alerts_by_iso3.get(iso3, [])
+        for alert in alerts:
+            # IODA alert has 'time' (epoch) or 'from'/'until'
+            alert_time = alert.get("time") or alert.get("from")
+            if alert_time is None:
+                continue
+            try:
+                t = float(alert_time)
+            except (ValueError, TypeError):
+                continue
+            if lookback_ts <= t <= surge_ts:
+                matching += 1
+
+    return {
+        "detected": matching > 0,
+        "score": 0,
+        "alert_count": matching,
+    }
+
+
 def analyse_precursors(
     surges: list[dict],
     registry: dict[str, dict[str, Any]],
@@ -242,13 +453,13 @@ def analyse_precursors(
     incidents_path = data_dir / "processed" / "incidents_all.parquet"
     incidents_df = pd.read_parquet(incidents_path) if incidents_path.exists() else pd.DataFrame()
 
-    # Load Cloudflare data (fixture or cached)
+    # Load Cloudflare data — try live API for full date range, fall back to fixture
     cf_annotations: list[dict] = []
-    cf_path = data_dir / "fixtures" / "cf_outages_90d.json"
-    if cf_path.exists():
-        with open(cf_path) as f:
-            cf_raw = json.load(f)
-        cf_annotations = cf_raw.get("result", {}).get("annotations", [])
+    cf_annotations = _load_cf_historical(data_dir)
+
+    # Load IODA historical alerts (live API, covers surge date range)
+    ioda_alerts_by_iso3: dict[str, list[dict]] = {}
+    ioda_alerts_by_iso3 = _load_ioda_historical(data_dir, registry)
 
     results: list[dict[str, Any]] = []
 
@@ -267,8 +478,8 @@ def analyse_precursors(
         cf_result = _check_cloudflare(start_time, country_iso3, cf_annotations)
         internal_result = _check_internal(start_time, delegations, incidents_df)
 
-        # IODA: use summary-level data (we can't do historical per-surge lookback)
-        ioda_result = {"detected": False, "score": 0}
+        # IODA: check historical alerts for affected countries in 48h before surge
+        ioda_result = _check_ioda(start_time, country_iso3, ioda_alerts_by_iso3)
 
         any_external = acled_result["detected"] or cf_result["detected"] or ioda_result["detected"]
 
@@ -359,6 +570,9 @@ def save_precursor_analysis(analysis: list[dict], data_dir: Path) -> Path:
             "acled_events": a["acled_precursor"]["event_count"],
             "acled_fatalities": a["acled_precursor"]["fatalities"],
             "acled_ratio": a["acled_precursor"]["ratio"],
+            "acled_spike_onset": a["acled_precursor"].get("spike_onset"),
+            "ioda_detected": a.get("ioda_precursor", {}).get("detected", False),
+            "ioda_alerts": a.get("ioda_precursor", {}).get("alert_count", 0),
             "cf_detected": a["cf_precursor"]["detected"],
             "cf_events": a["cf_precursor"]["event_count"],
             "internal_detected": a["internal_precursor"]["detected"],
