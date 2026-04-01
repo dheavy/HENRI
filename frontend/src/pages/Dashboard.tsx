@@ -1,4 +1,5 @@
 import { useDashboard, useCountries, useDelegations, useSurges } from '../hooks/useApi';
+import { useQuery } from '@tanstack/react-query';
 import AlertSummary from '../components/AlertSummary';
 import RiskTable from '../components/RiskTable';
 import EmptyState from '../components/EmptyState';
@@ -6,6 +7,93 @@ import SurgePulse from '../components/SurgePulse';
 import SourceHealthRings from '../components/SourceHealthRings';
 import DotHistogram from '../components/DotHistogram';
 import AnimatedNumber from '../components/AnimatedNumber';
+
+function BandwidthScorecard() {
+  const { data } = useQuery({
+    queryKey: ['bandwidth'],
+    queryFn: () => fetch('/api/v1/bandwidth').then(r => r.json()),
+    staleTime: 60_000,
+  });
+  if (!data?.summary) return <p className="text-small text-text-muted italic">Loading...</p>;
+  const { summary } = data;
+  const hasUtil = summary.sites_with_utilisation > 0;
+
+  return (
+    <div className="space-y-3">
+      {hasUtil && summary.over_utilised.length > 0 && (
+        <div>
+          <p className="text-data text-sm text-red mb-1">Over-utilised (&gt;80%)</p>
+          {summary.over_utilised.slice(0, 5).map((s: { site: string; pct: number; provider: string }) => (
+            <div key={s.site} className="flex justify-between text-data text-sm">
+              <span className="text-text-primary">{s.site}</span>
+              <span><span className="text-red">{s.pct}%</span> <span className="text-text-muted">{s.provider}</span></span>
+            </div>
+          ))}
+        </div>
+      )}
+      {hasUtil && summary.under_utilised.length > 0 && (
+        <div>
+          <p className="text-data text-sm text-yellow mb-1">Under-utilised (&lt;10%)</p>
+          {summary.under_utilised.slice(0, 5).map((s: { site: string; pct: number; provider: string }) => (
+            <div key={s.site} className="flex justify-between text-data text-sm">
+              <span className="text-text-primary">{s.site}</span>
+              <span><span className="text-yellow">{s.pct}%</span> <span className="text-text-muted">{s.provider}</span></span>
+            </div>
+          ))}
+        </div>
+      )}
+      {summary.zero_traffic.length > 0 && (
+        <p className="text-data text-sm text-orange">{summary.zero_traffic.length} sites with near-zero traffic</p>
+      )}
+      <p className="text-small text-text-muted">
+        Utilisation data for {summary.sites_with_utilisation} of {summary.sites_with_bandwidth} sites.
+        {!hasUtil && ' Coverage improves as NetBox circuit records are completed.'}
+      </p>
+    </div>
+  );
+}
+
+function CoherenceCard() {
+  const { data } = useQuery({
+    queryKey: ['coherence'],
+    queryFn: () => fetch('/api/v1/coherence').then(r => r.json()),
+    staleTime: 60_000,
+  });
+  if (!data) return <p className="text-small text-text-muted italic">Loading...</p>;
+
+  const items = [
+    { label: `${data.netbox_coverage.matched} / ${data.netbox_coverage.total_grafana} sites in NetBox`, pct: data.netbox_coverage.pct },
+    { label: `${data.commit_rate_coverage.with_rate} / ${data.commit_rate_coverage.total_circuits} circuits with committed rate`, pct: data.commit_rate_coverage.pct },
+  ];
+
+  return (
+    <div className="space-y-3">
+      {items.map((item) => (
+        <div key={item.label}>
+          <div className="flex justify-between text-data text-sm mb-1">
+            <span>{item.label}</span>
+            <span className="text-text-muted">{item.pct}%</span>
+          </div>
+          <div className="h-1.5 bg-bg-highlight rounded-full overflow-hidden">
+            <div className="h-full bg-accent rounded-full" style={{ width: `${item.pct}%` }} />
+          </div>
+        </div>
+      ))}
+      {data.grafana_not_in_netbox.length > 0 && (
+        <p className="text-data text-sm">{data.grafana_not_in_netbox.length} Grafana sites not in NetBox</p>
+      )}
+      {data.netbox_not_in_grafana.length > 0 && (
+        <p className="text-data text-sm">{data.netbox_not_in_grafana.length} NetBox circuits with no Grafana match</p>
+      )}
+      {data.zero_incident_sites.length > 0 && (
+        <p className="text-data text-sm text-yellow">{data.zero_incident_sites.length} sites with zero incidents in 90 days</p>
+      )}
+      {data.snow_orphan_codes.length > 0 && (
+        <p className="text-data text-sm">{data.snow_orphan_codes.length} ServiceNow codes not in Grafana</p>
+      )}
+    </div>
+  );
+}
 
 function StatCard({
   label,
@@ -218,67 +306,21 @@ export default function Dashboard() {
         <SourceHealthRings sources={pipeline_status.sources} lastRun={pipeline_status.last_run} />
       </div>
 
-      {/* Column 3: Bandwidth + Data coherence stacked */}
+      {/* Column 3: Bandwidth scorecard + Data coherence stacked */}
       <div style={{ gridColumn: 'span 1', alignSelf: 'start' }} className="flex flex-col gap-3">
 
-      {/* Bandwidth — UC-1 */}
+      {/* Bandwidth scorecard — UC-1 */}
       <div className="bg-bg-surface border border-border rounded-lg p-5">
-        <h3 className="text-label">Bandwidth — top consumers</h3>
-        <p className="text-small text-text-muted mt-1 mb-3">Highest peak throughput across field sites in the last 7 days</p>
-        {dashboard.bandwidth_top && dashboard.bandwidth_top.length > 0 ? (
-          <div className="space-y-1.5">
-            {dashboard.bandwidth_top.map((b) => (
-              <div key={b.site} className="flex items-center justify-between">
-                <span className="text-data text-text-primary">{b.site}</span>
-                <span className="text-data text-text-muted">
-                  {b.utilisation_pct != null
-                    ? <><span className="text-text-primary">{b.utilisation_pct}%</span> util</>
-                    : <><span className="text-text-primary">{b.peak_mbps}</span> Mbps peak</>}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-small text-text-muted italic">No bandwidth data available — Grafana pull pending</p>
-        )}
+        <h3 className="text-label">Bandwidth scorecard</h3>
+        <p className="text-small text-text-muted mt-1 mb-3">Actual throughput vs contracted capacity — identifies over-paying and under-provisioned sites</p>
+        <BandwidthScorecard />
       </div>
 
       {/* Data coherence — UC-3 */}
       <div className="bg-bg-surface border border-border rounded-lg p-5">
         <h3 className="text-label">Data coherence</h3>
         <p className="text-small text-text-muted mt-1 mb-3">Inventory completeness across data sources — gaps indicate missing configuration</p>
-        {dashboard.data_coherence ? (() => {
-          const dc = dashboard.data_coherence;
-          const nbPct = dc.grafana_sites > 0 ? Math.round(dc.netbox_sites / dc.grafana_sites * 100) : 0;
-          const ratePct = dc.circuits_total > 0 ? Math.round(dc.circuits_with_rate / dc.circuits_total * 100) : 0;
-          return (
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-data text-sm mb-1">
-                  <span>{dc.netbox_sites} / {dc.grafana_sites} sites in NetBox</span>
-                  <span className="text-text-muted">{nbPct}%</span>
-                </div>
-                <div className="h-1.5 bg-bg-highlight rounded-full overflow-hidden">
-                  <div className="h-full bg-accent rounded-full" style={{ width: `${nbPct}%` }} />
-                </div>
-              </div>
-              <div>
-                <div className="flex justify-between text-data text-sm mb-1">
-                  <span>{dc.circuits_with_rate} / {dc.circuits_total} circuits with committed rate</span>
-                  <span className="text-text-muted">{ratePct}%</span>
-                </div>
-                <div className="h-1.5 bg-bg-highlight rounded-full overflow-hidden">
-                  <div className="h-full bg-accent rounded-full" style={{ width: `${ratePct}%` }} />
-                </div>
-              </div>
-              {dc.silent_sites > 0 && (
-                <p className="text-data text-sm text-yellow">{dc.silent_sites} sites with zero incidents in 90 days</p>
-              )}
-            </div>
-          );
-        })() : (
-          <p className="text-small text-text-muted italic">No coherence data available</p>
-        )}
+        <CoherenceCard />
       </div>
 
       </div>{/* end stacked column */}
