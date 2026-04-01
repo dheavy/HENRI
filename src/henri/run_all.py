@@ -97,12 +97,33 @@ def _step_snow_parse(data_dir: Path) -> tuple[pd.DataFrame, dict, dict]:
         processed_dir.mkdir(parents=True, exist_ok=True)
         locations_df = normalise_locations(locations_csv, processed_dir / "locations_clean.csv")
 
-    # Grafana registry (fixture-based if available)
-    grafana_fixture = data_dir / "fixtures" / "grafana_registry.json"
+    # Grafana registry: live API first, fall back to fixture
     grafana_registry, grafana_subsite = {}, {}
-    if grafana_fixture.exists():
-        from grafana_client.registry_builder import build_registry_from_fixture
-        grafana_registry, grafana_subsite = build_registry_from_fixture(grafana_fixture)
+    try:
+        from snow_extract.config import GrafanaConfig
+        from grafana_client.client import GrafanaClient
+        from grafana_client.registry_builder import build_registry_from_grafana, build_registry_from_fixture
+
+        grafana_config = GrafanaConfig()
+        if grafana_config.is_configured:
+            logger.info("Grafana configured — pulling live registry")
+            client = GrafanaClient(grafana_config.url, grafana_config.api_token, grafana_config.prometheus_ds_id)
+            try:
+                grafana_registry, grafana_subsite = build_registry_from_grafana(client)
+            finally:
+                client.close()
+
+        if not grafana_registry:
+            grafana_fixture = data_dir / "fixtures" / "grafana_registry.json"
+            if grafana_fixture.exists():
+                logger.info("Falling back to Grafana fixture")
+                grafana_registry, grafana_subsite = build_registry_from_fixture(grafana_fixture)
+    except Exception as exc:
+        logger.warning("Grafana registry failed: %s", type(exc).__name__)
+        grafana_fixture = data_dir / "fixtures" / "grafana_registry.json"
+        if grafana_fixture.exists():
+            from grafana_client.registry_builder import build_registry_from_fixture
+            grafana_registry, grafana_subsite = build_registry_from_fixture(grafana_fixture)
 
     snow_registry = build_registry(df, locations_df, grafana_available=bool(grafana_registry))
     snow_subsite = build_subsite_map(df)
