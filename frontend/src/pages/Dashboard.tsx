@@ -277,7 +277,7 @@ export default function Dashboard() {
 
       {/* Bottom: delegations | bandwidth | source health + data coherence */}
       <div
-        style={{ gridColumn: 'span 1' }}
+        style={{ gridColumn: 'span 1', alignSelf: 'start' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
         <h3 className="text-label">Most alerting delegations</h3>
