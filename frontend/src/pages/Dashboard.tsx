@@ -1,10 +1,8 @@
 import { useDashboard, useCountries, useDelegations, useSurges } from '../hooks/useApi';
 import AlertSummary from '../components/AlertSummary';
 import RiskTable from '../components/RiskTable';
-import StatusBadge from '../components/StatusBadge';
 import EmptyState from '../components/EmptyState';
 import SurgePulse from '../components/SurgePulse';
-import DotMatrixMap from '../components/DotMatrixMap';
 import SourceHealthRings from '../components/SourceHealthRings';
 import DotHistogram from '../components/DotHistogram';
 
@@ -36,7 +34,7 @@ function StatCard({
 export default function Dashboard() {
   const { data: dashboard, isLoading: dashLoading } = useDashboard();
   const { data: countriesData } = useCountries('sort=risk_score&order=desc');
-  const { data: delegationsData } = useDelegations('sort=incident_count_30d&order=desc&limit=10');
+  const { data: delegationsData } = useDelegations();
   const { data: surgesData } = useSurges();
 
   if (dashLoading) {
@@ -62,9 +60,11 @@ export default function Dashboard() {
   const avgLeadHours = stats?.avg_lead_time_hours ?? null;
   const avgLeadTime = avgLeadHours != null ? `${avgLeadHours.toFixed(1)}h` : '--';
 
-  // Filter out HQ delegations (Fix 9)
+  const hasAlerts = alerts.length > 0 || delta_alerts.length > 0;
+
+  // Filter out HQ delegations
   const topDelegations = (delegationsData?.delegations ?? [])
-    .filter((d) => d.region !== 'HQ' && d.region !== '')
+    .filter((d) => d.region && d.region !== 'HQ')
     .slice(0, 10);
 
   return (
@@ -77,14 +77,7 @@ export default function Dashboard() {
         padding: '16px',
       }}
     >
-      {/* Alert summary — full width */}
-      {(alerts.length > 0 || delta_alerts.length > 0) && (
-        <div style={{ gridColumn: 'span 3' }}>
-          <AlertSummary alerts={alerts} deltaAlerts={delta_alerts} />
-        </div>
-      )}
-
-      {/* Dashboard title — full width */}
+      {/* 1. Title — always first */}
       <div style={{ gridColumn: 'span 3' }}>
         <h1 style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
           <span className="text-heading">HENRI</span>
@@ -97,18 +90,31 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Dot-matrix map: span 1 */}
-      <div
-        style={{ gridColumn: 'span 1' }}
-        className="bg-bg-surface border border-border rounded-lg overflow-hidden p-2"
-      >
-        {countriesData?.countries ? (
-          <DotMatrixMap countries={countriesData.countries} />
-        ) : (
-          <div className="w-full flex items-center justify-center">
-            <p className="text-small">Loading map...</p>
+      {/* 2. Alert explainer + alert card */}
+      {hasAlerts && (
+        <>
+          <div style={{ gridColumn: 'span 3' }}>
+            <p style={{ fontSize: '14px', color: 'var(--color-text-muted)' }}>
+              Conflict activity above normal levels — network disruption possible within 24-72h
+            </p>
           </div>
-        )}
+          <div style={{ gridColumn: 'span 3' }}>
+            <AlertSummary alerts={alerts} deltaAlerts={delta_alerts} />
+          </div>
+        </>
+      )}
+
+      {/* 3. LLM report placeholder (was map): span 1 */}
+      <div
+        style={{ gridColumn: 'span 1', minHeight: '200px' }}
+        className="bg-bg-surface border border-border rounded-lg p-5 flex flex-col"
+      >
+        <p className="text-label">Intelligence summary</p>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-sm italic text-text-muted text-center">
+            LLM-generated briefing coming soon
+          </p>
+        </div>
       </div>
 
       {/* Risk table: span 2 */}
@@ -117,12 +123,12 @@ export default function Dashboard() {
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
         <h3 className="text-label mb-3">
-          Threat Landscape — {countriesData?.countries.length ?? 0} Countries
+          Threat landscape — {countriesData?.countries.length ?? 0} countries
         </h3>
         {countriesData?.countries && <RiskTable countries={countriesData.countries} />}
       </div>
 
-      {/* 3 stat cards: each span 1 */}
+      {/* 4. Stat cards: each span 1 */}
       <div style={{ gridColumn: 'span 1' }}>
         <StatCard
           label="Surges with precursors"
@@ -136,7 +142,7 @@ export default function Dashboard() {
           label="Detection rate"
           value={detectionRate}
           description={detectionPct != null
-            ? `More than half of all network outages could have been anticipated.`
+            ? 'More than half of all network outages could have been anticipated.'
             : undefined}
         />
       </div>
@@ -150,7 +156,7 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Surge activity: span 2 */}
+      {/* 5. Surge activity: span 2 */}
       <div
         style={{ gridColumn: 'span 2' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
@@ -166,56 +172,47 @@ export default function Dashboard() {
         <DotHistogram />
       </div>
 
-      {/* Top delegations: span 2 */}
+      {/* 6. Bottom row: even three-way split */}
       <div
-        style={{ gridColumn: 'span 2' }}
+        style={{ gridColumn: 'span 1' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
-        <h3 className="text-label mb-3">Top Delegations</h3>
+        <h3 className="text-label mb-3">Top delegations</h3>
         {topDelegations.length === 0 ? (
           <p className="text-small">No delegation data available</p>
         ) : (
           <ol className="space-y-1.5">
             {topDelegations.map((d, i) => (
-              <li key={d.site_code} className="flex items-center justify-between">
-                <span className="text-data">
-                  <span className="text-text-muted mr-2">{i + 1}.</span>
-                  {d.site_code}
-                </span>
-                <span className="flex items-center gap-3">
-                  <span className="text-data">{d.incident_count_30d}</span>
-                  {d.dominant_alert && (
-                    <span className="text-small truncate max-w-[120px]">{d.dominant_alert}</span>
-                  )}
-                </span>
+              <li key={d.site_code} className="flex items-center gap-3">
+                <span className="text-data text-text-muted w-5 text-right shrink-0">{i + 1}.</span>
+                <span className="text-data text-text-primary w-12 shrink-0">{d.site_code}</span>
+                <span className="text-data text-text-primary w-10 shrink-0">{d.incident_count_30d}</span>
+                <span className="text-small text-text-muted truncate">{d.dominant_alert}</span>
               </li>
             ))}
           </ol>
         )}
       </div>
 
-      {/* Pipeline/source health: span 1 */}
       <div
         style={{ gridColumn: 'span 1' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
         <SourceHealthRings sources={pipeline_status.sources} />
-        <div className="mt-4 pt-3 border-t border-border">
-          <h3 className="text-label mb-3">Pipeline Status</h3>
-          <p className="text-small mb-3">
-            {pipeline_status.last_run
-              ? new Date(pipeline_status.last_run).toLocaleString()
-              : 'Never run'}
-          </p>
-          <div className="space-y-2">
-            {Object.entries(pipeline_status.sources).map(([name, info]) => (
-              <div key={name} className="flex items-center gap-2">
-                <StatusBadge status={info.status} />
-                <span className="text-small capitalize">{name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+      </div>
+
+      <div
+        style={{ gridColumn: 'span 1' }}
+        className="bg-bg-surface border border-border rounded-lg p-5"
+      >
+        <h3 className="text-label mb-3">Pipeline status</h3>
+        <p className="text-small text-text-muted mb-3">
+          Last run: {pipeline_status.last_run
+            ? new Date(pipeline_status.last_run).toLocaleString('en-GB', {
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+              }) + ' UTC'
+            : 'Never'}
+        </p>
       </div>
     </div>
   );

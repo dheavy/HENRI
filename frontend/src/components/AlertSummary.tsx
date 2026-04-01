@@ -38,9 +38,6 @@ export default function AlertSummary({ alerts, deltaAlerts }: Props) {
             <span className="text-text-primary text-sm font-medium">
               {totalCount} active alert{totalCount !== 1 ? 's' : ''}
             </span>
-            <p className="text-sm text-text-muted mt-1">
-              Conflict activity above normal levels — network disruption possible within 24-72h
-            </p>
           </div>
           <span className="text-text-muted text-sm">
             {Array.from(countryCounts.entries()).map(([country, count], i) => (

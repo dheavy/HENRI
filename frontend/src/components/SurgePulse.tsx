@@ -68,7 +68,10 @@ export default function SurgePulse({ surges }: { surges: SurgePoint[] }) {
 
   return (
     <div className="w-full">
-      <p className="text-label mb-2">Surge activity — last 90 days</p>
+      <p className="text-label">Surge activity — last 90 days</p>
+      <p className="text-sm text-text-muted mt-1 mb-4">
+        Weekly surge events across all regions — colored by precursor detection
+      </p>
       <ResponsiveContainer width="100%" height={180}>
         <BarChart data={weeklyData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#3A3D44" />
