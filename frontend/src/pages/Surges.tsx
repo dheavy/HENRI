@@ -12,7 +12,7 @@ function PrecursorDot({ detected, label }: { detected: boolean; label: string })
     <span
       title={detected ? `${label}: precursor detected` : `${label}: no precursor`}
       className={clsx(
-        'inline-block w-2.5 h-2.5 rounded-full cursor-help',
+        'inline-block w-2.5 h-2.5 rounded-full ',
         detected ? 'bg-green' : 'bg-bg-highlight'
       )}
     />
