@@ -3,6 +3,7 @@ import { useDelegations } from '../hooks/useApi';
 import { Search, Radio } from 'lucide-react';
 import clsx from 'clsx';
 import type { Delegation } from '../api/client';
+import AnimatedNumber from '../components/AnimatedNumber';
 import EmptyState from '../components/EmptyState';
 
 const REGIONS = ['All', 'AFRICA East', 'AFRICA West', 'AMERICAS', 'ASIA', 'EURASIA', 'NAME', 'HQ'];
@@ -20,7 +21,7 @@ function DelegationCard({ d }: { d: Delegation }) {
           <span className="text-xs bg-bg-elevated px-2 py-0.5 rounded border border-border">{d.region || 'Unknown'}</span>
         </div>
         <div className="flex items-center gap-4 text-xs">
-          <span className="font-mono">{d.incident_count_30d} <span className="text-text-muted">incidents</span></span>
+          <span className="font-mono"><AnimatedNumber value={d.incident_count_30d} duration={1} className="inline" /> <span className="text-text-muted">incidents</span></span>
           {d.sitedown_count_30d > 0 && (
             <span className="font-mono text-red">{d.sitedown_count_30d} <span className="text-text-muted">down</span></span>
           )}

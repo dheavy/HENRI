@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSurges } from '../hooks/useApi';
 import EmptyState from '../components/EmptyState';
+import AnimatedNumber from '../components/AnimatedNumber';
 import clsx from 'clsx';
 import { Zap, Filter } from 'lucide-react';
 import type { Surge } from '../api/client';
@@ -139,17 +140,17 @@ export default function Surges() {
       {data?.stats && (
         <div className="grid grid-cols-4 gap-4">
           <div className="bg-bg-surface rounded-lg border border-border p-4">
-            <p className="text-xs text-text-muted uppercase">Total Surges</p>
-            <p className="text-2xl font-bold font-mono">{data.stats.total_surges}</p>
+            <p className="text-label">Total Surges</p>
+            <AnimatedNumber value={data.stats.total_surges} className="text-data-display mt-1 block" />
           </div>
           <div className="bg-bg-surface rounded-lg border border-border p-4">
-            <p className="text-xs text-text-muted uppercase">With Precursors</p>
-            <p className="text-2xl font-bold font-mono text-accent">{data.stats.with_external_precursor}</p>
-            <p className="text-xs text-text-muted">{data.stats.pct_with_precursor}%</p>
+            <p className="text-label">With Precursors</p>
+            <AnimatedNumber value={data.stats.with_external_precursor} className="text-data-display mt-1 block text-accent" />
+            <AnimatedNumber value={data.stats.pct_with_precursor} decimals={1} suffix="%" className="text-data mt-1 block text-text-muted" />
           </div>
           <div className="bg-bg-surface rounded-lg border border-border p-4">
-            <p className="text-xs text-text-muted uppercase">Avg Lead Time</p>
-            <p className="text-2xl font-bold font-mono">{data.stats.avg_lead_time_hours}h</p>
+            <p className="text-label">Avg Lead Time</p>
+            <AnimatedNumber value={data.stats.avg_lead_time_hours} decimals={1} suffix="h" className="text-data-display mt-1 block" />
           </div>
           <div className="bg-bg-surface rounded-lg border border-border p-4">
             <p className="text-xs text-text-muted uppercase">Precursor Legend</p>

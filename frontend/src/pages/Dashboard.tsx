@@ -5,15 +5,16 @@ import EmptyState from '../components/EmptyState';
 import SurgePulse from '../components/SurgePulse';
 import SourceHealthRings from '../components/SourceHealthRings';
 import DotHistogram from '../components/DotHistogram';
+import AnimatedNumber from '../components/AnimatedNumber';
 
 function StatCard({
   label,
-  value,
+  children,
   description,
   accent,
 }: {
   label: string;
-  value: string | number;
+  children: React.ReactNode;
   description?: string;
   accent?: boolean;
 }) {
@@ -24,7 +25,7 @@ function StatCard({
       }`}
     >
       <p className="text-label">{label}</p>
-      <p className="text-data-display mt-2">{value}</p>
+      <div className="text-data-display mt-2">{children}</div>
       {description && <p className="text-sm text-text-muted mt-2">{description}</p>}
     </div>
   );
@@ -56,9 +57,7 @@ export default function Dashboard() {
   const totalSurges = stats?.total_surges ?? 0;
   const surgesWithPrecursors = stats?.with_external_precursor ?? 0;
   const detectionPct = stats?.pct_with_precursor != null ? Math.round(stats.pct_with_precursor) : null;
-  const detectionRate = detectionPct != null ? `${detectionPct}%` : '--';
   const avgLeadHours = stats?.avg_lead_time_hours ?? null;
-  const avgLeadTime = avgLeadHours != null ? `${avgLeadHours.toFixed(1)}h` : '--';
 
   const hasAlerts = alerts.length > 0 || delta_alerts.length > 0;
 
@@ -135,28 +134,37 @@ export default function Dashboard() {
       <div style={{ gridColumn: 'span 1' }}>
         <StatCard
           label="Surges with precursors"
-          value={`${surgesWithPrecursors} / ${totalSurges}`}
           description={`Of ${totalSurges} outage clusters, ${surgesWithPrecursors} had warning signals visible before the outage.`}
           accent
-        />
+        >
+          <AnimatedNumber value={surgesWithPrecursors} className="text-data-display" />
+          <span className="text-text-muted text-data-display"> / </span>
+          <AnimatedNumber value={totalSurges} className="text-data-display" />
+        </StatCard>
       </div>
       <div style={{ gridColumn: 'span 1' }}>
         <StatCard
           label="Detection rate"
-          value={detectionRate}
           description={detectionPct != null
             ? 'More than half of all network outages could have been anticipated.'
             : undefined}
-        />
+        >
+          {detectionPct != null
+            ? <AnimatedNumber value={detectionPct} suffix="%" className="text-data-display" />
+            : <span className="text-data-display">--</span>}
+        </StatCard>
       </div>
       <div style={{ gridColumn: 'span 1' }}>
         <StatCard
           label="Avg lead time"
-          value={avgLeadTime}
           description={avgLeadHours != null
             ? `Average warning time before connectivity loss: ~${(avgLeadHours / 24).toFixed(1)} days of advance notice.`
             : undefined}
-        />
+        >
+          {avgLeadHours != null
+            ? <AnimatedNumber value={avgLeadHours} decimals={1} suffix="h" className="text-data-display" />
+            : <span className="text-data-display">--</span>}
+        </StatCard>
       </div>
 
       {/* 5. Surge activity: span 2 */}

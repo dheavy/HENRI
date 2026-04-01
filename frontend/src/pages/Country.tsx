@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import AnimatedNumber from '../components/AnimatedNumber';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import clsx from 'clsx';
 import { useCountryDetail } from '../hooks/useApi';
@@ -107,8 +108,8 @@ export default function Country() {
           { label: 'SiteDown Events', value: country.snow_sitedown as number },
         ].map(({ label, value }) => (
           <div key={label} className="bg-bg-surface rounded-lg border border-border p-4">
-            <p className="text-xs text-text-muted uppercase tracking-wider">{label}</p>
-            <p className="text-2xl font-bold font-mono">{(value ?? 0).toLocaleString()}</p>
+            <p className="text-label">{label}</p>
+            <AnimatedNumber value={value ?? 0} className="text-data-display mt-1 block" />
           </div>
         ))}
       </div>
