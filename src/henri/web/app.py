@@ -6,7 +6,10 @@ Serves the JSON API at ``/api/v1/`` and the React SPA as static files.
 from __future__ import annotations
 
 import logging
+import os
+from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import AsyncGenerator
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -15,12 +18,24 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .api.router import api_router
+from .db import init_db
+from .scheduler import start_scheduler, stop_scheduler
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 _FRONTEND_DIST = Path(__file__).resolve().parent.parent.parent.parent / "frontend" / "dist"
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    init_db()
+    if os.getenv("HENRI_SCHEDULER_ENABLED", "0") == "1":
+        start_scheduler()
+        logger.info("Background scheduler enabled")
+    yield
+    stop_scheduler()
 
 
 def create_app() -> FastAPI:
@@ -30,6 +45,7 @@ def create_app() -> FastAPI:
         version="1.0.0",
         docs_url="/api/docs",
         redoc_url=None,
+        lifespan=_lifespan,
     )
 
     # CORS — allow local dev origins
