@@ -112,9 +112,10 @@ export default function Dashboard() {
         className="bg-bg-surface border border-border rounded-lg p-5 flex flex-col"
       >
         <p className="text-label">Intelligence summary</p>
+        <p className="text-small text-text-muted mt-1">AI-generated briefing based on the latest data — coming soon</p>
         <div className="flex-1 flex items-center justify-center">
           <p className="text-sm italic text-text-muted text-center">
-            LLM-generated briefing coming soon
+            Coming soon
           </p>
         </div>
       </div>
@@ -124,9 +125,10 @@ export default function Dashboard() {
         style={{ gridColumn: 'span 2', maxHeight: '500px', overflowY: 'auto' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
-        <h3 className="text-label mb-3">
+        <h3 className="text-label">
           Threat landscape — {countriesData?.countries.length ?? 0} countries
         </h3>
+        <p className="text-small text-text-muted mt-1 mb-3">Combined risk score from conflict data, outage monitoring, and internal network alerts</p>
         {countriesData?.countries && <RiskTable countries={countriesData.countries} />}
       </div>
 
@@ -180,15 +182,18 @@ export default function Dashboard() {
         style={{ gridColumn: 'span 1' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
+        <p className="text-label">Incident volume by region</p>
+        <p className="text-small text-text-muted mt-1 mb-3">Monthly incident distribution across ICT regions — each dot represents ~50 incidents</p>
         <DotHistogram />
       </div>
 
-      {/* 6. Bottom row: two-way split */}
+      {/* Bottom: delegations | bandwidth | source health + data coherence */}
       <div
         style={{ gridColumn: 'span 1' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
-        <h3 className="text-label mb-3">Most alerting delegations</h3>
+        <h3 className="text-label">Most alerting delegations</h3>
+        <p className="text-small text-text-muted mt-1 mb-3">Field sites ranked by total alert volume in the current dataset</p>
         {topDelegations.length === 0 ? (
           <p className="text-small">No delegation data available</p>
         ) : (
@@ -205,12 +210,78 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* Bandwidth — UC-1 */}
       <div
         style={{ gridColumn: 'span 1', alignSelf: 'start' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
+        <h3 className="text-label">Bandwidth — top consumers</h3>
+        <p className="text-small text-text-muted mt-1 mb-3">Highest peak throughput across field sites in the last 7 days</p>
+        {dashboard.bandwidth_top && dashboard.bandwidth_top.length > 0 ? (
+          <div className="space-y-1.5">
+            {dashboard.bandwidth_top.map((b: { site: string; peak_mbps: number; avg_mbps: number; utilisation_pct: number | null }) => (
+              <div key={b.site} className="flex items-center justify-between">
+                <span className="text-data text-text-primary">{b.site}</span>
+                <span className="text-data text-text-muted">
+                  {b.utilisation_pct != null
+                    ? <><span className="text-text-primary">{b.utilisation_pct}%</span> util</>
+                    : <><span className="text-text-primary">{b.peak_mbps}</span> Mbps peak</>}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-small text-text-muted italic">No bandwidth data available — Grafana pull pending</p>
+        )}
+      </div>
+
+      {/* Column 3: Source health + Data coherence stacked */}
+      <div style={{ gridColumn: 'span 1', alignSelf: 'start' }} className="flex flex-col gap-3">
+
+      {/* Source health */}
+      <div className="bg-bg-surface border border-border rounded-lg p-5">
         <SourceHealthRings sources={pipeline_status.sources} lastRun={pipeline_status.last_run} />
       </div>
+
+      {/* Data coherence — UC-3 */}
+      <div className="bg-bg-surface border border-border rounded-lg p-5">
+        <h3 className="text-label">Data coherence</h3>
+        <p className="text-small text-text-muted mt-1 mb-3">Inventory completeness across data sources — gaps indicate missing configuration</p>
+        {dashboard.data_coherence ? (() => {
+          const dc = dashboard.data_coherence as { netbox_sites: number; grafana_sites: number; circuits_total: number; circuits_with_rate: number; silent_sites: number };
+          const nbPct = dc.grafana_sites > 0 ? Math.round(dc.netbox_sites / dc.grafana_sites * 100) : 0;
+          const ratePct = dc.circuits_total > 0 ? Math.round(dc.circuits_with_rate / dc.circuits_total * 100) : 0;
+          return (
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between text-data text-sm mb-1">
+                  <span>{dc.netbox_sites} / {dc.grafana_sites} sites in NetBox</span>
+                  <span className="text-text-muted">{nbPct}%</span>
+                </div>
+                <div className="h-1.5 bg-bg-highlight rounded-full overflow-hidden">
+                  <div className="h-full bg-accent rounded-full" style={{ width: `${nbPct}%` }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-data text-sm mb-1">
+                  <span>{dc.circuits_with_rate} / {dc.circuits_total} circuits with committed rate</span>
+                  <span className="text-text-muted">{ratePct}%</span>
+                </div>
+                <div className="h-1.5 bg-bg-highlight rounded-full overflow-hidden">
+                  <div className="h-full bg-accent rounded-full" style={{ width: `${ratePct}%` }} />
+                </div>
+              </div>
+              {dc.silent_sites > 0 && (
+                <p className="text-data text-sm text-yellow">{dc.silent_sites} sites with zero incidents in 90 days</p>
+              )}
+            </div>
+          );
+        })() : (
+          <p className="text-small text-text-muted italic">No coherence data available</p>
+        )}
+      </div>
+
+      </div>{/* end stacked column */}
     </div>
   );
 }

@@ -181,4 +181,83 @@ async def dashboard() -> dict:
             "last_run": generated_at,
             "sources": sources,
         },
+        "bandwidth_top": _bandwidth_top(data_dir, registry),
+        "data_coherence": _data_coherence(data_dir, registry),
+    }
+
+
+def _bandwidth_top(data_dir: Path, registry: dict) -> list[dict]:
+    """Top 5 sites by peak throughput."""
+    import pandas as pd
+    bw_path = data_dir / "processed" / "bandwidth_by_site.parquet"
+    if not bw_path.exists():
+        return []
+    try:
+        df = pd.read_parquet(bw_path)
+        if df.empty:
+            return []
+        # Get peak per site (both directions combined)
+        site_peak = df.groupby("site").agg(
+            peak_bps=("peak_bps", "max"),
+            avg_bps=("avg_bps", "mean"),
+        ).reset_index().nlargest(5, "peak_bps")
+
+        # Load circuits for commit_rate
+        circuits = _load_json(data_dir / "reference" / "circuits.json") or []
+        commit_by_site: dict[str, float] = {}
+        for c in circuits:
+            parent = c.get("parent_code")
+            rate_kbps = c.get("commit_rate_kbps")
+            if parent and rate_kbps:
+                commit_by_site[parent] = max(commit_by_site.get(parent, 0), rate_kbps)
+
+        result = []
+        for _, row in site_peak.iterrows():
+            site = row["site"]
+            peak_mbps = round(row["peak_bps"] / 1e6, 1)
+            avg_mbps = round(row["avg_bps"] / 1e6, 1)
+            commit_kbps = commit_by_site.get(site)
+            utilisation = None
+            if commit_kbps and commit_kbps > 0:
+                commit_bps = commit_kbps * 1000
+                utilisation = round(row["peak_bps"] / commit_bps * 100, 1)
+            result.append({
+                "site": site,
+                "peak_mbps": peak_mbps,
+                "avg_mbps": avg_mbps,
+                "utilisation_pct": utilisation,
+            })
+        return result
+    except Exception:
+        return []
+
+
+def _data_coherence(data_dir: Path, registry: dict) -> dict:
+    """UC-3 data completeness stats."""
+    import pandas as pd
+
+    grafana_sites = sum(1 for v in registry.values() if v.get("source", "").startswith("grafana"))
+    nb_map = _load_json(data_dir / "reference" / "netbox_site_map.json") or {}
+    circuits = _load_json(data_dir / "reference" / "circuits.json") or []
+    circuits_with_rate = sum(1 for c in circuits if c.get("commit_rate_kbps"))
+
+    # Sites with zero incidents in 90 days (suspicious silence)
+    silent_sites = 0
+    incidents_path = data_dir / "processed" / "incidents_all.parquet"
+    if incidents_path.exists():
+        try:
+            df = pd.read_parquet(incidents_path)
+            code_col = "parent_code" if "parent_code" in df.columns else "delegation_code"
+            codes_with_incidents = set(df[code_col].dropna().unique())
+            grafana_codes = {k for k, v in registry.items() if v.get("source", "").startswith("grafana")}
+            silent_sites = len(grafana_codes - codes_with_incidents)
+        except Exception:
+            pass
+
+    return {
+        "netbox_sites": len(nb_map),
+        "grafana_sites": grafana_sites,
+        "circuits_total": len(circuits),
+        "circuits_with_rate": circuits_with_rate,
+        "silent_sites": silent_sites,
     }

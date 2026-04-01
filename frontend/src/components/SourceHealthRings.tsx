@@ -44,9 +44,10 @@ export default function SourceHealthRings({
 
   return (
     <div>
-      <p className="text-label mb-3">
+      <p className="text-label">
         Source health{lastRunFmt ? ` — last run ${lastRunFmt}` : ''}
       </p>
+      <p className="text-small text-text-muted mt-1 mb-3">Live status and freshness of each data feed powering HENRI</p>
       <div className="space-y-0.5">
         {Object.entries(sources).map(([key, info]) => {
           const meta = SOURCE_META[key] ?? { label: key, color: '#5C5F66' };

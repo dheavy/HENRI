@@ -45,8 +45,16 @@ export interface DashboardResponse {
   risk_cards: RiskCard[];
   pipeline_status: {
     last_run: string;
-    sources: Record<string, { status: string; last_pull: string | null }>;
+    sources: Record<string, { status: string; last_pull: string | null; metric?: string | null }>;
   };
+  bandwidth_top: { site: string; peak_mbps: number; avg_mbps: number; utilisation_pct: number | null }[];
+  data_coherence: {
+    netbox_sites: number;
+    grafana_sites: number;
+    circuits_total: number;
+    circuits_with_rate: number;
+    silent_sites: number;
+  } | null;
 }
 
 export interface Country {
