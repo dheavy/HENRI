@@ -210,32 +210,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Bandwidth — UC-1 */}
-      <div
-        style={{ gridColumn: 'span 1', alignSelf: 'start' }}
-        className="bg-bg-surface border border-border rounded-lg p-5"
-      >
-        <h3 className="text-label">Bandwidth — top consumers</h3>
-        <p className="text-small text-text-muted mt-1 mb-3">Highest peak throughput across field sites in the last 7 days</p>
-        {dashboard.bandwidth_top && dashboard.bandwidth_top.length > 0 ? (
-          <div className="space-y-1.5">
-            {dashboard.bandwidth_top.map((b: { site: string; peak_mbps: number; avg_mbps: number; utilisation_pct: number | null }) => (
-              <div key={b.site} className="flex items-center justify-between">
-                <span className="text-data text-text-primary">{b.site}</span>
-                <span className="text-data text-text-muted">
-                  {b.utilisation_pct != null
-                    ? <><span className="text-text-primary">{b.utilisation_pct}%</span> util</>
-                    : <><span className="text-text-primary">{b.peak_mbps}</span> Mbps peak</>}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-small text-text-muted italic">No bandwidth data available — Grafana pull pending</p>
-        )}
-      </div>
-
-      {/* Column 3: Source health + Data coherence stacked */}
+      {/* Column 2: Source health + Data coherence stacked */}
       <div style={{ gridColumn: 'span 1', alignSelf: 'start' }} className="flex flex-col gap-3">
 
       {/* Source health */}
@@ -282,6 +257,31 @@ export default function Dashboard() {
       </div>
 
       </div>{/* end stacked column */}
+
+      {/* Bandwidth — UC-1 */}
+      <div
+        style={{ gridColumn: 'span 1', alignSelf: 'start' }}
+        className="bg-bg-surface border border-border rounded-lg p-5"
+      >
+        <h3 className="text-label">Bandwidth — top consumers</h3>
+        <p className="text-small text-text-muted mt-1 mb-3">Highest peak throughput across field sites in the last 7 days</p>
+        {dashboard.bandwidth_top && dashboard.bandwidth_top.length > 0 ? (
+          <div className="space-y-1.5">
+            {dashboard.bandwidth_top.map((b) => (
+              <div key={b.site} className="flex items-center justify-between">
+                <span className="text-data text-text-primary">{b.site}</span>
+                <span className="text-data text-text-muted">
+                  {b.utilisation_pct != null
+                    ? <><span className="text-text-primary">{b.utilisation_pct}%</span> util</>
+                    : <><span className="text-text-primary">{b.peak_mbps}</span> Mbps peak</>}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-small text-text-muted italic">No bandwidth data available — Grafana pull pending</p>
+        )}
+      </div>
     </div>
   );
 }
