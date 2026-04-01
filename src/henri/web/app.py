@@ -78,13 +78,27 @@ def create_app() -> FastAPI:
         )
         return {"reports": files}
 
-    @app.get("/api/v1/reports/{filename}")
-    async def download_report(filename: str) -> FileResponse:
-        """Serve a report HTML file for download or viewing."""
+    def _resolve_report(filename: str) -> Path | None:
         if ".." in filename or "/" in filename or not filename.endswith(".html"):
-            return JSONResponse({"error": "Invalid filename"}, status_code=400)
+            return None
         path = _reports_dir / filename
         if not path.exists() or not path.resolve().is_relative_to(_reports_dir.resolve()):
+            return None
+        return path
+
+    @app.get("/api/v1/reports/{filename}")
+    async def view_report(filename: str) -> FileResponse:
+        """Serve a report HTML file inline (for iframe embedding)."""
+        path = _resolve_report(filename)
+        if not path:
+            return JSONResponse({"error": "Not found"}, status_code=404)
+        return FileResponse(str(path), media_type="text/html")
+
+    @app.get("/api/v1/reports/{filename}/download")
+    async def download_report(filename: str) -> FileResponse:
+        """Serve a report HTML file as a download attachment."""
+        path = _resolve_report(filename)
+        if not path:
             return JSONResponse({"error": "Not found"}, status_code=404)
         return FileResponse(str(path), media_type="text/html", filename=filename)
 
