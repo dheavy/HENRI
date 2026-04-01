@@ -115,6 +115,15 @@ async def dashboard() -> dict:
         else:
             sources[name] = {"status": "unavailable", "last_pull": None}
 
+    # IODA and Cloudflare don't have dedicated files — use risk_scores.json mtime
+    # (OSINT sources are pulled together during risk scoring)
+    osint_mtime = generated_at or None
+    for name in ["ioda", "cloudflare"]:
+        if osint_mtime:
+            sources[name] = {"status": "ok", "last_pull": osint_mtime}
+        else:
+            sources[name] = {"status": "unavailable", "last_pull": None}
+
     return {
         "generated_at": generated_at,
         "alerts": alerts,
