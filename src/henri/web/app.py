@@ -64,6 +64,30 @@ def create_app() -> FastAPI:
     async def health() -> dict:
         return {"status": "ok", "service": "henri"}
 
+    # Report file endpoints (must be before SPA catch-all)
+    _reports_dir = Path(os.getenv("DATA_DIR", "./data")) / "reports"
+
+    @app.get("/api/v1/reports")
+    async def list_reports() -> dict:
+        """List available HTML reports."""
+        if not _reports_dir.is_dir():
+            return {"reports": []}
+        files = sorted(
+            [f.name for f in _reports_dir.glob("*.html")],
+            reverse=True,
+        )
+        return {"reports": files}
+
+    @app.get("/api/v1/reports/{filename}")
+    async def download_report(filename: str) -> FileResponse:
+        """Serve a report HTML file for download or viewing."""
+        if ".." in filename or "/" in filename or not filename.endswith(".html"):
+            return JSONResponse({"error": "Invalid filename"}, status_code=400)
+        path = _reports_dir / filename
+        if not path.exists() or not path.resolve().is_relative_to(_reports_dir.resolve()):
+            return JSONResponse({"error": "Not found"}, status_code=404)
+        return FileResponse(str(path), media_type="text/html", filename=filename)
+
     # Serve React build if it exists
     if _FRONTEND_DIST.is_dir():
         assets_dir = _FRONTEND_DIST / "assets"
