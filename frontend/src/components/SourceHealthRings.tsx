@@ -1,13 +1,14 @@
 interface SourceInfo {
   status: string;
   last_pull: string | null;
+  metric?: string | null;
 }
 
-const SOURCE_META: Record<string, { label: string; color: string; metric?: string }> = {
-  servicenow: { label: 'ServiceNow', color: '#A8C97A', metric: '50,000 incidents' },
-  grafana: { label: 'Grafana', color: '#A8C97A', metric: '316 sites' },
-  netbox: { label: 'NetBox', color: '#A8C97A', metric: '46 sites' },
-  acled: { label: 'ACLED', color: '#C792EA', metric: '24,891 events' },
+const SOURCE_META: Record<string, { label: string; color: string }> = {
+  servicenow: { label: 'ServiceNow', color: '#A8C97A' },
+  grafana: { label: 'Grafana', color: '#A8C97A' },
+  netbox: { label: 'NetBox', color: '#A8C97A' },
+  acled: { label: 'ACLED', color: '#C792EA' },
   ioda: { label: 'IODA', color: '#82AAFF' },
   cloudflare: { label: 'Cloudflare', color: '#89DDFF' },
 };
@@ -59,7 +60,7 @@ export default function SourceHealthRings({
                 <span className="text-sm text-text-body">{meta.label}</span>
               </div>
               <div className="flex items-center gap-3">
-                {meta.metric && <span className="text-data text-text-primary">{meta.metric}</span>}
+                {info.metric && <span className="text-data text-text-primary">{info.metric}</span>}
                 <span className="text-small">{formatFreshness(info.last_pull)}</span>
               </div>
             </div>

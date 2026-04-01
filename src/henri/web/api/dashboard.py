@@ -101,28 +101,75 @@ async def dashboard() -> dict:
         for d in deltas
     ]
 
-    # Pipeline status — check file mtimes
+    # Pipeline status — check file mtimes and compute record counts
     sources: dict[str, dict] = {}
-    for name, path in [
-        ("servicenow", data_dir / "processed" / "incidents_all.parquet"),
-        ("grafana", data_dir / "reference" / "delegations.json"),
-        ("netbox", data_dir / "reference" / "circuits.json"),
-        ("acled", data_dir / "processed" / "acled_events.parquet"),
-    ]:
+
+    def _source(name: str, path: Path, metric: str | None = None) -> None:
         if path.exists():
             mtime = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat()
-            sources[name] = {"status": "ok", "last_pull": mtime}
+            sources[name] = {"status": "ok", "last_pull": mtime, "metric": metric}
         else:
-            sources[name] = {"status": "unavailable", "last_pull": None}
+            sources[name] = {"status": "unavailable", "last_pull": None, "metric": None}
 
-    # IODA and Cloudflare don't have dedicated files — use risk_scores.json mtime
-    # (OSINT sources are pulled together during risk scoring)
+    # ServiceNow — count rows in parquet
+    snow_path = data_dir / "processed" / "incidents_all.parquet"
+    snow_metric = None
+    if snow_path.exists():
+        try:
+            import pyarrow.parquet as pq
+            snow_metric = f"{pq.read_metadata(snow_path).num_rows:,} incidents"
+        except Exception:
+            pass
+    _source("servicenow", snow_path, snow_metric)
+
+    # Grafana — count delegations in registry
+    grafana_path = data_dir / "reference" / "delegations.json"
+    grafana_metric = None
+    if grafana_path.exists():
+        try:
+            reg = _load_json(grafana_path) or {}
+            grafana_sites = sum(1 for v in reg.values() if v.get("source", "").startswith("grafana"))
+            grafana_metric = f"{grafana_sites} sites"
+        except Exception:
+            pass
+    _source("grafana", grafana_path, grafana_metric)
+
+    # NetBox — count circuits
+    netbox_path = data_dir / "reference" / "circuits.json"
+    netbox_metric = None
+    if netbox_path.exists():
+        try:
+            circuits = _load_json(netbox_path) or []
+            netbox_metric = f"{len(circuits)} circuits"
+        except Exception:
+            pass
+    _source("netbox", netbox_path, netbox_metric)
+
+    # ACLED — count events in parquet
+    acled_path = data_dir / "processed" / "acled_events.parquet"
+    acled_metric = None
+    if acled_path.exists():
+        try:
+            import pyarrow.parquet as pq
+            acled_metric = f"{pq.read_metadata(acled_path).num_rows:,} events"
+        except Exception:
+            pass
+    _source("acled", acled_path, acled_metric)
+
+    # IODA and Cloudflare — count from risk cards
     osint_mtime = generated_at or None
-    for name in ["ioda", "cloudflare"]:
-        if osint_mtime:
-            sources[name] = {"status": "ok", "last_pull": osint_mtime}
-        else:
-            sources[name] = {"status": "unavailable", "last_pull": None}
+    ioda_countries = sum(1 for c in risk_cards if c.get("ioda_score", 0) > 0)
+    cf_countries = sum(1 for c in risk_cards if c.get("cf_outages", 0) > 0)
+    sources["ioda"] = {
+        "status": "ok" if osint_mtime else "unavailable",
+        "last_pull": osint_mtime,
+        "metric": f"{ioda_countries} countries" if ioda_countries else None,
+    }
+    sources["cloudflare"] = {
+        "status": "ok" if osint_mtime else "unavailable",
+        "last_pull": osint_mtime,
+        "metric": f"{cf_countries} countries with outages" if cf_countries else None,
+    }
 
     return {
         "generated_at": generated_at,
