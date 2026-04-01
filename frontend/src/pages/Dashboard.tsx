@@ -81,12 +81,15 @@ export default function Dashboard() {
       <div style={{ gridColumn: 'span 3' }}>
         <h1 style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
           <span className="text-heading">HENRI</span>
-          <span style={{ fontSize: '20px', color: 'var(--color-text-muted)' }}>— Network intelligence</span>
+          <span style={{ fontSize: '20px', color: 'var(--color-text-muted)' }}>— Humanitarian Early-warning Network Intelligence</span>
         </h1>
         <p className="text-data" style={{ color: 'var(--color-text-muted)', marginTop: '4px' }}>
-          Last update: {dashboard.generated_at ? new Date(dashboard.generated_at).toLocaleString('en-GB', {
-            day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short'
-          }) : '—'}
+          Last update: {dashboard.generated_at ? (() => {
+            const d = new Date(dashboard.generated_at);
+            const utc = d.toLocaleString('en-GB', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' });
+            const local = d.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+            return `${utc} (${local})`;
+          })() : '—'}
         </p>
       </div>
 
