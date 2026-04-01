@@ -84,7 +84,7 @@ export default function Dashboard() {
           <span style={{ fontSize: '20px', color: 'var(--color-text-muted)' }}>— Network intelligence</span>
         </h1>
         <p className="text-data" style={{ color: 'var(--color-text-muted)', marginTop: '4px' }}>
-          {dashboard.generated_at ? new Date(dashboard.generated_at).toLocaleString('en-GB', {
+          Last update: {dashboard.generated_at ? new Date(dashboard.generated_at).toLocaleString('en-GB', {
             day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short'
           }) : '—'}
         </p>
@@ -172,7 +172,7 @@ export default function Dashboard() {
         <DotHistogram />
       </div>
 
-      {/* 6. Bottom row: even three-way split */}
+      {/* 6. Bottom row: two-way split */}
       <div
         style={{ gridColumn: 'span 1' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
@@ -198,21 +198,7 @@ export default function Dashboard() {
         style={{ gridColumn: 'span 1' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
-        <SourceHealthRings sources={pipeline_status.sources} />
-      </div>
-
-      <div
-        style={{ gridColumn: 'span 1' }}
-        className="bg-bg-surface border border-border rounded-lg p-5"
-      >
-        <h3 className="text-label mb-3">Pipeline status</h3>
-        <p className="text-small text-text-muted mb-3">
-          Last run: {pipeline_status.last_run
-            ? new Date(pipeline_status.last_run).toLocaleString('en-GB', {
-                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
-              }) + ' UTC'
-            : 'Never'}
-        </p>
+        <SourceHealthRings sources={pipeline_status.sources} lastRun={pipeline_status.last_run} />
       </div>
     </div>
   );

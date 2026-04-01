@@ -29,12 +29,23 @@ function formatFreshness(lastPull: string | null): string {
 
 export default function SourceHealthRings({
   sources,
+  lastRun,
 }: {
   sources: Record<string, SourceInfo>;
+  lastRun?: string | null;
 }) {
+  const lastRunFmt = lastRun
+    ? new Date(lastRun).toLocaleString('en-GB', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', timeZone: 'UTC',
+      })
+    : null;
+
   return (
     <div>
-      <p className="text-label mb-3">Source health</p>
+      <p className="text-label mb-3">
+        Source health{lastRunFmt ? ` — last run ${lastRunFmt}` : ''}
+      </p>
       <div className="space-y-0.5">
         {Object.entries(sources).map(([key, info]) => {
           const meta = SOURCE_META[key] ?? { label: key, color: '#5C5F66' };
