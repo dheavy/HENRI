@@ -1,0 +1,98 @@
+import { useDashboard, useCountries } from '../hooks/useApi';
+import { PrecursorBanner, DeltaBanner } from '../components/AlertBanner';
+import RiskTable from '../components/RiskTable';
+import StatusBadge from '../components/StatusBadge';
+import { Shield, AlertTriangle, Zap, Globe } from 'lucide-react';
+
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  color,
+}: {
+  label: string;
+  value: string | number;
+  icon: React.ElementType;
+  color: string;
+}) {
+  return (
+    <div className="bg-surface rounded-lg border border-border p-4">
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg ${color}`}>
+          <Icon size={18} />
+        </div>
+        <div>
+          <p className="text-xs text-text-secondary uppercase tracking-wider">{label}</p>
+          <p className="text-2xl font-bold font-mono">{value}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Dashboard() {
+  const { data: dashboard, isLoading: dashLoading } = useDashboard();
+  const { data: countriesData } = useCountries('sort=risk_score&order=desc');
+
+  if (dashLoading) {
+    return <div className="text-text-secondary">Loading dashboard...</div>;
+  }
+
+  if (!dashboard) {
+    return <div className="text-red-400">Failed to load dashboard data</div>;
+  }
+
+  const { alerts, delta_alerts, risk_summary, pipeline_status } = dashboard;
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Alert banners */}
+      {alerts.length > 0 && (
+        <div>
+          {alerts.map((a, i) => (
+            <PrecursorBanner key={i} alert={a} />
+          ))}
+        </div>
+      )}
+      {delta_alerts.length > 0 && (
+        <div>
+          {delta_alerts.map((d, i) => (
+            <DeltaBanner key={i} alert={d} />
+          ))}
+        </div>
+      )}
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-4 gap-4">
+        <StatCard label="High Risk" value={risk_summary.high} icon={AlertTriangle} color="bg-red-950 text-red-400" />
+        <StatCard label="Medium Risk" value={risk_summary.medium} icon={Shield} color="bg-orange-950 text-orange-400" />
+        <StatCard label="Low Risk" value={risk_summary.low} icon={Globe} color="bg-yellow-950 text-yellow-400" />
+        <StatCard label="Minimal" value={risk_summary.minimal} icon={Zap} color="bg-green-950 text-green-400" />
+      </div>
+
+      {/* Pipeline status */}
+      <div className="bg-surface rounded-lg border border-border p-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium">Pipeline Status</h3>
+          <span className="text-xs text-text-secondary font-mono">
+            Last run: {pipeline_status.last_run ? new Date(pipeline_status.last_run).toLocaleString() : 'Never'}
+          </span>
+        </div>
+        <div className="flex gap-6 mt-3">
+          {Object.entries(pipeline_status.sources).map(([name, info]) => (
+            <div key={name} className="flex items-center gap-2">
+              <StatusBadge status={info.status} />
+              <span className="text-xs text-text-secondary capitalize">{name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Risk table */}
+      <div className="bg-surface rounded-lg border border-border p-4">
+        <h3 className="text-sm font-medium mb-4">Threat Landscape — {countriesData?.countries.length ?? 0} Countries</h3>
+        {countriesData?.countries && <RiskTable countries={countriesData.countries} />}
+      </div>
+    </div>
+  );
+}

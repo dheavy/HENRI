@@ -49,7 +49,7 @@ class TestDelegationsAPI:
         assert r.status_code == 404
 
     def test_detail_invalid_code(self):
-        r = client.get("/api/v1/delegations/../../etc")
+        r = client.get("/api/v1/delegations/DROP_TABLE")
         assert r.status_code == 404
 
 
