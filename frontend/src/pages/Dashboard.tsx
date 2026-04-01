@@ -177,7 +177,7 @@ export default function Dashboard() {
         style={{ gridColumn: 'span 1' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
-        <h3 className="text-label mb-3">Top delegations</h3>
+        <h3 className="text-label mb-3">Most alerting delegations</h3>
         {topDelegations.length === 0 ? (
           <p className="text-small">No delegation data available</p>
         ) : (
