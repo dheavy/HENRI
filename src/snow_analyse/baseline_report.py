@@ -504,9 +504,10 @@ def generate_report(
     # Precursor analysis
     precursor_ctx = None
     try:
-        from snow_analyse.precursor import analyse_precursors, compute_precursor_stats
+        from snow_analyse.precursor import analyse_precursors, compute_precursor_stats, save_precursor_analysis
         if surges:
             precursor_data = analyse_precursors(surges, registry, data_dir)
+            save_precursor_analysis(precursor_data, data_dir)
             precursor_stats = compute_precursor_stats(precursor_data)
             # Sort: precursor-positive first (by lead time asc), then no-precursor by score desc
             has_precursor = [p for p in precursor_data
