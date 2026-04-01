@@ -196,6 +196,11 @@ def _bandwidth_top(data_dir: Path, registry: dict) -> list[dict]:
         df = pd.read_parquet(bw_path)
         if df.empty:
             return []
+        # Filter out HQ sites
+        hq_sites = {k for k, v in registry.items() if v.get("region") == "HQ"}
+        df = df[~df["site"].isin(hq_sites)]
+        if df.empty:
+            return []
         # Get peak per site (both directions combined)
         site_peak = df.groupby("site").agg(
             peak_bps=("peak_bps", "max"),
