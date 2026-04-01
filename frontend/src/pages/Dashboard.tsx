@@ -2,6 +2,7 @@ import { useDashboard, useCountries } from '../hooks/useApi';
 import { PrecursorBanner, DeltaBanner } from '../components/AlertBanner';
 import RiskTable from '../components/RiskTable';
 import StatusBadge from '../components/StatusBadge';
+import EmptyState from '../components/EmptyState';
 import { Shield, AlertTriangle, Zap, Globe } from 'lucide-react';
 
 function StatCard({
@@ -38,8 +39,11 @@ export default function Dashboard() {
     return <div className="text-text-muted">Loading dashboard...</div>;
   }
 
-  if (!dashboard) {
-    return <div className="text-error">Failed to load dashboard data</div>;
+  if (!dashboard || (!dashboard.risk_cards?.length && !dashLoading)) {
+    return <EmptyState
+      title="No dashboard data"
+      message="The pipeline has not been run yet. Generate reports to see the threat landscape, alerts, and delegation status."
+    />;
   }
 
   const { alerts, delta_alerts, risk_summary, pipeline_status } = dashboard;

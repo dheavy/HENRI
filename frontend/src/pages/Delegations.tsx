@@ -3,6 +3,7 @@ import { useDelegations } from '../hooks/useApi';
 import { Search, Radio } from 'lucide-react';
 import clsx from 'clsx';
 import type { Delegation } from '../api/client';
+import EmptyState from '../components/EmptyState';
 
 const REGIONS = ['All', 'AFRICA East', 'AFRICA West', 'AMERICAS', 'ASIA', 'EURASIA', 'NAME', 'HQ'];
 
@@ -81,6 +82,13 @@ export default function Delegations() {
   if (region !== 'All') params.set('region', region);
 
   const { data, isLoading } = useDelegations(params.toString());
+
+  if (!isLoading && !data?.total) {
+    return <EmptyState
+      title="No delegation data"
+      message="The delegation registry requires a pipeline run. Generate reports to populate the site inventory."
+    />;
+  }
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">

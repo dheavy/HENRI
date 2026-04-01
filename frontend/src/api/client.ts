@@ -130,3 +130,22 @@ export const fetchSurges = (params?: string) =>
 
 export const fetchDelegations = (params?: string) =>
   fetchJson<DelegationsResponse>(`${BASE}/delegations${params ? '?' + params : ''}`);
+
+// ── Pipeline ─────────────────────────────────────────────────────────
+
+export interface PipelineStatus {
+  running: boolean;
+  status: 'idle' | 'running' | 'done' | 'error';
+  started_at: number | null;
+  finished_at: number | null;
+  error: string | null;
+}
+
+export const fetchPipelineStatus = () =>
+  fetchJson<PipelineStatus>(`${BASE}/pipeline/status`);
+
+export async function triggerRegenerate(): Promise<{ accepted: boolean; reason?: string }> {
+  const res = await fetch(`${BASE}/pipeline/regenerate`, { method: 'POST' });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}

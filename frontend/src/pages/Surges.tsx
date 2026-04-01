@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSurges } from '../hooks/useApi';
+import EmptyState from '../components/EmptyState';
 import clsx from 'clsx';
 import { Zap, Filter } from 'lucide-react';
 import type { Surge } from '../api/client';
@@ -110,6 +111,13 @@ export default function Surges() {
   params.set('limit', '50');
 
   const { data, isLoading } = useSurges(params.toString());
+
+  if (!isLoading && (!data?.stats?.total_surges)) {
+    return <EmptyState
+      title="No surge data"
+      message="Precursor analysis requires a pipeline run. Generate reports to analyse surge events and detect external warning signals."
+    />;
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">

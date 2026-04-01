@@ -7,9 +7,11 @@ from .countries import router as countries_router
 from .surges import router as surges_router
 from .delegations import router as delegations_router
 from .alerts import router as alerts_router
+from .pipeline import router as pipeline_router
 
 api_router = APIRouter()
 
+api_router.include_router(pipeline_router, prefix="/pipeline", tags=["pipeline"])
 api_router.include_router(dashboard_router, tags=["dashboard"])
 api_router.include_router(countries_router, prefix="/countries", tags=["countries"])
 api_router.include_router(surges_router, prefix="/surges", tags=["surges"])
