@@ -1,41 +1,44 @@
 @import "tailwindcss";
 
 @theme {
-  /* Surfaces */
-  --color-bg-deepest: #090B10;
-  --color-bg-base: #0F111A;
-  --color-bg-surface: #181A1F;
-  --color-bg-elevated: #1A1C25;
-  --color-bg-highlight: #1F2233;
-  --color-bg-button: #191A21;
-  --color-border: #1F2233;
+  /* Surfaces — dark Graphite family */
+  --color-bg-deepest: #1A1C20;
+  --color-bg-base: #22242A;
+  --color-bg-surface: #2A2C32;
+  --color-bg-elevated: #32353B;
+  --color-bg-highlight: #3A3D44;
+  --color-bg-button: #2E3036;
+  --color-border: #3A3D44;
 
-  /* Text */
-  --color-text-primary: #EEFFFF;
-  --color-text-body: #B0B4C4;
-  --color-text-muted: #4B526D;
-  --color-text-disabled: #464B5D;
-  --color-text-comment: #717CB4;
+  /* Text — warm neutrals from Snow/Pebble */
+  --color-text-primary: #F5F7F7;
+  --color-text-body: #DEDEDE;
+  --color-text-muted: #8A8D94;
+  --color-text-disabled: #5C5F66;
+  --color-text-comment: #9A9DA6;
 
-  /* Accent & interactive */
-  --color-accent: #84FFFF;
-  --color-link: #80CBC4;
+  /* Accent — Pomegranate + Brick */
+  --color-accent: #D83C3B;
+  --color-accent-deep: #921F1C;
+  --color-link: #E5A89A;
+
+  /* OSINT source colors */
   --color-blue: #82AAFF;
   --color-cyan: #89DDFF;
   --color-purple: #C792EA;
 
-  /* Status & risk */
-  --color-green: #C3E88D;
-  --color-yellow: #FFCB6B;
-  --color-orange: #F78C6C;
-  --color-red: #F07178;
-  --color-error: #FF5370;
+  /* Status & risk — warm-shifted */
+  --color-green: #A8C97A;
+  --color-yellow: #E5C46B;
+  --color-orange: #D88A6C;
+  --color-red: #D83C3B;
+  --color-error: #D83C3B;
 
   /* Risk tier row backgrounds (semi-transparent) */
-  --color-risk-high: #F0717833;
-  --color-risk-medium: #F78C6C33;
-  --color-risk-low: #FFCB6B22;
-  --color-risk-minimal: #C3E88D15;
+  --color-risk-high: #D83C3B30;
+  --color-risk-medium: #D88A6C28;
+  --color-risk-low: #E5C46B1C;
+  --color-risk-minimal: #A8C97A14;
 }
 
 body {
@@ -49,6 +52,6 @@ body {
 }
 
 ::selection {
-  background-color: #717CB480;
+  background-color: #921F1C80;
   color: #FFFFFF;
 }
