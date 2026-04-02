@@ -93,7 +93,7 @@ export default function Country() {
         <div className="flex gap-2">
           {delegations.map((d) => (
             <Link key={d} to={`/delegations`}
-              className="font-mono text-xs bg-bg-surface border border-border px-2 py-1 rounded hover:border-accent transition-colors">
+              className="font-mono text-xs bg-bg-surface border border-border px-2 py-1 hover:border-accent transition-colors">
               {d}
             </Link>
           ))}
@@ -108,7 +108,7 @@ export default function Country() {
           { label: 'IODA Score', value: country.ioda_score as number },
           { label: 'SiteDown Events', value: country.snow_sitedown as number },
         ].map(({ label, value }) => (
-          <div key={label} className="bg-bg-surface rounded-lg border border-border p-4">
+          <div key={label} className="bg-bg-surface border border-border p-4">
             <p className="text-label">{label}</p>
             <AnimatedNumber value={value ?? 0} className="text-data-display mt-1 block" />
           </div>
@@ -117,7 +117,7 @@ export default function Country() {
 
       {/* ACLED timeline chart */}
       {acledTimeline.length > 0 && (
-        <div className="bg-bg-surface rounded-lg border border-border p-4">
+        <div className="bg-bg-surface border border-border p-4">
           <h3 className="text-sm font-medium mb-4">ACLED Conflict Events — Daily (last 90 days)</h3>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={acledTimeline}>
@@ -135,7 +135,7 @@ export default function Country() {
 
       {/* ServiceNow incidents */}
       {snowIncidents.length > 0 && (
-        <div className="bg-bg-surface rounded-lg border border-border p-4">
+        <div className="bg-bg-surface border border-border p-4">
           <h3 className="text-sm font-medium mb-4">ServiceNow Incidents by Delegation</h3>
           <table className="w-full text-sm">
             <thead>
@@ -162,7 +162,7 @@ export default function Country() {
 
       {/* Surge history */}
       {surges.length > 0 && (
-        <div className="bg-bg-surface rounded-lg border border-border p-4">
+        <div className="bg-bg-surface border border-border p-4">
           <h3 className="text-sm font-medium">Surge Events Affecting This Country</h3>
           <p className="text-xs text-text-muted mt-1 mb-4">
             Source badges (ACLED, IODA, CF) indicate which external signals were detected before the outage.
@@ -171,15 +171,15 @@ export default function Country() {
           </p>
           <div className="space-y-2">
             {surges.map((s) => (
-              <div key={s.surge_id} className="flex items-center justify-between p-3 rounded-lg bg-bg-base border border-border/30">
+              <div key={s.surge_id} className="flex items-center justify-between p-3 bg-bg-base border border-border/30">
                 <div>
                   <span className="text-sm font-mono">{s.date}</span>
                   <span className="text-xs text-text-muted ml-3">{s.region}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  {s.acled_detected && <span className="text-xs bg-[#F0717822] text-red px-2 py-0.5 rounded">ACLED</span>}
-                  {s.ioda_detected && <span className="text-xs bg-[#82AAFF22] text-blue px-2 py-0.5 rounded">IODA</span>}
-                  {s.cf_detected && <span className="text-xs bg-[#F78C6C22] text-orange px-2 py-0.5 rounded">CF</span>}
+                  {s.acled_detected && <span className="text-xs bg-[#F0717822] text-red px-2 py-0.5 ">ACLED</span>}
+                  {s.ioda_detected && <span className="text-xs bg-[#82AAFF22] text-blue px-2 py-0.5 ">IODA</span>}
+                  {s.cf_detected && <span className="text-xs bg-[#F78C6C22] text-orange px-2 py-0.5 ">CF</span>}
                   {s.lead_time_hours != null && (
                     <span className={clsx('text-xs font-mono px-2 py-0.5 rounded',
                       s.lead_time_hours > 48 ? 'bg-[#C3E88D22] text-green' :

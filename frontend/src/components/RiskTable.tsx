@@ -66,7 +66,7 @@ export default function RiskTable({ countries }: { countries: Country[] }) {
               <td className="py-2.5 pr-5">
                 <div className="flex gap-1 flex-wrap">
                   {c.delegations.slice(0, 4).map((d) => (
-                    <span key={d} className="font-mono text-xs bg-bg-highlight text-text-body px-1.5 py-0.5 rounded">
+                    <span key={d} className="font-mono text-xs bg-bg-highlight text-text-body px-1.5 py-0.5 ">
                       {d}
                     </span>
                   ))}

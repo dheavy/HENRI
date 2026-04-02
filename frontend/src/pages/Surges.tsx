@@ -24,7 +24,7 @@ function LeadTimeBadge({ hours }: { hours: number | null }) {
   if (hours == null) return <span className="text-text-muted">—</span>;
   const rounded = Math.round(hours);
   return (
-    <span className={clsx('font-mono text-xs px-2 py-0.5 rounded',
+    <span className={clsx('font-mono text-xs px-2 py-0.5',
       hours > 48 ? 'bg-[#C3E88D22] text-green' :
       hours > 12 ? 'bg-[#FFCB6B22] text-yellow' :
       'bg-[#F0717822] text-red'
@@ -50,7 +50,7 @@ function SurgeRow({ surge }: { surge: Surge }) {
         <td className="py-2.5">
           <div className="flex gap-1 flex-wrap">
             {surge.delegations.slice(0, 4).map((d) => (
-              <span key={d} className="font-mono text-xs bg-bg-surface px-1 py-0.5 rounded border border-border">{d}</span>
+              <span key={d} className="font-mono text-xs bg-bg-surface px-1 py-0.5 border border-border">{d}</span>
             ))}
             {surge.delegations.length > 4 && <span className="text-xs text-text-muted">+{surge.delegations.length - 4}</span>}
           </div>
@@ -139,20 +139,20 @@ export default function Surges() {
       {/* Stats */}
       {data?.stats && (
         <div className="grid grid-cols-4 gap-4">
-          <div className="bg-bg-surface rounded-lg border border-border p-4">
+          <div className="bg-bg-surface border border-border p-4">
             <p className="text-label">Total Surges</p>
             <AnimatedNumber value={data.stats.total_surges} className="text-data-display mt-1 block" />
           </div>
-          <div className="bg-bg-surface rounded-lg border border-border p-4">
+          <div className="bg-bg-surface border border-border p-4">
             <p className="text-label">With Precursors</p>
             <AnimatedNumber value={data.stats.with_external_precursor} className="text-data-display mt-1 block text-accent" />
             <AnimatedNumber value={data.stats.pct_with_precursor} decimals={1} suffix="%" className="text-data mt-1 block text-text-muted" />
           </div>
-          <div className="bg-bg-surface rounded-lg border border-border p-4">
+          <div className="bg-bg-surface border border-border p-4">
             <p className="text-label">Avg Lead Time</p>
             <AnimatedNumber value={data.stats.avg_lead_time_hours} decimals={1} suffix="h" className="text-data-display mt-1 block" />
           </div>
-          <div className="bg-bg-surface rounded-lg border border-border p-4">
+          <div className="bg-bg-surface border border-border p-4">
             <p className="text-xs text-text-muted uppercase">Precursor Legend</p>
             <div className="flex gap-3 mt-2 text-xs">
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> Detected</span>
@@ -168,7 +168,7 @@ export default function Surges() {
         <div className="flex gap-1">
           {REGIONS.map((r) => (
             <button key={r} onClick={() => setRegion(r)}
-              className={clsx('text-xs px-3 py-1.5 rounded transition-colors',
+              className={clsx('text-xs px-3 py-1.5 transition-colors',
                 region === r ? 'bg-accent text-white cursor-pointer' : 'bg-bg-surface text-text-muted hover:text-text-primary border border-border cursor-pointer'
               )}>
               {r}
@@ -183,7 +183,7 @@ export default function Surges() {
       </div>
 
       {/* Table */}
-      <div className="bg-bg-surface rounded-lg border border-border p-4">
+      <div className="bg-bg-surface border border-border p-4">
         {isLoading ? (
           <p className="text-text-muted text-sm">Loading surges...</p>
         ) : (

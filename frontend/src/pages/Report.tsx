@@ -54,7 +54,7 @@ export default function Report() {
         </h2>
         {downloadUrl && (
           <a href={downloadUrl}
-            className="flex items-center gap-1 text-xs bg-accent text-white px-3 py-1.5 rounded hover:opacity-90 transition-opacity">
+            className="flex items-center gap-1 text-xs bg-accent text-white px-3 py-1.5 hover:opacity-90 transition-opacity">
             <Download size={14} /> Download HTML
           </a>
         )}
@@ -65,7 +65,7 @@ export default function Report() {
         <div className="flex gap-2 flex-wrap">
           {entries.map((e, i) => (
             <button key={e.filename} onClick={() => setSelectedIdx(i)}
-              className={clsx('text-xs px-3 py-1.5 rounded transition-colors',
+              className={clsx('text-xs px-3 py-1.5 transition-colors',
                 selectedIdx === i
                   ? 'bg-accent text-white'
                   : 'bg-bg-surface text-text-muted hover:text-text-primary border border-border'
@@ -89,11 +89,11 @@ export default function Report() {
           key={selected?.filename}
           src={viewUrl}
           title={selected?.label ?? 'Report'}
-          className="w-full rounded-lg border border-border"
+          className="w-full border border-border"
           style={{ height: 'calc(100vh - 260px)' }}
         />
       ) : (
-        <div className="bg-bg-surface rounded-lg border border-border p-8 text-center text-text-muted">
+        <div className="bg-bg-surface border border-border p-8 text-center text-text-muted">
           No reports generated yet. Run the pipeline first.
         </div>
       )}

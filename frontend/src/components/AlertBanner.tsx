@@ -3,7 +3,7 @@ import type { Alert, DeltaAlert } from '../api/client';
 
 export function PrecursorBanner({ alert }: { alert: Alert }) {
   return (
-    <div className="bg-[#D88A6C18] border-l-[3px] border-orange rounded-r-lg p-4 mb-3">
+    <div className="bg-[#D88A6C18] border-l-[3px] border-orange p-4 mb-3">
       <div className="flex items-start gap-3">
         <AlertTriangle className="text-orange shrink-0 mt-0.5" size={18} />
         <div>
@@ -11,7 +11,7 @@ export function PrecursorBanner({ alert }: { alert: Alert }) {
           <p className="text-sm text-text-primary mt-1">{alert.message}</p>
           <div className="flex gap-2 mt-2">
             {alert.delegations_at_risk.map((d) => (
-              <span key={d} className="text-data bg-bg-highlight px-2 py-0.5 rounded">
+              <span key={d} className="text-data bg-bg-highlight px-2 py-0.5 ">
                 {d}
               </span>
             ))}
@@ -28,7 +28,7 @@ export function DeltaBanner({ alert }: { alert: DeltaAlert }) {
     <div
       className={`${
         isEscalation ? 'bg-[#D83C3B18] border-red' : 'bg-[#A8C97A18] border-green'
-      } border-l-[3px] rounded-r-lg p-4 mb-3`}
+      } border-l-[3px] p-4 mb-3`}
     >
       <div className="flex items-center gap-3">
         {isEscalation ? (

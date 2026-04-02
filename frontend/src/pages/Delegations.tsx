@@ -12,13 +12,13 @@ function DelegationCard({ d }: { d: Delegation }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="bg-bg-surface rounded-lg border border-border p-4 hover:border-border/80 transition-colors cursor-pointer"
+    <div className="bg-bg-surface border border-border p-4 hover:border-border/80 transition-colors cursor-pointer"
       onClick={() => setExpanded(!expanded)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="font-mono font-bold text-sm">{d.site_code}</span>
           <span className="text-xs text-text-muted">{d.country}</span>
-          <span className="text-xs bg-bg-elevated px-2 py-0.5 rounded border border-border">{d.region || 'Unknown'}</span>
+          <span className="text-xs bg-bg-elevated px-2 py-0.5 border border-border">{d.region || 'Unknown'}</span>
         </div>
         <div className="flex items-center gap-4 text-xs">
           <span className="font-mono"><AnimatedNumber value={d.incident_count_30d} duration={1} className="inline" /> <span className="text-text-muted">incidents</span></span>
@@ -39,7 +39,7 @@ function DelegationCard({ d }: { d: Delegation }) {
               <p className="text-xs text-text-muted mb-1">Sub-sites:</p>
               <div className="flex gap-1 flex-wrap">
                 {d.sub_sites.map((s) => (
-                  <span key={s} className="font-mono text-xs bg-bg-base px-1.5 py-0.5 rounded border border-border/30">{s}</span>
+                  <span key={s} className="font-mono text-xs bg-bg-base px-1.5 py-0.5 border border-border/30">{s}</span>
                 ))}
               </div>
             </div>
@@ -110,14 +110,14 @@ export default function Delegations() {
             placeholder="Search by site code, country..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-bg-surface border border-border rounded-lg pl-9 pr-3 py-2 text-sm
+            className="w-full bg-bg-surface border border-border pl-9 pr-3 py-2 text-sm
               placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors"
           />
         </div>
         <div className="flex gap-1">
           {REGIONS.map((r) => (
             <button key={r} onClick={() => setRegion(r)}
-              className={clsx('text-xs px-3 py-1.5 rounded transition-colors',
+              className={clsx('text-xs px-3 py-1.5 transition-colors',
                 region === r ? 'bg-accent text-white' : 'bg-bg-surface text-text-muted hover:text-text-primary border border-border'
               )}>
               {r}

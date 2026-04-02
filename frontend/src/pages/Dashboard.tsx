@@ -157,7 +157,7 @@ function StatCard({
 }) {
   return (
     <div
-      className={`bg-bg-surface border border-border rounded-lg p-5 ${
+      className={`bg-bg-surface border border-border p-5 ${
         accent ? 'border-l-2 border-l-accent' : ''
       }`}
     >
@@ -243,7 +243,7 @@ export default function Dashboard() {
         </h1>
         <p
           className="text-data"
-          style={{ color: 'var(--color-text-muted)', marginTop: '4px' }}
+          style={{ color: 'var(--color-text-muted)', marginTop: '14px' }}
         >
           Last update:{' '}
           {dashboard.generated_at
@@ -287,7 +287,7 @@ export default function Dashboard() {
       {/* 3. LLM report placeholder (was map): span 1 */}
       <div
         style={{ gridColumn: 'span 1', minHeight: '200px' }}
-        className="bg-bg-surface border border-border rounded-lg p-5 flex flex-col"
+        className="bg-bg-surface border border-border p-5 flex flex-col"
       >
         <p className="text-label">Intelligence summary</p>
         <p className="text-small text-text-muted mt-1">
@@ -303,7 +303,7 @@ export default function Dashboard() {
       {/* Risk table: span 2 */}
       <div
         style={{ gridColumn: 'span 2', maxHeight: '500px', overflowY: 'auto' }}
-        className="bg-bg-surface border border-border rounded-lg overflow-hidden"
+        className="bg-bg-surface border border-border overflow-hidden"
       >
         <div className="px-5 pt-5 pb-3">
           <h3 className="text-label">
@@ -329,9 +329,10 @@ export default function Dashboard() {
           <AnimatedNumber
             value={surgesWithPrecursors}
             className="text-data-display"
+            immediate
           />
           <span className="text-text-muted text-data-display"> / </span>
-          <AnimatedNumber value={totalSurges} className="text-data-display" />
+          <AnimatedNumber value={totalSurges} className="text-data-display" immediate />
         </StatCard>
       </div>
       <div style={{ gridColumn: 'span 1' }}>
@@ -379,7 +380,7 @@ export default function Dashboard() {
       {/* 5. Surge activity: span 2 */}
       <div
         style={{ gridColumn: 'span 2' }}
-        className="bg-bg-surface border border-border rounded-lg p-5"
+        className="bg-bg-surface border border-border p-5"
       >
         <SurgePulse surges={surgesData?.surges ?? []} />
       </div>
@@ -387,7 +388,7 @@ export default function Dashboard() {
       {/* Incident volume: span 1 */}
       <div
         style={{ gridColumn: 'span 1' }}
-        className="bg-bg-surface border border-border rounded-lg p-5"
+        className="bg-bg-surface border border-border p-5"
       >
         <p className="text-label">Incident volume by region</p>
         <p className="text-small text-text-muted mt-1 mb-3">
@@ -400,7 +401,7 @@ export default function Dashboard() {
       {/* Bottom: delegations | bandwidth | source health + data coherence */}
       <div
         style={{ gridColumn: 'span 1', alignSelf: 'start' }}
-        className="bg-bg-surface border border-border rounded-lg p-5"
+        className="bg-bg-surface border border-border p-5"
       >
         <h3 className="text-label">Most alerting delegations</h3>
         <p className="text-small text-text-muted mt-1 mb-3">
@@ -433,7 +434,7 @@ export default function Dashboard() {
       {/* Column 2: Source health */}
       <div
         style={{ gridColumn: 'span 1', alignSelf: 'start' }}
-        className="bg-bg-surface border border-border rounded-lg p-5"
+        className="bg-bg-surface border border-border p-5"
       >
         <SourceHealth
           sources={pipeline_status.sources}
@@ -447,7 +448,7 @@ export default function Dashboard() {
         className="flex flex-col gap-3"
       >
         {/* Bandwidth scorecard — UC-1 */}
-        <div className="bg-bg-surface border border-border rounded-lg p-5">
+        <div className="bg-bg-surface border border-border p-5">
           <h3 className="text-label">Bandwidth scorecard</h3>
           <p className="text-small text-text-muted mt-1 mb-3">
             Actual throughput vs contracted capacity — identifies over-paying
@@ -457,7 +458,7 @@ export default function Dashboard() {
         </div>
 
         {/* Data coherence — UC-3 */}
-        <div className="bg-bg-surface border border-border rounded-lg p-5">
+        <div className="bg-bg-surface border border-border p-5">
           <h3 className="text-label">Data coherence</h3>
           <p className="text-small text-text-muted mt-1 mb-3">
             Inventory completeness across data sources — gaps indicate missing

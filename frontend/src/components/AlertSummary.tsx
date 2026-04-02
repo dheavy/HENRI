@@ -30,7 +30,7 @@ export default function AlertSummary({ alerts, deltaAlerts }: Props) {
   }
 
   return (
-    <div className="bg-bg-surface border-l-[3px] border-orange rounded-lg p-4">
+    <div className="bg-bg-surface border-l-[3px] border-orange p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <AlertTriangle className="text-orange shrink-0" size={18} />
@@ -55,7 +55,7 @@ export default function AlertSummary({ alerts, deltaAlerts }: Props) {
               {Array.from(allDelegations).slice(0, 6).map((d) => (
                 <span
                   key={d}
-                  className="bg-bg-elevated text-text-primary font-mono text-xs px-2 py-0.5 rounded"
+                  className="bg-bg-elevated text-text-primary font-mono text-xs px-2 py-0.5 "
                 >
                   {d}
                 </span>
@@ -87,7 +87,7 @@ export default function AlertSummary({ alerts, deltaAlerts }: Props) {
                   {a.delegations_at_risk.map((d) => (
                     <span
                       key={d}
-                      className="bg-bg-elevated text-text-primary font-mono text-xs px-2 py-0.5 rounded"
+                      className="bg-bg-elevated text-text-primary font-mono text-xs px-2 py-0.5 "
                     >
                       {d}
                     </span>

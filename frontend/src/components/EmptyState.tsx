@@ -72,7 +72,7 @@ export default function EmptyState({
 
   return (
     <div className="flex flex-col items-center justify-center py-16 px-8">
-      <div className="bg-bg-surface rounded-xl border border-border p-8 max-w-md text-center space-y-4">
+      <div className="bg-bg-surface border border-border p-8 max-w-md text-center space-y-4">
         {isDone ? (
           <>
             <CheckCircle size={40} className="mx-auto text-green" />
@@ -85,7 +85,7 @@ export default function EmptyState({
             <h3 className="text-lg font-medium text-text-primary">Generation failed</h3>
             <p className="text-sm text-text-muted">{status?.error ?? 'An error occurred during pipeline execution.'}</p>
             <button onClick={handleRegenerate}
-              className="px-4 py-2 bg-accent text-white rounded-lg text-sm hover:opacity-90 transition-opacity">
+              className="px-4 py-2 bg-accent text-white text-sm hover:opacity-90 transition-opacity">
               Retry
             </button>
           </>
@@ -106,7 +106,7 @@ export default function EmptyState({
             <h3 className="text-lg font-medium text-text-primary">{title}</h3>
             <p className="text-sm text-text-muted">{message}</p>
             <button onClick={handleRegenerate}
-              className="px-4 py-2 bg-accent text-white rounded-lg text-sm hover:opacity-90 transition-opacity">
+              className="px-4 py-2 bg-accent text-white text-sm hover:opacity-90 transition-opacity">
               Generate reports
             </button>
           </>
