@@ -3,16 +3,60 @@
 from __future__ import annotations
 
 import argparse
-import logging
 import sys
 
 from dotenv import load_dotenv
+
+BANNER = r"""
+  .          ...                .       .
+ .      . . ..:++=====-:.    .       .. .
+  .     ..:=+#%##***##%%%+==-:.       ...  ..
+       ..+#%###*********+=*%#%#+... .
+   ....-#%%#=:.............:+##%%*:.......
+   ...-%%%+:................:**%%##=::.... .
+   ...-%%*-:................:+##%%%*:::....
+   ...:#%*-:...............:-+#%%@@+:.....
+ . ...:+%*-:........:==-::::-*%%##*:......  .
+   ...:*%#==-=+=:..:=-+-:.::-+%*+=-:::...  .
+   ...:-*%++==--=..........:-+#+--:::::..
+   ...:::#=:...:-..::......:-*%-:::::::..  .
+   ...:::*#-...::..::.:....:-#%=-=:::::...
+  ....:::+@*-..-+#*+-::-:::-+#%%+:::::::.
+   ...:::+%%*--=##*##*+*+=++*#%@#-:::.:..
+ .....:::#%%%%%%%#-::-+%%*###%%%+::...:..   .
+.. ...::-%%%%@@%**++=:..=##%%%*-=::::::.... .
+   ...:::=%%%@@@+-.....:=%%%+..:#%=::::....
+   ...::::::=*+=##+==+*#*+:...:+*@@#-::......
+   ...::::::::::=+**===:....:=+-#%%%%%+-.....
+   ...:::::::::=%#=-=:..:=+##*:#%####%%#*-...
+  ....:::::-+*%@@@@%***#%%#=:.#######*##*-..
+ . ..-+##%%%%%%%%@@%%#%%##+..*######****=:..
+   .=#%%%%#%%%%%%%%%%%%%#*-.+##******++*=...
+ ..:*#%%%%###%%*-:..=*#**#==#*******+===-...
+ .:+**###%%%%#:..  ...-*+:-*******++===+-...
+ ..:=+***###*:..     .....-++++++==--=+=:...
+ ....::-=**+-..        ...::::--::..:.:.....
+...... .......   .     ...... ...::.::::...
+  .                         .  ........... .
+
+    HENRI — Humanitarian Early-warning Network
+             Resilience Intelligence
+"""
+
+
+def _print_banner() -> None:
+    print(BANNER, file=sys.stderr)
 
 
 def main() -> None:
     load_dotenv()
 
-    parser = argparse.ArgumentParser(prog="henri", description="HENRI pipeline")
+    parser = argparse.ArgumentParser(
+        prog="henri",
+        description="HENRI — Humanitarian Early-warning Network Resilience Intelligence",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=BANNER,
+    )
     sub = parser.add_subparsers(dest="command")
 
     p_run = sub.add_parser("run_all", help="Full pipeline: extract → analyse → report")
@@ -31,9 +75,10 @@ def main() -> None:
 
     from henri.logging import setup_logging, new_correlation_id
     setup_logging()
-    new_correlation_id()  # Fresh ID for this CLI invocation
+    new_correlation_id()
 
     if command == "run_all":
+        _print_banner()
         from henri.run_all import run_pipeline
         _VALID_SOURCES = {"snow", "grafana", "netbox", "osint"}
         sources = None
@@ -53,6 +98,7 @@ def main() -> None:
             sys.exit(1)
 
     elif command == "report":
+        _print_banner()
         from henri.run_all import regenerate_reports
         regenerate_reports(field_only_only=getattr(args, "field_only", False))
 
