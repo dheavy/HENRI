@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Zap, Radio, FileText } from 'lucide-react';
+import { LayoutDashboard, Zap, Radio, Wifi, FileText } from 'lucide-react';
 import clsx from 'clsx';
 import { useDashboard } from '../hooks/useApi';
 
@@ -7,6 +7,7 @@ const NAV = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/surges', icon: Zap, label: 'Surges' },
   { to: '/delegations', icon: Radio, label: 'Delegations' },
+  { to: '/connectivity', icon: Wifi, label: 'Connectivity' },
   { to: '/report', icon: FileText, label: 'Report' },
 ];
 

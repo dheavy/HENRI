@@ -6,6 +6,7 @@ import Country from './pages/Country';
 import Surges from './pages/Surges';
 import Delegations from './pages/Delegations';
 import Report from './pages/Report';
+import Connectivity from './pages/Connectivity';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="/country/:iso2" element={<Country />} />
             <Route path="/surges" element={<Surges />} />
             <Route path="/delegations" element={<Delegations />} />
+            <Route path="/connectivity" element={<Connectivity />} />
             <Route path="/report" element={<Report />} />
           </Route>
         </Routes>

@@ -200,21 +200,22 @@ See `.env.example` for the full list including scheduler configuration.
 
 ## Dashboard
 
-The dashboard is a bento-style dark interface built with ICRC brand colours (Graphite, Brick, Pomegranate). Key cards:
+The dashboard is a bento-style dark interface built with ICRC brand colours (Graphite, Brick, Pomegranate) and typography (DM Sans, DM Mono, Noto Sans). The title features the ICRC brand brush stroke. All corners are square per brand book.
 
 | Card | What it shows |
 |------|--------------|
-| **Alert summary** | Collapsible card with active precursor warnings — countries with conflict spikes, delegations at risk |
+| **Alert summary** | Collapsible card with active precursor warnings — countries with conflict spikes, delegations at risk, contextual one-liner |
+| **Intelligence summary** | Placeholder for future LLM-generated daily briefing |
 | **Threat landscape** | 51 field countries ranked by combined risk score, colour-coded rows, dot sparklines |
-| **Stat cards** | Surges with precursors (118/218), detection rate (54%), average lead time (87h) |
+| **Stat cards** | Surges with precursors (118/218), detection rate (54%), average lead time (87h) — with explanatory one-liners |
 | **Surge activity** | Weekly stacked bar chart — cyan for surges with precursors, grey for without |
 | **Incident volume** | Dot histogram — monthly incidents by region, each dot ≈ 50 incidents |
 | **Most alerting delegations** | Top 10 field sites by alert count (HQ filtered out) |
 | **Bandwidth scorecard** | UC-1: over/under-utilised sites, utilisation % where NetBox commit_rate available |
 | **Data coherence** | UC-3: NetBox coverage gaps, orphan codes, silent sites — progress bars |
-| **Source health** | Live status of all 6 data feeds with record counts and freshness |
+| **Source health** | Live status of all 6 data feeds with record counts and freshness. Green dot = live, pulsating orange = fallback to cache, pulsating red = unavailable |
 
-All numeric values animate with countUp.js odometer effects, triggered by IntersectionObserver when scrolled into view.
+All numeric values animate with countUp.js odometer effects. Above-the-fold stats animate immediately; below-the-fold stats trigger on scroll via IntersectionObserver.
 
 ## Pages
 
@@ -224,7 +225,7 @@ All numeric values animate with countUp.js odometer effects, triggered by Inters
 | **Country** | `/country/:iso2` | ACLED daily bar chart, ServiceNow incidents by delegation, surge history with precursor badges |
 | **Surges** | `/surges` | Interactive precursor analysis table — filterable by region, expandable rows, lead time colour coding |
 | **Delegations** | `/delegations` | Searchable site inventory — circuits, sub-sites, incident counts |
-| **Report** | `/report` | Static HTML report browser with iframe embed and download |
+| **Report** | `/report` | Static HTML report browser with iframe embed, HTML download, and PDF export (via browser print) |
 
 ## Data sources
 
@@ -253,9 +254,19 @@ uv run pytest tests/test_prometheus_parser.py    # Hostname extraction
 cd frontend && npx tsc --noEmit
 ```
 
+## Logging
+
+HENRI uses structured JSON logging (one JSON object per line) for easy ingestion by Elasticsearch, Splunk, or OpenShift log aggregation.
+
+- **Correlation IDs**: Every pipeline run and API request gets a unique ID linking all related log entries
+- **Request logging**: Middleware logs method, path, status code, duration, and client IP for every API call
+- **Audit trail**: Pipeline regeneration and completion events persisted to SQLite `audit_log` table
+- **Alert-specific fields**: `alert_type`, `alert_country`, `alert_delegations` in log entries
+- **Security**: Only an allowlist of fields appears in JSON output — credentials cannot leak
+
 ## Known issues
 
-- **Grafana query_range returns 302 on GET**: Workaround implemented — all PromQL queries use POST. The reverse proxy in front of Grafana rewrites long query strings. Retry logic (5 attempts × 180s) handles transient failures.
+- **Grafana query_range returns 302 on GET**: All PromQL queries now use POST. Configurable retry logic (`GRAFANA_RETRY_ENABLED=1`, 5 attempts × 180s) with automatic client reset between retries.
 - **ACLED country name mismatches**: Ukraine shows 0 ACLED events — likely a country name mismatch. Côte d'Ivoire and Tajikistan also at zero. Investigate ACLED's exact country naming.
 - **Bandwidth data sparse**: Only 5 sites showing bandwidth (BNG, MOG, MSC, MOS, HEB). The PromQL query may need adjustment for sites using different metric names.
 - **UC-1 utilisation**: Only 3 of 103 field sites have both Grafana bandwidth AND NetBox commit_rate. Coverage improves as NetBox is populated.

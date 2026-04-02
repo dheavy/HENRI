@@ -5,6 +5,7 @@ import {
   fetchSurges,
   fetchDelegations,
   fetchCountryDetail,
+  fetchConnectivity,
 } from '../api/client';
 
 // Dashboard refreshes every 60s, all others every 30 minutes (for overnight sessions)
@@ -48,6 +49,14 @@ export function useDelegations(params?: string) {
   return useQuery({
     queryKey: ['delegations', params],
     queryFn: () => fetchDelegations(params),
+    refetchInterval: REFRESH_SLOW,
+  });
+}
+
+export function useConnectivity() {
+  return useQuery({
+    queryKey: ['connectivity'],
+    queryFn: fetchConnectivity,
     refetchInterval: REFRESH_SLOW,
   });
 }

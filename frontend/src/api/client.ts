@@ -139,6 +139,66 @@ export const fetchSurges = (params?: string) =>
 export const fetchDelegations = (params?: string) =>
   fetchJson<DelegationsResponse>(`${BASE}/delegations${params ? '?' + params : ''}`);
 
+// ── Connectivity ────────────────────────────────────────────────────
+
+export interface ConnectivityLink {
+  cid: string;
+  link_type: string | null;
+  provider: string | null;
+  effective_mbps: number;
+  mathis_mbps: number;
+  capacity_mbps: number | null;
+  rtt_ms: number;
+  rtt_source: string;
+  loss: number;
+  loss_source: string;
+  is_primary: boolean;
+}
+
+export interface ConnectivitySite {
+  site_code: string;
+  country: string;
+  region: string;
+  score: number;
+  grade: string;
+  etu_mbps: number;
+  etu_raw_mbps: number;
+  num_users: number;
+  num_users_source: string;
+  num_links: number;
+  jitter_penalty: number;
+  availability_penalty: number;
+  diversity_bonus: number;
+  data_completeness: number;
+  missing_data: string[];
+  limiting_factor: string;
+  links: ConnectivityLink[];
+}
+
+export interface ConnectivityResponse {
+  sites: ConnectivitySite[];
+  summary: {
+    total_sites: number;
+    scored_sites: number;
+    by_grade: Record<string, number>;
+    avg_completeness: number;
+  };
+  coverage: {
+    has_bandwidth: number;
+    has_circuits: number;
+    has_rtt: number;
+    has_loss: number;
+    has_jitter: number;
+    has_dhcp: number;
+    has_availability: number;
+    full_data: number;
+    total_sites: number;
+  };
+}
+
+export const fetchConnectivity = () =>
+  fetchJson<ConnectivityResponse>(`${BASE}/connectivity`);
+
 // ── Pipeline ─────────────────────────────────────────────────────────
 
 export interface PipelineStatus {

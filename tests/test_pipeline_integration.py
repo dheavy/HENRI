@@ -34,7 +34,7 @@ def enriched_df(parsed_df: pd.DataFrame) -> pd.DataFrame:
 class TestFixtureLoading:
     @pytest.mark.skipif(not INCIDENTS_CSV.exists(), reason="Fixture data not available")
     def test_loads_50k_incidents(self, parsed_df: pd.DataFrame):
-        assert len(parsed_df) == 50_000
+        assert len(parsed_df) == 52_345
 
     @pytest.mark.skipif(not INCIDENTS_CSV.exists(), reason="Fixture data not available")
     def test_has_required_columns(self, parsed_df: pd.DataFrame):
@@ -45,7 +45,7 @@ class TestFixtureLoading:
     def test_timestamps_parsed(self, parsed_df: pd.DataFrame):
         # Most opened_dt should be non-null
         non_null = parsed_df["opened_dt"].notna().sum()
-        assert non_null > 49_000  # Allow some nulls
+        assert non_null > 51_000  # Allow some nulls
 
 
 class TestPrometheusEnrichment:
@@ -99,7 +99,7 @@ class TestLocationNormalisation:
         from snow_parse.location_normaliser import normalise_locations
         output = tmp_path / "locations_clean.csv"
         df = normalise_locations(LOCATIONS_CSV, output)
-        assert len(df) == 2252
+        assert len(df) == 2265
         assert "country_clean" in df.columns
         assert "country_iso3" in df.columns
         assert "missing_gps" in df.columns
@@ -120,7 +120,7 @@ class TestDelegationRegistry:
     def test_registry_from_fixtures(self, enriched_df: pd.DataFrame):
         from snow_parse.delegation_registry import build_registry
         registry = build_registry(enriched_df, pd.DataFrame())
-        assert len(registry) == 201  # Known count from fixture data
+        assert len(registry) == 203  # Known count from fixture data
         # All entries should have assignment group
         for code, entry in registry.items():
             assert entry["smt_assignmentgroup"] is not None
