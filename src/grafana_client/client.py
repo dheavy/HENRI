@@ -42,6 +42,7 @@ class GrafanaClient:
                 base_url=self.base_url,
                 headers={"Authorization": f"Bearer {self.api_token}"},
                 timeout=30.0,
+                follow_redirects=False,  # 302 from reverse proxy leads to HTML login page
             )
         return self._client
 
@@ -77,8 +78,12 @@ class GrafanaClient:
                 if resp.status_code == 200:
                     return resp
 
-                # Non-200: log and potentially retry
-                logger.debug("%s returned %d (attempt %d/%d)", label, resp.status_code, attempt, max_attempts)
+                # 302: reverse proxy redirect — do NOT follow (leads to HTML login page)
+                if resp.status_code == 302:
+                    logger.warning("%s returned 302, likely reverse proxy redirect (attempt %d/%d)",
+                                   label, attempt, max_attempts)
+                else:
+                    logger.debug("%s returned %d (attempt %d/%d)", label, resp.status_code, attempt, max_attempts)
 
                 if attempt < max_attempts:
                     logger.info("%s failed (HTTP %d), retrying in %ds (%d/%d)",
@@ -101,13 +106,13 @@ class GrafanaClient:
         return None
 
     def query_instant(self, promql: str) -> pd.DataFrame:
-        """Execute instant PromQL query via Grafana datasource proxy."""
+        """Execute instant PromQL query via Grafana datasource proxy (POST)."""
         if not self.is_available:
             logger.warning("Grafana not configured, returning empty DataFrame")
             return pd.DataFrame()
 
         resp = self._request_with_retry(
-            "GET",
+            "POST",
             f"/api/datasources/proxy/{self.prometheus_ds_id}/api/v1/query",
             params={"query": promql},
             label="Grafana instant query",
@@ -120,13 +125,13 @@ class GrafanaClient:
             return pd.DataFrame()
 
     def query_range(self, promql: str, start: float, end: float, step: str = "1h") -> pd.DataFrame:
-        """Execute range PromQL query."""
+        """Execute range PromQL query (POST to avoid reverse proxy URL rewriting)."""
         if not self.is_available:
             logger.warning("Grafana not configured, returning empty DataFrame")
             return pd.DataFrame()
 
         resp = self._request_with_retry(
-            "GET",
+            "POST",
             f"/api/datasources/proxy/{self.prometheus_ds_id}/api/v1/query_range",
             params={"query": promql, "start": start, "end": end, "step": step},
             label="Grafana range query",
