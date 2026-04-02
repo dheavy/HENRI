@@ -141,8 +141,8 @@ export default function Country() {
             <thead>
               <tr className="text-left text-xs text-text-muted uppercase tracking-wider border-b border-border">
                 <th className="pb-2">Delegation</th>
-                <th className="pb-2 text-right">Total</th>
-                <th className="pb-2 text-right">Site Down</th>
+                <th className="pb-2">Total</th>
+                <th className="pb-2">Site Down</th>
                 <th className="pb-2 pl-4">Dominant Alert</th>
               </tr>
             </thead>
@@ -150,8 +150,8 @@ export default function Country() {
               {snowIncidents.map((inc) => (
                 <tr key={inc.delegation} className="border-b border-border/30">
                   <td className="py-2 font-mono">{inc.delegation}</td>
-                  <td className="py-2 text-right font-mono">{inc.total_incidents}</td>
-                  <td className="py-2 text-right font-mono">{inc.sitedown_count}</td>
+                  <td className="py-2 font-mono">{inc.total_incidents}</td>
+                  <td className="py-2 font-mono">{inc.sitedown_count}</td>
                   <td className="py-2 pl-4 text-xs text-text-muted">{inc.dominant_alert}</td>
                 </tr>
               ))}
