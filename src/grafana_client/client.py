@@ -1,4 +1,9 @@
+"""Grafana API client with rate limiting, retry, and graceful degradation."""
+
+from __future__ import annotations
+
 import logging
+import os
 import time
 from typing import Any
 
@@ -8,8 +13,16 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
+def _retry_config() -> tuple[bool, int, int]:
+    """Read retry config from env vars."""
+    enabled = os.getenv("GRAFANA_RETRY_ENABLED", "0") == "1"
+    wait = int(os.getenv("GRAFANA_RETRY_WAITING_TIME", "180"))
+    times = int(os.getenv("GRAFANA_RETRY_TIMES", "5"))
+    return enabled, wait, times
+
+
 class GrafanaClient:
-    """Grafana API client with rate limiting and graceful degradation."""
+    """Grafana API client with rate limiting, retry, and graceful degradation."""
 
     def __init__(self, base_url: str, api_token: str, prometheus_ds_id: str = "1"):
         self.base_url = base_url.rstrip("/")
@@ -38,23 +51,72 @@ class GrafanaClient:
             time.sleep(self._min_interval - elapsed)
         self._last_request_time = time.time()
 
+    def _request_with_retry(
+        self,
+        method: str,
+        path: str,
+        params: dict | None = None,
+        label: str = "Grafana request",
+    ) -> httpx.Response | None:
+        """Execute an HTTP request with configurable retry logic.
+
+        Returns the response on success, or None if all attempts fail.
+        """
+        retry_enabled, retry_wait, retry_times = _retry_config()
+        max_attempts = retry_times if retry_enabled else 1
+
+        for attempt in range(1, max_attempts + 1):
+            self._rate_limit()
+            try:
+                client = self._get_client()
+                if method == "GET":
+                    resp = client.get(path, params=params)
+                else:
+                    resp = client.post(path, data=params)
+
+                if resp.status_code == 200:
+                    return resp
+
+                # Non-200: log and potentially retry
+                logger.debug("%s returned %d (attempt %d/%d)", label, resp.status_code, attempt, max_attempts)
+
+                if attempt < max_attempts:
+                    logger.info("%s failed (HTTP %d), retrying in %ds (%d/%d)",
+                                label, resp.status_code, retry_wait, attempt, max_attempts)
+                    time.sleep(retry_wait)
+                    # Reset client in case of stale connection
+                    self.close()
+                    continue
+
+            except httpx.RequestError as e:
+                logger.debug("%s network error: %s (attempt %d/%d)", label, e, attempt, max_attempts)
+                if attempt < max_attempts:
+                    logger.info("%s network error, retrying in %ds (%d/%d)",
+                                label, retry_wait, attempt, max_attempts)
+                    time.sleep(retry_wait)
+                    self.close()
+                    continue
+
+        logger.warning("%s failed after %d attempt(s)", label, max_attempts)
+        return None
+
     def query_instant(self, promql: str) -> pd.DataFrame:
         """Execute instant PromQL query via Grafana datasource proxy."""
         if not self.is_available:
             logger.warning("Grafana not configured, returning empty DataFrame")
             return pd.DataFrame()
-        self._rate_limit()
-        client = self._get_client()
+
+        resp = self._request_with_retry(
+            "GET",
+            f"/api/datasources/proxy/{self.prometheus_ds_id}/api/v1/query",
+            params={"query": promql},
+            label="Grafana instant query",
+        )
+        if resp is None:
+            return pd.DataFrame()
         try:
-            resp = client.get(
-                f"/api/datasources/proxy/{self.prometheus_ds_id}/api/v1/query",
-                params={"query": promql},
-            )
-            resp.raise_for_status()
             return self._parse_vector(resp.json())
-        except Exception as e:
-            logger.debug("Grafana instant query error: %s", e)
-            logger.warning("Grafana instant query failed")
+        except Exception:
             return pd.DataFrame()
 
     def query_range(self, promql: str, start: float, end: float, step: str = "1h") -> pd.DataFrame:
@@ -62,58 +124,45 @@ class GrafanaClient:
         if not self.is_available:
             logger.warning("Grafana not configured, returning empty DataFrame")
             return pd.DataFrame()
-        self._rate_limit()
-        client = self._get_client()
+
+        resp = self._request_with_retry(
+            "GET",
+            f"/api/datasources/proxy/{self.prometheus_ds_id}/api/v1/query_range",
+            params={"query": promql, "start": start, "end": end, "step": step},
+            label="Grafana range query",
+        )
+        if resp is None:
+            return pd.DataFrame()
         try:
-            resp = client.get(
-                f"/api/datasources/proxy/{self.prometheus_ds_id}/api/v1/query_range",
-                params={"query": promql, "start": start, "end": end, "step": step},
-            )
-            resp.raise_for_status()
             return self._parse_matrix(resp.json())
-        except Exception as e:
-            logger.debug("Grafana range query error: %s", e)
-            logger.warning("Grafana range query failed")
+        except Exception:
             return pd.DataFrame()
 
     def get_datasources(self) -> list[dict]:
         if not self.is_available:
             return []
-        self._rate_limit()
-        try:
-            resp = self._get_client().get("/api/datasources")
-            resp.raise_for_status()
-            return resp.json()
-        except Exception as e:
-            logger.debug("Datasource fetch error: %s", e)
-            logger.warning("Failed to get datasources")
+        resp = self._request_with_retry("GET", "/api/datasources", label="Grafana datasources")
+        if resp is None:
             return []
+        return resp.json()
 
     def search_dashboards(self) -> list[dict]:
         if not self.is_available:
             return []
-        self._rate_limit()
-        try:
-            resp = self._get_client().get("/api/search", params={"type": "dash-db"})
-            resp.raise_for_status()
-            return resp.json()
-        except Exception as e:
-            logger.debug("Dashboard search error: %s", e)
-            logger.warning("Failed to search dashboards")
+        resp = self._request_with_retry("GET", "/api/search", params={"type": "dash-db"},
+                                         label="Grafana dashboard search")
+        if resp is None:
             return []
+        return resp.json()
 
     def get_dashboard(self, uid: str) -> dict:
         if not self.is_available:
             return {}
-        self._rate_limit()
-        try:
-            resp = self._get_client().get(f"/api/dashboards/uid/{uid}")
-            resp.raise_for_status()
-            return resp.json()
-        except Exception as e:
-            logger.debug("Dashboard fetch error for uid=%s: %s", uid, e)
-            logger.warning("Failed to get dashboard")
+        resp = self._request_with_retry("GET", f"/api/dashboards/uid/{uid}",
+                                         label="Grafana dashboard fetch")
+        if resp is None:
             return {}
+        return resp.json()
 
     def _parse_vector(self, data: dict) -> pd.DataFrame:
         results = data.get("data", {}).get("result", [])

@@ -51,18 +51,28 @@ export default function SourceHealthRings({
       <div className="space-y-0.5">
         {Object.entries(sources).map(([key, info]) => {
           const meta = SOURCE_META[key] ?? { label: key, color: '#5C5F66' };
+          const isFallback = info.status === 'fallback';
+          const isUnavailable = info.status === 'unavailable';
+          const dotColor = isFallback ? '#D88A6C' : isUnavailable ? '#D83C3B' : meta.color;
+          const dotTitle = isFallback
+            ? 'Fetching from source failed, reverted to previously stored dataset (see logs for detail)'
+            : isUnavailable ? 'Source unavailable' : `${meta.label}: live`;
+
           return (
             <div key={key} className="flex items-center justify-between py-1.5">
               <div className="flex items-center gap-2">
                 <span
-                  className="w-2 h-2 rounded-full inline-block shrink-0"
-                  style={{ background: info.status === 'ok' ? meta.color : '#D83C3B' }}
+                  className={`w-2 h-2 rounded-full inline-block shrink-0 ${isFallback ? 'animate-slow-pulse' : ''}`}
+                  style={{ background: dotColor }}
+                  title={dotTitle}
                 />
                 <span className="text-sm text-text-body">{meta.label}</span>
               </div>
               <div className="flex items-center gap-3">
                 {info.metric && <span className="text-data text-text-primary">{info.metric}</span>}
-                <span className="text-small">{formatFreshness(info.last_pull)}</span>
+                <span className="text-small">
+                  {isFallback ? 'using cache' : formatFreshness(info.last_pull)}
+                </span>
               </div>
             </div>
           );

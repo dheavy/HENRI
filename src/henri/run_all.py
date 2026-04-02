@@ -78,11 +78,18 @@ def _step_snow_parse(data_dir: Path) -> tuple[pd.DataFrame, dict, dict]:
     from snow_parse.location_normaliser import normalise_locations
     from snow_parse.delegation_registry import build_registry, build_subsite_map
 
+    # Track which sources are live vs fallback
+    source_status: dict[str, str] = {}  # "live" | "fallback" | "unavailable"
+
     df = load_and_parse(data_dir)
     if df.empty:
         logger.warning("No incident data found")
         return df, {}, {}
     logger.info("Loaded %d incidents", len(df))
+
+    # Check if ServiceNow loaded from raw or fixtures
+    raw_csvs = list((data_dir / "raw").glob("*.csv")) if (data_dir / "raw").is_dir() else []
+    source_status["servicenow"] = "live" if raw_csvs else "fallback"
 
     df = enrich_prometheus(df)
     df = enrich_human(df)
@@ -113,11 +120,14 @@ def _step_snow_parse(data_dir: Path) -> tuple[pd.DataFrame, dict, dict]:
             finally:
                 client.close()
 
-        if not grafana_registry:
+        if grafana_registry:
+            source_status["grafana"] = "live"
+        else:
             grafana_fixture = data_dir / "fixtures" / "grafana_registry.json"
             if grafana_fixture.exists():
                 logger.info("Falling back to Grafana fixture")
                 grafana_registry, grafana_subsite = build_registry_from_fixture(grafana_fixture)
+            source_status["grafana"] = "fallback"
     except Exception as exc:
         logger.warning("Grafana registry failed: %s", type(exc).__name__)
         grafana_fixture = data_dir / "fixtures" / "grafana_registry.json"
@@ -155,7 +165,8 @@ def _step_snow_parse(data_dir: Path) -> tuple[pd.DataFrame, dict, dict]:
     with open(ref_dir / "subsite_map.json", "w") as f:
         json.dump(subsite_map, f, indent=2, ensure_ascii=False)
 
-    # NetBox enrichment
+    # NetBox enrichment (always fixture-based currently)
+    source_status["netbox"] = "fallback"
     nb_sites = data_dir / "fixtures" / "netbox_sites.json"
     nb_circuits = data_dir / "fixtures" / "netbox_circuits.json"
     if nb_sites.exists() and nb_circuits.exists():
@@ -183,6 +194,11 @@ def _step_snow_parse(data_dir: Path) -> tuple[pd.DataFrame, dict, dict]:
 
     df.to_parquet(processed_dir / "incidents_all.parquet", index=False)
     df[df["is_prometheus"]].to_parquet(processed_dir / "prometheus_alerts.parquet", index=False)
+
+    # Save source status for the dashboard
+    processed_dir.mkdir(parents=True, exist_ok=True)
+    with open(processed_dir / "source_status.json", "w") as f:
+        json.dump(source_status, f, indent=2)
 
     logger.info("Parse complete: %d delegation codes, %d sub-sites",
                 len(registry), sum(1 for k, v in subsite_map.items() if k != v))

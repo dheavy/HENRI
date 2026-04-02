@@ -102,12 +102,17 @@ async def dashboard() -> dict:
     ]
 
     # Pipeline status — check file mtimes and compute record counts
+    # Load source status from pipeline (live vs fallback)
+    src_status = _load_json(data_dir / "processed" / "source_status.json") or {}
     sources: dict[str, dict] = {}
 
     def _source(name: str, path: Path, metric: str | None = None) -> None:
+        pipeline_status_val = src_status.get(name)
         if path.exists():
             mtime = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat()
-            sources[name] = {"status": "ok", "last_pull": mtime, "metric": metric}
+            status = "fallback" if pipeline_status_val == "fallback" else "ok"
+            # For fallback sources, don't update last_pull (keep it stale)
+            sources[name] = {"status": status, "last_pull": mtime if status == "ok" else None, "metric": metric}
         else:
             sources[name] = {"status": "unavailable", "last_pull": None, "metric": None}
 
