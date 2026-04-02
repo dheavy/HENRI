@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+configurations:
+  - common/configuration.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+labels:
+  - includeTemplates: true
+    includeSelectors: false
+    pairs:
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/part-of: henri
+
+resources:
+  - henri/
+  - common/service-account.yaml

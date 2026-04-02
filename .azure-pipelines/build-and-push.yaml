@@ -1,0 +1,61 @@
+---
+# HENRI — Build and push container image to Nexus registry.
+#
+# This pipeline:
+# 1. Builds the multi-stage Docker image (Node frontend + Python backend)
+# 2. Pushes to main.repository.ext.icrc.org/icrc/expr/henri:latest
+# 3. Triggers the deploy-test pipeline automatically on success.
+#
+# The Dockerfile is a multi-stage build:
+#   Stage 1: node:22-alpine — builds the React frontend (npm run build)
+#   Stage 2: python:3.13-slim — copies built frontend + Python backend
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: DevOps Portal/pipelines-templates
+      ref: refs/heads/main
+    - repository: self
+      type: git
+      ref: refs/heads/main
+
+name: build-and-push-$(date:yyyyMMdd)$(rev:.rr)
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  name: OpenShift
+
+stages:
+  - stage: buildAndPush
+    displayName: Build and push HENRI container image
+    jobs:
+      - job: buildAndPush
+        displayName: Build container and push to Nexus
+        steps:
+          - task: Docker@2
+            displayName: Login to Nexus
+            inputs:
+              command: login
+              containerRegistry: icrc-repository-main-images
+
+          - task: Docker@2
+            displayName: Build and push container
+            inputs:
+              containerRegistry: icrc-repository-main-images
+              command: buildAndPush
+              Dockerfile: ./Dockerfile
+              repository: icrc/expr/henri
+              tags: latest
+
+          - task: PowerShell@2
+            displayName: Build and Push Completed
+            inputs:
+              targetType: 'inline'
+              script: |
+                Write-Host "Build and push completed successfully."
+                Write-Host "Deploy-test pipeline will be triggered automatically."

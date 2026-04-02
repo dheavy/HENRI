@@ -1,0 +1,7 @@
+# Kustomize name reference configuration
+# Maps Service names into Route references for OpenShift
+nameReference:
+  - kind: Service
+    fieldSpecs:
+      - kind: Route
+        path: spec/to/name

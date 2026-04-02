@@ -1,0 +1,184 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: henri
+  labels:
+    app.kubernetes.io/component: henri
+spec:
+  # Recreate strategy: HENRI writes to a shared PVC (data/), so we
+  # can't have two pods running simultaneously during a rolling update.
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: henri
+  template:
+    metadata:
+      name: henri
+      labels:
+        app.kubernetes.io/component: henri
+    spec:
+      serviceAccountName: henri
+      containers:
+        - name: henri
+          # Image pushed by the build-and-push pipeline to Nexus.
+          # Tag is overridden in overlays if needed.
+          image: main.repository.ext.icrc.org/icrc/expr/henri:latest
+          imagePullPolicy: Always
+          env:
+            # ── Enterprise proxy ──────────────────────────────────
+            # Required for all outbound HTTPS calls (ACLED, IODA,
+            # Cloudflare, Grafana). The globalproxy is the on-prem
+            # forward proxy; no_proxy excludes internal domains.
+            - name: HTTP_PROXY
+              value: http://globalproxy.gva.icrc.priv:8080
+            - name: HTTPS_PROXY
+              value: http://globalproxy.gva.icrc.priv:8080
+            - name: http_proxy
+              value: http://globalproxy.gva.icrc.priv:8080
+            - name: https_proxy
+              value: http://globalproxy.gva.icrc.priv:8080
+            - name: no_proxy
+              value: "localhost,.icrc.org,.ext.icrc.org,.gva.icrc.priv,.cluster.local,.svc,10.0.0.0/8,127.0.0.1,172.30.0.0/16"
+            - name: NO_PROXY
+              value: "localhost,.icrc.org,.ext.icrc.org,.gva.icrc.priv,.cluster.local,.svc,10.0.0.0/8,127.0.0.1,172.30.0.0/16"
+
+            # ── Data directory ────────────────────────────────────
+            # Points to the PVC mount where processed data, reports,
+            # SQLite DB, and reference files are stored persistently.
+            - name: DATA_DIR
+              value: /app/data
+
+            # ── Scheduler ─────────────────────────────────────────
+            # Enable the APScheduler background jobs so the pipeline
+            # runs automatically inside the container.
+            - name: HENRI_SCHEDULER_ENABLED
+              value: "1"
+            - name: SCHEDULER_FULL_HOUR
+              value: "6"
+            - name: SCHEDULER_FULL_MINUTE
+              value: "0"
+            - name: SCHEDULER_OSINT_INTERVAL_MINUTES
+              value: "15"
+
+            # ── Grafana (internal, bypasses proxy via no_proxy) ───
+            - name: GRAFANA_URL
+              valueFrom:
+                secretKeyRef:
+                  name: henri
+                  key: GRAFANA_URL
+            - name: GRAFANA_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: henri
+                  key: GRAFANA_API_TOKEN
+            - name: GRAFANA_PROMETHEUS_DS_ID
+              value: "4"
+            - name: GRAFANA_RETRY_ENABLED
+              value: "1"
+            - name: GRAFANA_RETRY_WAITING_TIME
+              value: "180"
+            - name: GRAFANA_RETRY_TIMES
+              value: "5"
+
+            # ── NetBox (internal, bypasses proxy) ─────────────────
+            - name: NETBOX_URL
+              valueFrom:
+                secretKeyRef:
+                  name: henri
+                  key: NETBOX_URL
+            - name: NETBOX_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: henri
+                  key: NETBOX_TOKEN
+
+            # ── ServiceNow (internal) ─────────────────────────────
+            # Uncomment when the service account is provisioned.
+            # - name: SNOW_INSTANCE_URL
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: henri
+            #       key: SNOW_INSTANCE_URL
+            # - name: SNOW_USERNAME
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: henri
+            #       key: SNOW_USERNAME
+            # - name: SNOW_PASSWORD
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: henri
+            #       key: SNOW_PASSWORD
+
+            # ── OSINT: ACLED (external, uses proxy) ───────────────
+            - name: ACLED_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: henri
+                  key: ACLED_EMAIL
+            - name: ACLED_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: henri
+                  key: ACLED_PASSWORD
+
+            # ── OSINT: Cloudflare Radar (external, uses proxy) ────
+            - name: CF_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: henri
+                  key: CF_API_TOKEN
+
+            # ── IODA: no auth required ────────────────────────────
+
+          ports:
+            - name: http
+              containerPort: 8000
+          resources:
+            # HENRI loads large parquet files into memory (50k incidents,
+            # 62k ACLED events) and runs pandas groupby/aggregation.
+            # The precursor analysis with IODA historical alerts is the
+            # heaviest step (~512MB peak).
+            requests:
+              cpu: '100m'
+              memory: '512Mi'
+            limits:
+              cpu: '1000m'
+              memory: '2Gi'
+          # Health checks hit the FastAPI health endpoint.
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            # Pipeline runs can take 3+ minutes; don't kill the pod
+            # during a pipeline execution.
+            failureThreshold: 6
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          # Persistent volume for data/, reports, SQLite, ACLED cache
+          volumeMounts:
+            - name: henri-data
+              mountPath: /app/data
+            # tmpfs for uv cache (container has read-only root filesystem)
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: henri-data
+          persistentVolumeClaim:
+            claimName: henri-data
+        - name: tmp
+          emptyDir:
+            sizeLimit: 200Mi
+      # Security: run as non-root (matches Dockerfile USER henri, uid 1000)
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000

@@ -1,0 +1,146 @@
+---
+# HENRI — Deploy to test environment on OpenShift.
+#
+# This pipeline:
+# 1. Creates/updates the Kubernetes secret from Azure DevOps variable group
+# 2. Applies the Kustomize overlay for the test environment
+# 3. Restarts the deployment to pick up new secrets/image
+#
+# Prerequisites:
+# - Variable group "henri-secrets-test" exists in Azure DevOps Library
+#   with all required secrets (see deploy/base/henri/secret.yaml)
+# - Namespace "labwam-test" exists on the target cluster
+# - nexus-registry-secret exists in the namespace (for image pulls)
+# - PVC storage class is available on the cluster
+
+resources:
+  pipelines:
+    - pipeline: buildAndPush
+      # Triggered automatically after the build-and-push pipeline succeeds.
+      source: henri-build-and-push
+      trigger:
+        branches:
+          include:
+            - main
+  repositories:
+    - repository: templates
+      type: git
+      name: DevOps Portal/pipelines-templates
+      ref: refs/heads/main
+    - repository: self
+      type: git
+      ref: refs/heads/main
+
+# This pipeline only runs after build-and-push (no direct trigger).
+trigger: none
+pr: none
+
+name: deploy-test-$(date:yyyyMMdd)$(rev:.rr)
+
+variables:
+  - group: henri-secrets-test
+
+stages:
+  # ── Stage 1: Create/update secrets from variable group ──────────
+  - stage: createSecrets
+    displayName: Create Kubernetes secrets
+    dependsOn: []
+    condition: succeeded()
+    jobs:
+      - job: createSecrets
+        displayName: Create Kubernetes secrets
+        pool:
+          name: OpenShift
+        steps:
+          - task: Kubernetes@1
+            displayName: Delete existing secret (if exists)
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'api.ikstest.gva.icrc.priv_labwam-test'
+              namespace: 'labwam-test'
+              command: 'delete'
+              arguments: 'secret henri --ignore-not-found=true'
+
+          - task: Kubernetes@1
+            displayName: Create secret from variable group
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'api.ikstest.gva.icrc.priv_labwam-test'
+              namespace: 'labwam-test'
+              command: 'create'
+              # Each --from-literal maps a variable from the Azure DevOps
+              # Library variable group "henri-secrets-test" into the K8s secret.
+              arguments: >-
+                secret generic henri
+                --from-literal=GRAFANA_URL="$(GRAFANA_URL)"
+                --from-literal=GRAFANA_API_TOKEN="$(GRAFANA_API_TOKEN)"
+                --from-literal=NETBOX_URL="$(NETBOX_URL)"
+                --from-literal=NETBOX_TOKEN="$(NETBOX_TOKEN)"
+                --from-literal=ACLED_EMAIL="$(ACLED_EMAIL)"
+                --from-literal=ACLED_PASSWORD="$(ACLED_PASSWORD)"
+                --from-literal=CF_API_TOKEN="$(CF_API_TOKEN)"
+
+          - task: Kubernetes@1
+            displayName: Verify secret was created
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'api.ikstest.gva.icrc.priv_labwam-test'
+              namespace: 'labwam-test'
+              command: 'get'
+              arguments: 'secret henri -o yaml'
+
+  # ── Stage 2: Deploy via Kustomize ───────────────────────────────
+  - stage: deployInTest
+    displayName: Deploy in Test environment
+    dependsOn: createSecrets
+    condition: succeeded()
+    jobs:
+      - job: deployToK8s
+        displayName: Deploy to Kubernetes
+        pool:
+          name: OpenShift
+        steps:
+          - task: Kubernetes@1
+            displayName: Create Service Account
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'api.ikstest.gva.icrc.priv_labwam-test'
+              namespace: 'labwam-test'
+              command: 'apply'
+              arguments: '-f deploy/base/common/service-account.yaml'
+
+          - task: Kubernetes@1
+            displayName: Apply Kustomize deployment
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'api.ikstest.gva.icrc.priv_labwam-test'
+              namespace: 'labwam-test'
+              command: 'apply'
+              arguments: '-k deploy/overlays/test'
+
+          - task: Kubernetes@1
+            displayName: Restart deployment to pick up new image/secrets
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'api.ikstest.gva.icrc.priv_labwam-test'
+              namespace: 'labwam-test'
+              command: 'rollout'
+              arguments: 'restart deployment/henri'
+
+          - task: Kubernetes@1
+            displayName: Wait for rollout to complete
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'api.ikstest.gva.icrc.priv_labwam-test'
+              namespace: 'labwam-test'
+              command: 'rollout'
+              arguments: 'status deployment/henri --timeout=300s'
+
+          - task: Kubernetes@1
+            displayName: Verify pod is running
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'api.ikstest.gva.icrc.priv_labwam-test'
+              namespace: 'labwam-test'
+              command: 'get'
+              arguments: 'pods -l app.kubernetes.io/component=henri -o wide'

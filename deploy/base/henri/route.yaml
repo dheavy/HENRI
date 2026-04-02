@@ -1,0 +1,18 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: henri
+  labels:
+    app.kubernetes.io/component: henri
+spec:
+  to:
+    kind: Service
+    name: henri
+  port:
+    targetPort: http
+  tls:
+    # TLS terminated at the OpenShift router (edge).
+    # The container serves plain HTTP on port 8000.
+    termination: edge
+    # Reject unencrypted connections — HTTPS only.
+    insecureEdgeTerminationPolicy: None

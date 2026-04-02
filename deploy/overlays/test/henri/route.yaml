@@ -1,0 +1,8 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: henri
+spec:
+  # Test environment hostname.
+  # Change this to match the namespace and cluster.
+  host: henri.apps.ikstest.gva.icrc.priv

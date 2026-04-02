@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: henri-data
+  labels:
+    app.kubernetes.io/component: henri
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # Stores: processed parquets (~50MB), ACLED events (~20MB),
+      # HTML reports (~200KB each), SQLite DB (<1MB), reference JSON.
+      # 1Gi is generous for current data volume; increase if ServiceNow
+      # raw CSV archives grow large.
+      storage: 1Gi

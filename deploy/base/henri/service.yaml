@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: henri
+  labels:
+    app.kubernetes.io/component: henri
+spec:
+  ports:
+    # FastAPI (uvicorn) listens on 8000 inside the container.
+    # Service exposes on port 80 for the Route.
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+  selector:
+    app.kubernetes.io/component: henri
