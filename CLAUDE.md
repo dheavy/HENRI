@@ -268,15 +268,12 @@ ICRC-branded dark theme derived from brand book colors (Graphite, Snow, Brick, P
 - [x] Phase 3: Web interface — FastAPI + React SPA, bento dashboard, 5 pages, SQLite, APScheduler
 - [x] UC-1 deepening: Bandwidth scorecard with utilisation % (3 of 103 sites have both data sources)
 - [x] UC-3 deepening: Data coherence endpoint with cross-reference gap detection
-- [x] 336 tests passing
+- [x] **Grafana query_range fix**: POST method works (GET returns 302). Ensure grafana_client uses POST for all query_range calls. Bandwidth data is currently from a single successful pull — needs to refresh daily.
 
 ## What's next
 
 - [ ] **ServiceNow live pull**: Service account being provisioned. Playwright exporter ready. This is the last fixture dependency.
-- [ ] **Grafana query_range fix**: POST method works (GET returns 302). Ensure grafana_client uses POST for all query_range calls. Bandwidth data is currently from a single successful pull — needs to refresh daily.
-- [ ] **Phase 4 — Three.js globe**: Cinematic "overview effect" at `/globe` route. Design references in `documents/design-inspiration/`. Will consume `/api/v1/countries` and `/api/v1/delegations` endpoints.
 - [ ] **LLM intelligence summary**: AI-generated daily briefing from risk scores + precursor signals. Dashboard card placeholder ("Intelligence summary") is ready. FastAPI backend will call Claude API to generate narrative from structured findings.
-- [ ] **Demo to sponsor**: Dashboard is demo-ready. All four use cases visible. Schedule walkthrough with Head of Field IT.
 - [ ] **Teams/email integration**: Webhook notifications for precursor alerts and delta escalations.
 - [ ] **Authentication**: OpenShift OAuth proxy for production deployment.
 
