@@ -169,7 +169,7 @@ export default function Surges() {
           {REGIONS.map((r) => (
             <button key={r} onClick={() => setRegion(r)}
               className={clsx('text-xs px-3 py-1.5 rounded transition-colors',
-                region === r ? 'bg-accent text-white' : 'bg-bg-surface text-text-muted hover:text-text-primary border border-border'
+                region === r ? 'bg-accent text-white cursor-pointer' : 'bg-bg-surface text-text-muted hover:text-text-primary border border-border cursor-pointer'
               )}>
               {r}
             </button>
