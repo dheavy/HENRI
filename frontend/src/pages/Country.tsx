@@ -71,7 +71,8 @@ export default function Country() {
 
       {/* Header */}
       <p className="text-sm text-text-muted">
-        Country drill-down: conflict timeline, internet outage signals, ServiceNow incidents
+        Country drill-down: ACLED (Armed Conflict Location &amp; Event Data) conflict timeline,
+        IODA (Internet Outage Detection &amp; Analysis) signals, ServiceNow incidents
         by delegation, and historical surge events with precursor analysis.
       </p>
 
@@ -141,8 +142,8 @@ export default function Country() {
               <tr className="text-left text-xs text-text-muted uppercase tracking-wider border-b border-border">
                 <th className="pb-2">Delegation</th>
                 <th className="pb-2 text-right">Total</th>
-                <th className="pb-2 text-right">SiteDown</th>
-                <th className="pb-2">Dominant Alert</th>
+                <th className="pb-2 text-right">Site Down</th>
+                <th className="pb-2 pl-4">Dominant Alert</th>
               </tr>
             </thead>
             <tbody>
@@ -151,7 +152,7 @@ export default function Country() {
                   <td className="py-2 font-mono">{inc.delegation}</td>
                   <td className="py-2 text-right font-mono">{inc.total_incidents}</td>
                   <td className="py-2 text-right font-mono">{inc.sitedown_count}</td>
-                  <td className="py-2 text-xs text-text-muted">{inc.dominant_alert}</td>
+                  <td className="py-2 pl-4 text-xs text-text-muted">{inc.dominant_alert}</td>
                 </tr>
               ))}
             </tbody>
@@ -162,7 +163,12 @@ export default function Country() {
       {/* Surge history */}
       {surges.length > 0 && (
         <div className="bg-bg-surface rounded-lg border border-border p-4">
-          <h3 className="text-sm font-medium mb-4">Surge Events Affecting This Country</h3>
+          <h3 className="text-sm font-medium">Surge Events Affecting This Country</h3>
+          <p className="text-xs text-text-muted mt-1 mb-4">
+            Source badges (ACLED, IODA, CF) indicate which external signals were detected before the outage.
+            The time label shows lead time — how far in advance the warning signal appeared. Surges without
+            a time label had no detectable external precursor.
+          </p>
           <div className="space-y-2">
             {surges.map((s) => (
               <div key={s.surge_id} className="flex items-center justify-between p-3 rounded-lg bg-bg-base border border-border/30">
