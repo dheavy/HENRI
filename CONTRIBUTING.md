@@ -1,6 +1,6 @@
 # Contributing to HENRI
 
-HENRI is an internal ICRC tool. Contributions are welcome from anyone within T&I and the wider ICT organisation.
+HENRI is an internal ICRC tool. Contributions are welcome from anyone within T&I and the wider organisation.
 
 ## Before you start
 
