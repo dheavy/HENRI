@@ -53,16 +53,18 @@ export default function SourceHealthRings({
           const meta = SOURCE_META[key] ?? { label: key, color: '#5C5F66' };
           const isFallback = info.status === 'fallback';
           const isUnavailable = info.status === 'unavailable';
-          const dotColor = isFallback ? '#D88A6C' : isUnavailable ? '#D83C3B' : meta.color;
+          const isOk = info.status === 'ok';
+          const dotColor = isOk ? '#A8C97A' : isFallback ? '#D88A6C' : '#D83C3B';
+          const pulseClass = isFallback ? 'animate-slow-pulse' : isUnavailable ? 'animate-slow-pulse' : '';
           const dotTitle = isFallback
             ? 'Fetching from source failed, reverted to previously stored dataset (see logs for detail)'
-            : isUnavailable ? 'Source unavailable' : `${meta.label}: live`;
+            : isUnavailable ? 'No data available for this source' : `${meta.label}: live`;
 
           return (
             <div key={key} className="flex items-center justify-between py-1.5">
               <div className="flex items-center gap-2">
                 <span
-                  className={`w-2 h-2 rounded-full inline-block shrink-0 ${isFallback ? 'animate-slow-pulse' : ''}`}
+                  className={`w-2 h-2 rounded-full inline-block shrink-0 ${pulseClass}`}
                   style={{ background: dotColor }}
                   title={dotTitle}
                 />
