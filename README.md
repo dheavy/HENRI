@@ -36,7 +36,7 @@
 
 > Named after Henri Dunant, founder of the ICRC and first Nobel Peace Prize laureate. He'd probably appreciate that 160 years later, his organisation is using network intelligence to anticipate disruptions before they hit.
 
-**Creator and maintainer:** Davy Braun &lt;dbraun@icrc.org&gt; — T&I Architecture
+**Creator and maintainer:** Davy Braun <dbraun@icrc.org> — T&I Architecture
 
 ---
 

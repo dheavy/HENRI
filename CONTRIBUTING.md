@@ -58,4 +58,4 @@ If your change doesn't serve one of these goals, it probably doesn't belong here
 
 ## Questions?
 
-Reach out to Davy Braun &lt;dbraun@icrc.org&gt; — T&I Architecture.
+Reach out to Davy Braun <dbraun@icrc.org> — T&I Architecture.
