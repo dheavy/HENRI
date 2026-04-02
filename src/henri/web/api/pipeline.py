@@ -62,20 +62,30 @@ def _release_file_lock() -> None:
 def _run_pipeline_background() -> None:
     """Run the pipeline in a background thread with file lock."""
     global _state
+    from henri.logging import new_correlation_id, get_correlation_id
+    cid = new_correlation_id()
     try:
         from henri.run_all import run_pipeline
+        from henri.web.db import write_audit
         result = run_pipeline(fixtures=True)
+        status = "done" if not result["steps_failed"] else "error"
         with _lock:
             _state["running"] = False
             _state["finished_at"] = time.time()
-            _state["status"] = "done" if not result["steps_failed"] else "error"
+            _state["status"] = status
             _state["error"] = ", ".join(result["steps_failed"]) if result["steps_failed"] else None
+        write_audit(f"pipeline.{status}", detail=f"steps_ok={len(result['steps_run'])}", correlation_id=cid)
     except Exception as exc:
         with _lock:
             _state["running"] = False
             _state["finished_at"] = time.time()
             _state["status"] = "error"
             _state["error"] = type(exc).__name__
+        try:
+            from henri.web.db import write_audit
+            write_audit("pipeline.error", detail=type(exc).__name__, correlation_id=cid)
+        except Exception:
+            pass
     finally:
         _release_file_lock()
 
@@ -93,8 +103,11 @@ async def pipeline_status() -> dict:
         }
 
 
+_audit_logger = logging.getLogger("henri.audit")
+
+
 @router.post("/regenerate")
-async def regenerate() -> dict:
+async def regenerate(request=None) -> dict:
     """Trigger pipeline regeneration with rate limiting and file locking.
 
     Rejects if: already running, within cooldown period, or file lock held (scheduler running).
@@ -123,6 +136,13 @@ async def regenerate() -> dict:
 
     thread = threading.Thread(target=_run_pipeline_background, daemon=True)
     thread.start()
-    logger.info("Pipeline regeneration triggered via API")
+    from henri.logging import get_correlation_id
+    from henri.web.db import write_audit
+    cid = get_correlation_id()
+    _audit_logger.info(
+        "Pipeline regeneration triggered",
+        extra={"audit_action": "pipeline.regenerate", "audit_user": "api"},
+    )
+    write_audit("pipeline.regenerate", user="api", correlation_id=cid)
 
     return {"accepted": True}

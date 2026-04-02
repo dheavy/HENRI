@@ -64,6 +64,15 @@ def init_db() -> None:
                 sources TEXT,
                 report_path TEXT
             );
+
+            CREATE TABLE IF NOT EXISTS audit_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ts TEXT NOT NULL,
+                action TEXT NOT NULL,
+                user TEXT,
+                detail TEXT,
+                correlation_id TEXT
+            );
         """)
     logger.info("Database initialized at %s", _get_db_path().name)
 
@@ -231,3 +240,28 @@ def get_last_pipeline_run() -> dict | None:
             "SELECT * FROM pipeline_runs ORDER BY id DESC LIMIT 1"
         ).fetchone()
     return dict(row) if row else None
+
+
+# ── Audit log ─────────────────────────────────────────────────────────
+
+def write_audit(action: str, user: str | None = None, detail: str | None = None,
+                correlation_id: str | None = None) -> None:
+    """Write an audit log entry to SQLite."""
+    now = datetime.now(timezone.utc).isoformat()
+    try:
+        with get_conn() as conn:
+            conn.execute(
+                "INSERT INTO audit_log (ts, action, user, detail, correlation_id) VALUES (?, ?, ?, ?, ?)",
+                (now, action, user, detail, correlation_id),
+            )
+    except Exception:
+        pass  # Don't let audit logging failures crash the app
+
+
+def get_audit_log(limit: int = 100) -> list[dict]:
+    """Get recent audit log entries."""
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT * FROM audit_log ORDER BY id DESC LIMIT ?", (limit,)
+        ).fetchall()
+    return [dict(r) for r in rows]

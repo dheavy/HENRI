@@ -7,23 +7,28 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncGenerator
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from .api.router import api_router
 from .db import init_db
 from .scheduler import start_scheduler, stop_scheduler
+from henri.logging import setup_logging, new_correlation_id
 
 load_dotenv()
+setup_logging()
 
 logger = logging.getLogger(__name__)
+_request_logger = logging.getLogger("henri.web.requests")
 
 _FRONTEND_DIST = Path(__file__).resolve().parent.parent.parent.parent / "frontend" / "dist"
 
@@ -47,6 +52,37 @@ def create_app() -> FastAPI:
         redoc_url=None,
         lifespan=_lifespan,
     )
+
+    # Request logging middleware — logs every API call with timing
+    class RequestLoggingMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request: Request, call_next):
+            # Skip logging for static assets and health checks
+            path = request.url.path
+            if path.startswith("/assets") or path == "/api/health":
+                return await call_next(request)
+
+            # Set correlation ID from header or generate new one
+            cid = request.headers.get("X-Correlation-ID") or new_correlation_id()
+
+            start = time.time()
+            response = await call_next(request)
+            duration_ms = round((time.time() - start) * 1000, 1)
+
+            _request_logger.info(
+                "%s %s %d %.1fms",
+                request.method, path, response.status_code, duration_ms,
+                extra={
+                    "method": request.method,
+                    "path": path,
+                    "status": response.status_code,
+                    "duration_ms": duration_ms,
+                    "client_ip": request.client.host if request.client else None,
+                },
+            )
+            response.headers["X-Correlation-ID"] = cid
+            return response
+
+    app.add_middleware(RequestLoggingMiddleware)
 
     # CORS — allow local dev origins
     app.add_middleware(
