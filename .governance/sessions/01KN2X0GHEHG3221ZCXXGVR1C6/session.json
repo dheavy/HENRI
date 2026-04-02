@@ -1,0 +1,20 @@
+{
+  "id": "01KN2X0GHEHG3221ZCXXGVR1C6",
+  "objective": "",
+  "state": "paused",
+  "started_at": "2026-03-31T21:32:49.583Z",
+  "ended_at": null,
+  "duration_seconds": null,
+  "parent_session_id": null,
+  "operator": "pcs14317",
+  "hostname": "NCM7FJF6D6",
+  "git_branch": "feat/phase1-operational",
+  "git_sha": "3b4c8c162cd4104be625a391c613563c5940f1cb",
+  "git_dirty": true,
+  "trace_id": "de181ab1-c0e0-479e-b9c7-3f4b649dae1a",
+  "k6s_version": "1.7.1",
+  "event_count": 929,
+  "agent_count": 9,
+  "violation_count": 0,
+  "chain_integrity": "CHAIN_INTACT"
+}
