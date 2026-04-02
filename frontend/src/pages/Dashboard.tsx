@@ -211,12 +211,14 @@ export default function Dashboard() {
       {/* Risk table: span 2 */}
       <div
         style={{ gridColumn: 'span 2', maxHeight: '500px', overflowY: 'auto' }}
-        className="bg-bg-surface border border-border rounded-lg p-5"
+        className="bg-bg-surface border border-border rounded-lg overflow-hidden"
       >
-        <h3 className="text-label">
-          Threat landscape — {countriesData?.countries.length ?? 0} countries
-        </h3>
-        <p className="text-small text-text-muted mt-1 mb-3">Combined risk score from conflict data, outage monitoring, and internal network alerts</p>
+        <div className="px-5 pt-5 pb-3">
+          <h3 className="text-label">
+            Threat landscape — {countriesData?.countries.length ?? 0} countries
+          </h3>
+          <p className="text-small text-text-muted mt-1">Combined risk score from conflict data, outage monitoring, and internal network alerts</p>
+        </div>
         {countriesData?.countries && <RiskTable countries={countriesData.countries} />}
       </div>
 
