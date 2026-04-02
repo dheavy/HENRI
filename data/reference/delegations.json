@@ -138,7 +138,6 @@
     "longitude": null,
     "source": "grafana_fortigate_labels",
     "sub_sites": [
-      "RAD",
       "RRAD11",
       "WBAG30"
     ]
@@ -1144,7 +1143,6 @@
     "longitude": null,
     "source": "grafana_fortigate_labels",
     "sub_sites": [
-      "DJB",
       "DOI",
       "FDA",
       "OUH"
