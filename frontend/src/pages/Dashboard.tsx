@@ -219,9 +219,25 @@ export default function Dashboard() {
     >
       {/* 1. Title — always first */}
       <div style={{ gridColumn: 'span 3' }}>
-        <h1 style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-          <span className="text-heading">HENRI</span>
-          <span style={{ fontSize: '20px', color: 'var(--color-text-muted)' }}>
+        <h1 style={{ display: 'flex', alignItems: 'baseline', gap: '8px', position: 'relative' }}>
+          {/* ICRC brand brush stroke behind the title */}
+          <img
+            src="/ICRC-hand-line-BrightRed-57.svg"
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              left: '-28px',
+              top: '50%',
+              transform: 'translateY(-60%)',
+              height: '100px',
+              width: '430px',
+              opacity: 1,
+              pointerEvents: 'none',
+            }}
+          />
+          <span className="text-heading" style={{ position: 'relative' }}>HENRI</span>
+          <span style={{ fontSize: '20px', color: 'var(--color-text-primary)', position: 'relative' }}>
             — Humanitarian Early-warning Network Resilience Intelligence
           </span>
         </h1>
