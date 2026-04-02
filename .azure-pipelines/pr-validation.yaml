@@ -1,0 +1,60 @@
+---
+# HENRI — Pull request validation pipeline.
+#
+# Runs on every PR targeting main. Must pass before merge is allowed.
+# Configure as a required build policy in Azure DevOps:
+#   Repos > Branches > main > Branch policies > Build Validation
+#
+# Steps:
+# 1. Install Python dependencies (uv sync)
+# 2. Run backend test suite (pytest)
+# 3. Install frontend dependencies (npm ci)
+# 4. TypeScript type check (tsc --noEmit)
+# 5. Frontend production build (npm run build)
+
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  name: OpenShift
+
+steps:
+  # ── Python backend ──────────────────────────────────────────────
+  - script: |
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+      export PATH="$HOME/.local/bin:$PATH"
+      uv sync
+    displayName: Install Python dependencies
+
+  - script: |
+      export PATH="$HOME/.local/bin:$PATH"
+      uv run pytest tests/ -q --tb=short --junitxml=$(Build.ArtifactStagingDirectory)/test-results.xml
+    displayName: Run Python tests
+
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: JUnit
+      testResultsFiles: '$(Build.ArtifactStagingDirectory)/test-results.xml'
+      testRunTitle: 'HENRI Python tests'
+
+  # ── Frontend ────────────────────────────────────────────────────
+  - script: |
+      cd frontend
+      npm ci
+    displayName: Install frontend dependencies
+
+  - script: |
+      cd frontend
+      npx tsc --noEmit
+    displayName: TypeScript type check
+
+  - script: |
+      cd frontend
+      npm run build
+    displayName: Frontend production build
