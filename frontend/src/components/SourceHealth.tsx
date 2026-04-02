@@ -28,7 +28,7 @@ function formatFreshness(lastPull: string | null): string {
   return `${days}d ago`;
 }
 
-export default function SourceHealthRings({
+export default function SourceHealth({
   sources,
   lastRun,
 }: {

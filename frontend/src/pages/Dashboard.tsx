@@ -4,7 +4,7 @@ import AlertSummary from '../components/AlertSummary';
 import RiskTable from '../components/RiskTable';
 import EmptyState from '../components/EmptyState';
 import SurgePulse from '../components/SurgePulse';
-import SourceHealthRings from '../components/SourceHealthRings';
+import SourceHealth from '../components/SourceHealth';
 import DotHistogram from '../components/DotHistogram';
 import AnimatedNumber from '../components/AnimatedNumber';
 
@@ -303,7 +303,7 @@ export default function Dashboard() {
         style={{ gridColumn: 'span 1', alignSelf: 'start' }}
         className="bg-bg-surface border border-border rounded-lg p-5"
       >
-        <SourceHealthRings sources={pipeline_status.sources} lastRun={pipeline_status.last_run} />
+        <SourceHealth sources={pipeline_status.sources} lastRun={pipeline_status.last_run} />
       </div>
 
       {/* Column 3: Bandwidth scorecard + Data coherence stacked */}
