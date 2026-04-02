@@ -92,6 +92,8 @@ def start_scheduler() -> BackgroundScheduler:
         id="full_pipeline",
         name="Full HENRI pipeline",
         replace_existing=True,
+        misfire_grace_time=3600,  # Run if missed within 1 hour (e.g. container restart)
+        coalesce=True,            # If multiple misfires, run only once
     )
 
     _scheduler.add_job(
@@ -101,6 +103,8 @@ def start_scheduler() -> BackgroundScheduler:
         id="osint_quick",
         name="Quick OSINT check",
         replace_existing=True,
+        misfire_grace_time=300,   # Run if missed within 5 minutes
+        coalesce=True,
     )
 
     _scheduler.start()
