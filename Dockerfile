@@ -37,7 +37,7 @@ RUN useradd -m -u 1000 -s /usr/sbin/nologin henri \
     && chown -R henri:henri /app
 
 # Copy source code
-COPY --chown=henri:henri src/ ./src/
+COPY --chown=henri:henri backend/ ./backend/
 COPY --chown=henri:henri templates/ ./templates/
 COPY --chown=henri:henri data/fixtures/ ./data/fixtures/
 COPY --chown=henri:henri data/reference/ ./data/reference/
@@ -51,7 +51,7 @@ USER henri
 # uv: cache in writable tmpfs, skip sync at runtime (deps frozen at build)
 ENV UV_CACHE_DIR=/tmp/uv-cache
 ENV UV_NO_SYNC=1
-ENV PYTHONPATH=/app/src
+ENV PYTHONPATH=/app/backend
 
 # FastAPI serves on port 8000
 EXPOSE 8000

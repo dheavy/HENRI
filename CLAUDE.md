@@ -53,7 +53,7 @@ A network intelligence platform for ICRC that fuses internal network data with e
 
 ```
 henri/
-├── src/
+├── backend/
 │   ├── henri/                    # Orchestrator + web app
 │   │   ├── __main__.py           # python -m henri entry point
 │   │   ├── run_all.py            # Pipeline orchestrator (7 steps)

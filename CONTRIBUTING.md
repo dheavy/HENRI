@@ -41,16 +41,16 @@ If your change doesn't serve one of these goals, it probably doesn't belong here
 
 ## Adding a new data source
 
-1. Create a client module in `src/` (e.g. `src/new_source/client.py`)
+1. Create a client module in `backend/` (e.g. `backend/new_source/client.py`)
 2. Add a fixture file in `data/fixtures/` for offline testing
-3. Wire it into `src/henri/run_all.py` as a pipeline step
+3. Wire it into `backend/henri/run_all.py` as a pipeline step
 4. Add source status tracking (`source_status.json`) for the Source Health card
 5. Add tests in `tests/`
 6. Update `.env.example` with any required credentials
 
 ## Adding a new dashboard card
 
-1. Add the data to an existing or new API endpoint in `src/henri/web/api/`
+1. Add the data to an existing or new API endpoint in `backend/henri/web/api/`
 2. Create the React component in `frontend/src/components/`
 3. Wire it into `frontend/src/pages/Dashboard.tsx`
 4. Include a `.text-label` title and a one-liner description in `text-text-muted`

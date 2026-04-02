@@ -26,13 +26,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/snow_extract", "src/snow_parse", "src/snow_analyse", "src/grafana_client", "src/netbox_client", "src/osint", "src/henri"]
+packages = ["backend/snow_extract", "backend/snow_parse", "backend/snow_analyse", "backend/grafana_client", "backend/netbox_client", "backend/osint", "backend/henri"]
 
 [tool.hatch.build.targets.wheel.sources]
-"src" = ""
+"backend" = ""
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["backend"]
 
 [dependency-groups]
 dev = [
