@@ -71,6 +71,11 @@ body {
   animation: slow-pulse 3s ease-in-out infinite;
 }
 
+/* Recharts container vertical centering */
+.recharts-responsive-container {
+  margin-top: 60px;
+}
+
 ::selection {
   background-color: #921F1C80;
   color: #FFFFFF;
