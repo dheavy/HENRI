@@ -19,42 +19,44 @@ pr:
     include:
       - main
 
-pool:
-  name: OpenShift
+jobs:
+  - job: validate
+    displayName: HENRI PR Validation
+    pool:
+      name: OpenShift
+    steps:
+      # ── Python backend ──────────────────────────────────────────────
+      - script: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          export PATH="$HOME/.local/bin:$PATH"
+          uv sync
+        displayName: Install Python dependencies
 
-steps:
-  # ── Python backend ──────────────────────────────────────────────
-  - script: |
-      curl -LsSf https://astral.sh/uv/install.sh | sh
-      export PATH="$HOME/.local/bin:$PATH"
-      uv sync
-    displayName: Install Python dependencies
+      - script: |
+          export PATH="$HOME/.local/bin:$PATH"
+          uv run pytest tests/ -q --tb=short --junitxml=$(Build.ArtifactStagingDirectory)/test-results.xml
+        displayName: Run Python tests
 
-  - script: |
-      export PATH="$HOME/.local/bin:$PATH"
-      uv run pytest tests/ -q --tb=short --junitxml=$(Build.ArtifactStagingDirectory)/test-results.xml
-    displayName: Run Python tests
+      - task: PublishTestResults@2
+        displayName: Publish test results
+        condition: succeededOrFailed()
+        inputs:
+          testResultsFormat: JUnit
+          testResultsFiles: '$(Build.ArtifactStagingDirectory)/test-results.xml'
+          testRunTitle: 'HENRI Python tests'
 
-  - task: PublishTestResults@2
-    displayName: Publish test results
-    condition: succeededOrFailed()
-    inputs:
-      testResultsFormat: JUnit
-      testResultsFiles: '$(Build.ArtifactStagingDirectory)/test-results.xml'
-      testRunTitle: 'HENRI Python tests'
+      # ── Frontend ────────────────────────────────────────────────────
+      - script: |
+          cd frontend
+          npm ci
+        displayName: Install frontend dependencies
 
-  # ── Frontend ────────────────────────────────────────────────────
-  - script: |
-      cd frontend
-      npm ci
-    displayName: Install frontend dependencies
+      - script: |
+          cd frontend
+          npx tsc --noEmit
+        displayName: TypeScript type check
 
-  - script: |
-      cd frontend
-      npx tsc --noEmit
-    displayName: TypeScript type check
-
-  - script: |
-      cd frontend
-      npm run build
-    displayName: Frontend production build
+      - script: |
+          cd frontend
+          npm run build
+        displayName: Frontend production build
