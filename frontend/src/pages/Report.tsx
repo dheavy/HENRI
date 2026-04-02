@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { FileText, Download } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { FileText, Download, Printer } from 'lucide-react';
 import clsx from 'clsx';
 
 interface ReportEntry {
@@ -31,6 +31,7 @@ const DESCRIPTIONS: Record<string, string> = {
 export default function Report() {
   const [entries, setEntries] = useState<ReportEntry[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     fetch('/api/v1/reports')
@@ -46,6 +47,12 @@ export default function Report() {
   const viewUrl = selected ? `/api/v1/reports/${selected.filename}` : null;
   const downloadUrl = selected ? `/api/v1/reports/${selected.filename}/download` : null;
 
+  const handlePrintPdf = () => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow) return;
+    iframe.contentWindow.print();
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
@@ -53,10 +60,18 @@ export default function Report() {
           <FileText size={24} className="text-accent" /> Static Reports
         </h2>
         {downloadUrl && (
-          <a href={downloadUrl}
-            className="flex items-center gap-1 text-xs bg-accent text-white px-3 py-1.5 hover:opacity-90 transition-opacity">
-            <Download size={14} /> Download HTML
-          </a>
+          <div className="flex gap-2">
+            <button
+              onClick={handlePrintPdf}
+              className="flex items-center gap-1 text-xs bg-bg-surface text-text-body border border-border px-3 py-1.5 hover:bg-bg-elevated transition-colors cursor-pointer"
+            >
+              <Printer size={14} /> Export PDF
+            </button>
+            <a href={downloadUrl}
+              className="flex items-center gap-1 text-xs bg-accent text-white px-3 py-1.5 hover:opacity-90 transition-opacity">
+              <Download size={14} /> Download HTML
+            </a>
+          </div>
         )}
       </div>
 
@@ -65,7 +80,7 @@ export default function Report() {
         <div className="flex gap-2 flex-wrap">
           {entries.map((e, i) => (
             <button key={e.filename} onClick={() => setSelectedIdx(i)}
-              className={clsx('text-xs px-3 py-1.5 transition-colors',
+              className={clsx('text-xs px-3 py-1.5 transition-colors cursor-pointer',
                 selectedIdx === i
                   ? 'bg-accent text-white'
                   : 'bg-bg-surface text-text-muted hover:text-text-primary border border-border'
@@ -86,6 +101,7 @@ export default function Report() {
       {/* Embedded report */}
       {viewUrl ? (
         <iframe
+          ref={iframeRef}
           key={selected?.filename}
           src={viewUrl}
           title={selected?.label ?? 'Report'}
