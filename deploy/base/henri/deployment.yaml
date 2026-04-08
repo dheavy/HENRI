@@ -177,8 +177,11 @@ spec:
         - name: tmp
           emptyDir:
             sizeLimit: 200Mi
-      # Security: run as non-root (matches Dockerfile USER henri, uid 1000)
+      # Security: run as non-root. We do NOT set runAsUser/fsGroup/runAsGroup
+      # explicitly because OpenShift's restricted-v2 SCC injects a UID from
+      # the namespace's allocated range (e.g. 1000760000-1000769999). Hard-
+      # coding 1000 makes the SCC reject the pod with FailedCreate. The
+      # Dockerfile must be OpenShift-friendly: files writable by group root
+      # (gid 0), no `USER 1000` (use `USER 1001` or rely on the injected UID).
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
+        runAsNonRoot: true
