@@ -154,10 +154,37 @@ def create_app() -> FastAPI:
             app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
         @app.get("/{full_path:path}")
-        async def serve_spa(full_path: str) -> FileResponse:
-            """Catch-all: serve index.html for client-side routing."""
+        async def serve_spa(full_path: str):
+            """Serve top-level static files from dist/, else fall back to
+            index.html for client-side routing.
+
+            Without this, requests like /favicon.svg or /ICRC-hand-line-*.svg
+            (assets that Vite copies to dist/ root, NOT dist/assets/) match
+            this catch-all and get index.html back with text/html content
+            type. The browser then renders HTML in place of an image — no
+            404 surfaces, but the image is broken.
+            """
             if ".." in full_path:
                 return JSONResponse({"error": "Invalid path"}, status_code=400)
+
+            # If the path resolves to a real file under dist/, serve it
+            # directly. FileResponse infers the correct media_type from the
+            # extension via mimetypes.
+            if full_path:
+                candidate = _FRONTEND_DIST / full_path
+                try:
+                    candidate_resolved = candidate.resolve()
+                    dist_resolved = _FRONTEND_DIST.resolve()
+                    # Path traversal guard: must stay inside dist/.
+                    if (
+                        candidate_resolved.is_file()
+                        and dist_resolved in candidate_resolved.parents
+                    ):
+                        return FileResponse(str(candidate_resolved))
+                except (OSError, RuntimeError):
+                    pass
+
+            # Fall through to SPA: index.html for client-side routing.
             index = _FRONTEND_DIST / "index.html"
             if index.exists():
                 return FileResponse(str(index))
