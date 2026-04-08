@@ -162,7 +162,7 @@ function CoverageChart({
 
   return (
     <div>
-      <ResponsiveContainer width="100%" height={items.length * 36 + 20}>
+      <ResponsiveContainer width="90%" height={items.length * 36 + 20}>
         <BarChart
           data={data}
           layout="vertical"
@@ -202,7 +202,7 @@ function CoverageChart({
         </BarChart>
       </ResponsiveContainer>
       {/* Count labels overlaid on right side */}
-      <div className="space-y-0">
+      <div className="space-y-1">
         {items.map((item, i) => (
           <div
             key={item.label}
