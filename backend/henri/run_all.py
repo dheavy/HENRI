@@ -67,7 +67,7 @@ def _step_snow_extract(data_dir: Path) -> None:
     asyncio.run(_run())
 
 
-def _step_snow_parse(data_dir: Path) -> tuple[pd.DataFrame, dict, dict]:
+def _step_snow_parse(data_dir: Path, fixtures: bool = False) -> tuple[pd.DataFrame, dict, dict]:
     """Parse ServiceNow CSVs → enriched parquet + registry.
 
     Returns (incidents_df, registry, subsite_map).
@@ -111,8 +111,10 @@ def _step_snow_parse(data_dir: Path) -> tuple[pd.DataFrame, dict, dict]:
         from grafana_client.client import GrafanaClient
         from grafana_client.registry_builder import build_registry_from_grafana, build_registry_from_fixture
 
+        import os as _os
+        _offline = _os.getenv("HENRI_OFFLINE", "").lower() in ("1", "true", "yes")
         grafana_config = GrafanaConfig()
-        if grafana_config.is_configured:
+        if grafana_config.is_configured and not fixtures and not _offline:
             logger.info("Grafana configured — pulling live registry")
             client = GrafanaClient(grafana_config.url, grafana_config.api_token, grafana_config.prometheus_ds_id)
             try:
@@ -314,7 +316,7 @@ def run_pipeline(
     # Step 3: Parse & enrich
     if "snow" in active:
         try:
-            _, registry, subsite_map = _step_snow_parse(data_dir)
+            _, registry, subsite_map = _step_snow_parse(data_dir, fixtures=fixtures)
             steps_run.append("snow_parse")
         except Exception as exc:
             logger.error("ServiceNow parsing failed: %s", exc)

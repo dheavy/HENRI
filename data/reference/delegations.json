@@ -113,7 +113,6 @@
     "longitude": null,
     "source": "grafana_fortigate_labels",
     "sub_sites": [
-      "AM1",
       "AMW"
     ]
   },
@@ -138,6 +137,7 @@
     "longitude": null,
     "source": "grafana_fortigate_labels",
     "sub_sites": [
+      "RAD",
       "RRAD11",
       "WBAG30"
     ]
@@ -1045,7 +1045,7 @@
     "region": "ASIA",
     "country": null,
     "country_iso3": null,
-    "smt_assignmentgroup": "MSC ICT L2 SUPPORT",
+    "smt_assignmentgroup": "MSC ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "grafana_fortigate_labels",
@@ -1143,6 +1143,7 @@
     "longitude": null,
     "source": "grafana_fortigate_labels",
     "sub_sites": [
+      "DJB",
       "DOI",
       "FDA",
       "OUH"
@@ -1233,8 +1234,7 @@
     "longitude": null,
     "source": "grafana_fortigate_labels",
     "sub_sites": [
-      "ALJ",
-      "KHF"
+      "ALJ"
     ]
   },
   "RAM": {
@@ -1488,6 +1488,439 @@
       "RBIU02"
     ]
   },
+  "LOM": {
+    "name": "LOM",
+    "region": null,
+    "country": "Togo",
+    "country_iso3": "TGO",
+    "smt_assignmentgroup": "LOM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "LON": {
+    "name": "London",
+    "region": "AFRICA West",
+    "country": "United Kingdom",
+    "country_iso3": "GBR",
+    "smt_assignmentgroup": "LON ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": [
+      "DJI"
+    ]
+  },
+  "KYN": {
+    "name": "KYN",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KYN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "BGD": {
+    "name": "BGD",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BGD ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "JAL": {
+    "name": "JAL",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "JAL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "MYI": {
+    "name": "MYI",
+    "region": null,
+    "country": "Myanmar",
+    "country_iso3": "MMR",
+    "smt_assignmentgroup": "MYI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "TID": {
+    "name": "TID",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TID ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "TOK": {
+    "name": "TOK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TOK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "SCI": {
+    "name": "SCI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SCI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "TEG": {
+    "name": "Tegucigalpa",
+    "region": "AMERICAS",
+    "country": "Honduras",
+    "country_iso3": "HND",
+    "smt_assignmentgroup": "TEG ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "DJB": {
+    "name": "DJB",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "DJB ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "BGS": {
+    "name": "BGS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BGS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "SMM": {
+    "name": "SMM",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SMM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "BAH": {
+    "name": "BAH",
+    "region": null,
+    "country": "Ethiopia",
+    "country_iso3": "ETH",
+    "smt_assignmentgroup": "BAH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "GUL": {
+    "name": "GUL",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "GUL ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "AFU": {
+    "name": "AFU",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "AFU ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "CTN": {
+    "name": "CTN",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "CTN ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "MAY": {
+    "name": "MAY",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MAY ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "DOI": {
+    "name": "Donetsk",
+    "region": "EURASIA",
+    "country": "Ukraine",
+    "country_iso3": "UKR",
+    "smt_assignmentgroup": "DOI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "YEI": {
+    "name": "Yei",
+    "region": "AFRICA East",
+    "country": "South Sudan",
+    "country_iso3": "SSD",
+    "smt_assignmentgroup": "YEI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "SOK": {
+    "name": "SOK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SOK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "QUB": {
+    "name": "QUB",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "QUB ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "MRO": {
+    "name": "MRO",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MRO ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "LVI": {
+    "name": "LVI",
+    "region": null,
+    "country": "Ukraine",
+    "country_iso3": "UKR",
+    "smt_assignmentgroup": "LVI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "POP": {
+    "name": "POP",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "POP ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "UVI": {
+    "name": "UVI",
+    "region": null,
+    "country": "Democratic Republic Of The Congo",
+    "country_iso3": null,
+    "smt_assignmentgroup": "UVI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "DUS": {
+    "name": "Dushanbe",
+    "region": "EURASIA",
+    "country": "Tajikistan",
+    "country_iso3": "TJK",
+    "smt_assignmentgroup": "DUS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "TYR": {
+    "name": "TYR",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "TYR ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "WAS": {
+    "name": "Washington",
+    "region": "AMERICAS",
+    "country": "United States",
+    "country_iso3": "USA",
+    "smt_assignmentgroup": "WAS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "CHS": {
+    "name": "CHS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "CHS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "SEO": {
+    "name": "SEO",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "SEO ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "CHM": {
+    "name": "CHM",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "CHM ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "KIS": {
+    "name": "KIS",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "KIS ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": [
+      "XUD"
+    ]
+  },
+  "FAI": {
+    "name": "FAI",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "FAI ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "ABE": {
+    "name": "ABE",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "ABE ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "OUH": {
+    "name": "OUH",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "OUH ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "FDA": {
+    "name": "FDA",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "FDA ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "BRU": {
+    "name": "BRU",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BRU ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "BIK": {
+    "name": "BIK",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "BIK ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
   "BCT": {
     "name": "BCT",
     "region": null,
@@ -1505,17 +1938,6 @@
     "country": null,
     "country_iso3": null,
     "smt_assignmentgroup": "BME ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "BAH": {
-    "name": "BAH",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "BAH ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "servicenow+grafana",
@@ -1543,41 +1965,6 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "LON": {
-    "name": "London",
-    "region": "AFRICA West",
-    "country": "United Kingdom",
-    "country_iso3": "GBR",
-    "smt_assignmentgroup": "LON ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": [
-      "DJI"
-    ]
-  },
-  "UVI": {
-    "name": "UVI",
-    "region": null,
-    "country": "Democratic Republic Of The Congo",
-    "country_iso3": null,
-    "smt_assignmentgroup": "UVI ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "POP": {
-    "name": "POP",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "POP ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "WAU": {
     "name": "Wau",
     "region": "AFRICA East",
@@ -1595,17 +1982,6 @@
     "country": null,
     "country_iso3": null,
     "smt_assignmentgroup": "BUX ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "ABE": {
-    "name": "ABE",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "ABE ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "servicenow+grafana",
@@ -1644,72 +2020,6 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "SOK": {
-    "name": "SOK",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "SOK ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "MAY": {
-    "name": "MAY",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "MAY ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "OUH": {
-    "name": "OUH",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "OUH ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "YEI": {
-    "name": "Yei",
-    "region": "AFRICA East",
-    "country": "South Sudan",
-    "country_iso3": "SSD",
-    "smt_assignmentgroup": "YEI ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "LVI": {
-    "name": "LVI",
-    "region": null,
-    "country": "Ukraine",
-    "country_iso3": "UKR",
-    "smt_assignmentgroup": "LVI ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "TEG": {
-    "name": "Tegucigalpa",
-    "region": "AMERICAS",
-    "country": "Honduras",
-    "country_iso3": "HND",
-    "smt_assignmentgroup": "TEG ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "DAT": {
     "name": "DAT",
     "region": null,
@@ -1732,45 +2042,12 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "BIK": {
-    "name": "BIK",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "BIK ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "BLC": {
     "name": "BLC",
     "region": null,
     "country": null,
     "country_iso3": null,
     "smt_assignmentgroup": "BLC ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "JAL": {
-    "name": "JAL",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "JAL ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "MYI": {
-    "name": "MYI",
-    "region": null,
-    "country": "Myanmar",
-    "country_iso3": "MMR",
-    "smt_assignmentgroup": "MYI ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "servicenow+grafana",
@@ -1798,17 +2075,6 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "SCI": {
-    "name": "SCI",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "SCI ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "MAL": {
     "name": "Malakal",
     "region": "AFRICA East",
@@ -1831,28 +2097,6 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "TYR": {
-    "name": "TYR",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "TYR ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "SMM": {
-    "name": "SMM",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "SMM ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "AMW": {
     "name": "AMW",
     "region": null,
@@ -1863,19 +2107,6 @@
     "longitude": null,
     "source": "servicenow+grafana",
     "sub_sites": []
-  },
-  "KIS": {
-    "name": "KIS",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "KIS ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": [
-      "XUD"
-    ]
   },
   "MEE": {
     "name": "MEE",
@@ -1894,17 +2125,6 @@
     "country": null,
     "country_iso3": null,
     "smt_assignmentgroup": "HAW ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "GUL": {
-    "name": "GUL",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "GUL ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "servicenow+grafana",
@@ -1932,17 +2152,6 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "LOM": {
-    "name": "LOM",
-    "region": null,
-    "country": "Togo",
-    "country_iso3": "TGO",
-    "smt_assignmentgroup": "LOM ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "ZAH": {
     "name": "ZAH",
     "region": null,
@@ -1954,56 +2163,12 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "KYN": {
-    "name": "KYN",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "KYN ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "MOM": {
     "name": "MOM",
     "region": null,
     "country": null,
     "country_iso3": null,
     "smt_assignmentgroup": "MOM ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "CTN": {
-    "name": "CTN",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "CTN ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "BGS": {
-    "name": "BGS",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "BGS ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "SEO": {
-    "name": "SEO",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "SEO ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "servicenow+grafana",
@@ -2075,17 +2240,6 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "FAI": {
-    "name": "FAI",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "FAI ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "KYA": {
     "name": "KYA",
     "region": null,
@@ -2103,17 +2257,6 @@
     "country": null,
     "country_iso3": null,
     "smt_assignmentgroup": "PPO ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "TOK": {
-    "name": "TOK",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "TOK ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "servicenow+grafana",
@@ -2141,17 +2284,6 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "DOI": {
-    "name": "Donetsk",
-    "region": "EURASIA",
-    "country": "Ukraine",
-    "country_iso3": "UKR",
-    "smt_assignmentgroup": "DOI ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "KOU": {
     "name": "KOU",
     "region": null,
@@ -2174,17 +2306,6 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "DJB": {
-    "name": "DJB",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "DJB ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "JIJ": {
     "name": "JIJ",
     "region": null,
@@ -2196,34 +2317,12 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "WAS": {
-    "name": "Washington",
-    "region": "AMERICAS",
-    "country": "United States",
-    "country_iso3": "USA",
-    "smt_assignmentgroup": "WAS ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "HAG": {
     "name": "HAG",
     "region": null,
     "country": null,
     "country_iso3": null,
     "smt_assignmentgroup": "HAG ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "CHS": {
-    "name": "CHS",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "CHS ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "servicenow+grafana",
@@ -2284,45 +2383,12 @@
     "source": "servicenow+grafana",
     "sub_sites": []
   },
-  "BGD": {
-    "name": "BGD",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "BGD ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
   "TEL": {
     "name": "Tel Aviv",
     "region": "NAME",
     "country": "Israel",
     "country_iso3": "ISR",
     "smt_assignmentgroup": "TEL ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "QUB": {
-    "name": "QUB",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "QUB ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "DUS": {
-    "name": "Dushanbe",
-    "region": "EURASIA",
-    "country": "Tajikistan",
-    "country_iso3": "TJK",
-    "smt_assignmentgroup": "DUS ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "servicenow+grafana",
@@ -2345,17 +2411,6 @@
     "country": null,
     "country_iso3": null,
     "smt_assignmentgroup": "GAR ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "FDA": {
-    "name": "FDA",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "FDA ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "servicenow+grafana",
@@ -2455,17 +2510,6 @@
     "country": null,
     "country_iso3": null,
     "smt_assignmentgroup": "MIR ICT L2 Support",
-    "latitude": null,
-    "longitude": null,
-    "source": "servicenow+grafana",
-    "sub_sites": []
-  },
-  "MRO": {
-    "name": "MRO",
-    "region": null,
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "MRO ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "servicenow+grafana",

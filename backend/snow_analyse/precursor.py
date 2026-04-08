@@ -292,8 +292,9 @@ def _load_cf_historical(data_dir: Path) -> list[dict]:
     falls back to the fixture file.
     """
     import os
+    offline = os.getenv("HENRI_OFFLINE", "").lower() in ("1", "true", "yes")
     token = os.getenv("CF_API_TOKEN", "")
-    if token:
+    if token and not offline:
         try:
             import httpx
             resp = httpx.get(
@@ -331,6 +332,14 @@ def _load_ioda_historical(
     """
     import os
     import time as _time
+
+    if os.getenv("HENRI_OFFLINE", "").lower() in ("1", "true", "yes"):
+        # Use fixture if available, otherwise return empty.
+        fixture_path = data_dir / "fixtures" / "ioda_historical.json"
+        if fixture_path.exists():
+            with open(fixture_path) as f:
+                return json.load(f)
+        return {}
 
     # Determine the date range from incidents
     incidents_path = data_dir / "processed" / "incidents_all.parquet"

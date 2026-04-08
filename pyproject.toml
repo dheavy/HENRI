@@ -38,4 +38,5 @@ pythonpath = ["backend"]
 dev = [
     "pip-audit>=2.10.0",
     "pytest>=9.0.2",
+    "pytest-timeout>=2.3.1",
 ]
