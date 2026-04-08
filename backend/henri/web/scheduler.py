@@ -65,13 +65,25 @@ def _run_full_pipeline() -> None:
 
 
 def _run_osint_quick_check() -> None:
-    """Quick OSINT check — IODA summary + Cloudflare outages only."""
+    """Quick OSINT check — IODA summary + Cloudflare outages only.
+
+    Acquires the same file lock as the full pipeline to prevent racing a
+    manual regenerate or the scheduled full run, which would otherwise
+    consume a half-written parquet and crash report generation.
+    """
     logger.info("Scheduler: starting quick OSINT check")
+    from henri.web.api.pipeline import _acquire_file_lock, _release_file_lock
+
+    if not _acquire_file_lock():
+        logger.info("Scheduler: pipeline lock held, skipping OSINT quick check")
+        return
     try:
         from henri.run_all import run_pipeline
         run_pipeline(fixtures=False, sources={"osint"})
     except Exception as exc:
         logger.error("Scheduler: OSINT quick check failed — %s", type(exc).__name__)
+    finally:
+        _release_file_lock()
 
 
 def start_scheduler() -> BackgroundScheduler:

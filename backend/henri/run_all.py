@@ -355,20 +355,30 @@ def run_pipeline(
             steps_failed.append("deltas")
 
     # Step 7: Generate reports
-    try:
-        for fo in ([True] if field_only else [False, True]):
-            suffix = "field" if fo else "full"
-            output_name = f"henri_{suffix}_{today}.html"
-            path = generate_report(
-                data_dir, field_only=fo, use_fixtures=fixtures,
-                deltas=deltas, output_name=output_name,
-            )
-            report_paths.append(path)
-            logger.info("Report generated: %s", path.name)
-        steps_run.append("reports")
-    except Exception as exc:
-        logger.error("Report generation failed: %s", exc)
-        steps_failed.append("reports")
+    # Only generate reports when the snow parse step ran in this invocation.
+    # Quick OSINT-only runs (e.g. scheduler 15-min refresh) must NOT regenerate
+    # reports — they would consume a stale/partial parquet from a concurrent
+    # full run and crash with KeyError on missing columns like 'parent_code'.
+    if "snow_parse" not in steps_run:
+        logger.info(
+            "Skipping report generation: snow_parse did not run "
+            "(sources=%s)", sorted(active),
+        )
+    else:
+        try:
+            for fo in ([True] if field_only else [False, True]):
+                suffix = "field" if fo else "full"
+                output_name = f"henri_{suffix}_{today}.html"
+                path = generate_report(
+                    data_dir, field_only=fo, use_fixtures=fixtures,
+                    deltas=deltas, output_name=output_name,
+                )
+                report_paths.append(path)
+                logger.info("Report generated: %s", path.name)
+            steps_run.append("reports")
+        except Exception as exc:
+            logger.error("Report generation failed: %s", exc)
+            steps_failed.append("reports")
 
     elapsed = time.time() - start_time
     logger.info(
