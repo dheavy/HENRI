@@ -317,41 +317,62 @@ def _summarise_events(
     import pycountry as _pc
     iso_num_to_alpha3: dict[str, str] = {}
 
+    # Cache fuzzy name lookups too — pycountry.search_fuzzy is expensive.
+    name_to_alpha3: dict[str, str] = {}
+
     def _resolve_iso3(ev: dict) -> str | None:
         """ACLED events ship `iso` (numeric) and `country` (name).
-        Prefer numeric ISO; fall back to fuzzy name match for legacy
-        events that lack `iso` (rare in current API responses).
+
+        Try numeric ISO first; ALWAYS fall through to fuzzy name lookup
+        if the numeric path can't resolve. Old parquets written by an
+        earlier version of fetch_acled_live may not have the `iso`
+        column, or may have it as nullable float with NaN — both must
+        gracefully fall back to name matching.
         """
+        # ── 1. Numeric ISO path ────────────────────────────────────
         iso_num = ev.get("iso")
-        if iso_num is not None and iso_num != "":
-            # Coerce robustly: parquet round-trips can turn an int column
-            # into numpy.float64 (e.g. 566.0) if any row had a NaN. Naive
-            # str(566.0).zfill(3) gives "566.0" → pycountry lookup fails →
-            # 0 events match → silent empty result → fallback to fixture.
+        # Skip None, empty string, and NaN (NaN != NaN is the standard check).
+        if iso_num is not None and iso_num != "" and not (
+            isinstance(iso_num, float) and iso_num != iso_num
+        ):
             try:
+                # Coerce int / float / numpy variants to a canonical
+                # 3-digit numeric string. str(566.0).zfill(3) is "566.0"
+                # which pycountry rejects, so go through int().
                 key = str(int(float(iso_num))).zfill(3)
+                cached = iso_num_to_alpha3.get(key)
+                if cached is not None:
+                    if cached:
+                        return cached
+                else:
+                    try:
+                        c = _pc.countries.get(numeric=key)
+                        alpha3 = c.alpha_3 if c else ""
+                    except (AttributeError, LookupError, KeyError):
+                        alpha3 = ""
+                    iso_num_to_alpha3[key] = alpha3
+                    if alpha3:
+                        return alpha3
             except (TypeError, ValueError):
-                return None
-            cached = iso_num_to_alpha3.get(key)
-            if cached is not None:
-                return cached or None
-            try:
-                c = _pc.countries.get(numeric=key)
-                alpha3 = c.alpha_3 if c else ""
-            except (AttributeError, LookupError, KeyError):
-                alpha3 = ""
-            iso_num_to_alpha3[key] = alpha3
-            return alpha3 or None
-        # Fallback: fuzzy name lookup. pycountry handles most diacritic
-        # and apostrophe variants ("Cote d'Ivoire" → CIV).
+                pass  # Fall through to name lookup.
+
+        # ── 2. Fuzzy name fallback ─────────────────────────────────
+        # pycountry.search_fuzzy handles most diacritic and apostrophe
+        # variants ("Cote d'Ivoire" → CIV, "Democratic Republic of
+        # Congo" → COD).
         name = ev.get("country")
         if not name:
             return None
+        cached_name = name_to_alpha3.get(name)
+        if cached_name is not None:
+            return cached_name or None
         try:
             matches = _pc.countries.search_fuzzy(name)
-            return matches[0].alpha_3 if matches else None
+            alpha3 = matches[0].alpha_3 if matches else ""
         except LookupError:
-            return None
+            alpha3 = ""
+        name_to_alpha3[name] = alpha3
+        return alpha3 or None
 
     country_events: dict[str, list[dict]] = {}
     for ev in events:
