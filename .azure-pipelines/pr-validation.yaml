@@ -34,7 +34,12 @@ jobs:
 
       - script: |
           export PATH="$HOME/.local/bin:$PATH"
-          uv run pytest tests/ -q --tb=short --junitxml=$(Build.ArtifactStagingDirectory)/test-results.xml
+          # CI agent has no internet egress — force offline mode and unset
+          # any leaked credentials so fixture tests never touch the network.
+          export HENRI_OFFLINE=1
+          unset GRAFANA_API_TOKEN NETBOX_TOKEN SNOW_USERNAME SNOW_PASSWORD ACLED_EMAIL ACLED_PASSWORD CF_API_TOKEN
+          uv run pytest tests/ -v -o log_cli=true --tb=short --timeout=120 \
+            --junitxml=$(Build.ArtifactStagingDirectory)/test-results.xml
         displayName: Run Python tests
 
       - task: PublishTestResults@2
