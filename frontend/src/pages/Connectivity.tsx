@@ -179,6 +179,7 @@ function CoverageChart({
             tickLine={false}
           />
           <Tooltip
+            cursor={false}
             contentStyle={{
               background: 'var(--color-bg-surface)',
               border: '1px solid var(--color-border)',
