@@ -35,14 +35,25 @@ def _load_forward_alerts(data_dir: Path, registry: dict) -> list[dict]:
 
 
 def _load_delta_alerts(data_dir: Path) -> list[dict]:
+    """Read pipeline-produced risk scores and compute deltas against the
+    last persisted snapshot.
+
+    Previously this hard-coded ``use_fixtures=True`` and recomputed risk
+    cards from the bundled ACLED fixture on every dashboard request,
+    which (a) ignored fresh live data the pipeline already wrote to
+    risk_scores.json and (b) capped delta input at the 9 fixture
+    countries. The dashboard endpoint must be a thin reader of pipeline
+    output, not a recompute path.
+    """
     scores_path = data_dir / "processed" / "risk_scores.json"
     if not scores_path.exists():
         return []
     try:
         from henri.delta import compute_deltas
-        from osint.risk_scorer import compute_risk_cards
-        registry = _load_json(data_dir / "reference" / "delegations.json") or {}
-        cards = compute_risk_cards(data_dir, registry, use_fixtures=True)
+        scores_data = _load_json(scores_path) or {}
+        cards = scores_data.get("cards", [])
+        if not cards:
+            return []
         return compute_deltas(cards, data_dir)
     except Exception:
         return []

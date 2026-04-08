@@ -323,8 +323,15 @@ def _summarise_events(
         events that lack `iso` (rare in current API responses).
         """
         iso_num = ev.get("iso")
-        if iso_num is not None:
-            key = str(iso_num).zfill(3)
+        if iso_num is not None and iso_num != "":
+            # Coerce robustly: parquet round-trips can turn an int column
+            # into numpy.float64 (e.g. 566.0) if any row had a NaN. Naive
+            # str(566.0).zfill(3) gives "566.0" → pycountry lookup fails →
+            # 0 events match → silent empty result → fallback to fixture.
+            try:
+                key = str(int(float(iso_num))).zfill(3)
+            except (TypeError, ValueError):
+                return None
             cached = iso_num_to_alpha3.get(key)
             if cached is not None:
                 return cached or None
