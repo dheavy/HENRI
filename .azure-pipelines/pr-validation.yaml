@@ -51,6 +51,11 @@ jobs:
           testRunTitle: 'HENRI Python tests'
 
       # ── Frontend ────────────────────────────────────────────────────
+      - task: NodeTool@0
+        displayName: Install Node.js 22
+        inputs:
+          versionSpec: '22.x'
+
       - script: |
           cd frontend
           npm ci
