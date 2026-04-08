@@ -32,21 +32,29 @@ RUN uv sync --frozen --no-dev
 RUN uv run playwright install --with-deps chromium \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Create non-root user with no login shell
-RUN useradd -m -u 1000 -s /usr/sbin/nologin henri \
-    && chown -R henri:henri /app
+# OpenShift-friendly: non-root user, but files owned by group root (gid 0)
+# so the random UID injected by OpenShift's restricted-v2 SCC can still
+# write. We pick uid 1001 to match the OpenShift UBI convention; the
+# actual runtime UID will be assigned by the SCC.
+RUN useradd -m -u 1001 -g 0 -s /usr/sbin/nologin henri \
+    && chown -R 1001:0 /app \
+    && chmod -R g=u /app
 
-# Copy source code
-COPY --chown=henri:henri backend/ ./backend/
-COPY --chown=henri:henri templates/ ./templates/
-COPY --chown=henri:henri data/fixtures/ ./data/fixtures/
-COPY --chown=henri:henri data/reference/ ./data/reference/
+# Copy source code (group root, group-writable to match runtime UID injection)
+COPY --chown=1001:0 backend/ ./backend/
+COPY --chown=1001:0 templates/ ./templates/
+COPY --chown=1001:0 data/fixtures/ ./data/fixtures/
+COPY --chown=1001:0 data/reference/ ./data/reference/
 
 # Copy built React frontend from stage 1
-COPY --from=frontend-build --chown=henri:henri /app/frontend/dist ./frontend/dist
+COPY --from=frontend-build --chown=1001:0 /app/frontend/dist ./frontend/dist
 
-# Drop to non-root
-USER henri
+# Final perms pass — must be after all COPYs so group root can write everywhere
+RUN chmod -R g=u /app
+
+# Drop to non-root. OpenShift will override with an injected UID at runtime;
+# this default lets the image run on plain Docker/Podman too.
+USER 1001
 
 # uv: cache in writable tmpfs, skip sync at runtime (deps frozen at build)
 ENV UV_CACHE_DIR=/tmp/uv-cache
