@@ -34,14 +34,23 @@ _CLIENT_ID = "acled"
 
 
 def _get_icrc_countries(registry: dict[str, dict[str, Any]]) -> dict[str, tuple[str, str]]:
-    """Return {country_name_lower: (country_name, iso3)} for ICRC field delegations."""
+    """Return {iso3: (display_country_name, iso3)} for ICRC field delegations.
+
+    Keyed by ISO3 because country names are unreliable: ACLED uses
+    "Cote d'Ivoire" while the registry has both "Côte D'Ivoire" and
+    "Cote d'Ivoire" for the same delegation; "Democratic Republic of
+    Congo" vs "République Démocratique Du Congo"; etc. Lowercase string
+    matching dropped ~80% of countries in production.
+    """
     countries: dict[str, tuple[str, str]] = {}
     for entry in registry.values():
         country = entry.get("country")
         iso3 = entry.get("country_iso3")
         region = entry.get("region", "")
         if country and iso3 and region and region != "HQ":
-            countries[country.lower()] = (country, iso3)
+            # First-write wins: keeps the first display name we see for
+            # each ISO3, which is fine since name is just for the UI.
+            countries.setdefault(iso3, (country, iso3))
     return countries
 
 
@@ -210,20 +219,34 @@ def fetch_acled_live(
 
     all_events: list[dict] = []
 
+    import pycountry as _pc
     with httpx.Client(timeout=30.0) as client:
-        for country_lower, (country_name, _) in sorted(icrc_countries.items()):
+        for iso3, (country_name, _) in sorted(icrc_countries.items()):
             time.sleep(1.0)  # Rate limit: max 1 req/s
             # Refresh token if needed before each request
             current_token = token_mgr.get_token()
             if not current_token:
                 logger.warning("ACLED: token expired and refresh failed; aborting")
                 break
+            # Query ACLED by numeric ISO 3166-1 instead of country name.
+            # Country name matching against ACLED's catalogue is fragile
+            # ("Cote d'Ivoire" vs "Côte d'Ivoire", "DR Congo" vs
+            # "Democratic Republic of Congo", etc.) and dropped ~80% of
+            # countries in production. Numeric ISO is unambiguous.
+            try:
+                pc_country = _pc.countries.get(alpha_3=iso3)
+                iso_num = pc_country.numeric if pc_country else None
+            except (AttributeError, LookupError):
+                iso_num = None
+            if not iso_num:
+                logger.debug("ACLED: no numeric ISO for %s; skipping", iso3)
+                continue
             try:
                 resp = client.get(
                     _API_URL,
                     headers={"Authorization": f"Bearer {current_token}"},
                     params={
-                        "country": country_name,
+                        "iso": iso_num,
                         "limit": 5000,
                         "event_date": date_range,
                         "event_date_where": "BETWEEN",
@@ -289,6 +312,40 @@ def _summarise_events(
     cutoff_30 = max_date - timedelta(days=30)
     cutoff_15 = max_date - timedelta(days=15)
 
+    # Map ACLED's numeric ISO 3166-1 code → alpha-3 once, lazily, to keep
+    # the per-event loop a hash lookup.
+    import pycountry as _pc
+    iso_num_to_alpha3: dict[str, str] = {}
+
+    def _resolve_iso3(ev: dict) -> str | None:
+        """ACLED events ship `iso` (numeric) and `country` (name).
+        Prefer numeric ISO; fall back to fuzzy name match for legacy
+        events that lack `iso` (rare in current API responses).
+        """
+        iso_num = ev.get("iso")
+        if iso_num is not None:
+            key = str(iso_num).zfill(3)
+            cached = iso_num_to_alpha3.get(key)
+            if cached is not None:
+                return cached or None
+            try:
+                c = _pc.countries.get(numeric=key)
+                alpha3 = c.alpha_3 if c else ""
+            except (AttributeError, LookupError, KeyError):
+                alpha3 = ""
+            iso_num_to_alpha3[key] = alpha3
+            return alpha3 or None
+        # Fallback: fuzzy name lookup. pycountry handles most diacritic
+        # and apostrophe variants ("Cote d'Ivoire" → CIV).
+        name = ev.get("country")
+        if not name:
+            return None
+        try:
+            matches = _pc.countries.search_fuzzy(name)
+            return matches[0].alpha_3 if matches else None
+        except LookupError:
+            return None
+
     country_events: dict[str, list[dict]] = {}
     for ev in events:
         try:
@@ -297,13 +354,13 @@ def _summarise_events(
             continue
         if d < cutoff_30:
             continue
-        c = (ev.get("country") or "").lower()
-        if c in icrc_countries:
-            country_events.setdefault(c, []).append({"date": d, "event": ev})
+        iso3 = _resolve_iso3(ev)
+        if iso3 and iso3 in icrc_countries:
+            country_events.setdefault(iso3, []).append({"date": d, "event": ev})
 
     results = []
-    for country_lower, items in country_events.items():
-        country_name, iso3 = icrc_countries[country_lower]
+    for iso3, items in country_events.items():
+        country_name, iso3 = icrc_countries[iso3]
         events_30d = len(items)
         fatalities_30d = sum(int(item["event"].get("fatalities", 0) or 0) for item in items)
 
