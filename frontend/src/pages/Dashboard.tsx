@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import AlertSummary from '../components/AlertSummary';
 import RiskTable from '../components/RiskTable';
 import EmptyState from '../components/EmptyState';
+import RegenerateButton from '../components/RegenerateButton';
 import SurgePulse from '../components/SurgePulse';
 import SourceHealth from '../components/SourceHealth';
 import DotHistogram from '../components/DotHistogram';
@@ -241,32 +242,41 @@ export default function Dashboard() {
             — Humanitarian Early-warning Network Resilience Intelligence
           </span>
         </h1>
-        <p
+        <div
           className="text-data"
-          style={{ color: 'var(--color-text-muted)', marginTop: '14px' }}
+          style={{
+            color: 'var(--color-text-muted)',
+            marginTop: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+          }}
         >
-          Last update:{' '}
-          {dashboard.generated_at
-            ? (() => {
-                const d = new Date(dashboard.generated_at);
-                const utc = d.toLocaleString('en-GB', {
-                  day: '2-digit',
-                  month: 'long',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  timeZone: 'UTC',
-                  timeZoneName: 'short',
-                });
-                const local = d.toLocaleString('en-GB', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  timeZoneName: 'short',
-                });
-                return `${utc} (${local})`;
-              })()
-            : '—'}
-        </p>
+          <span>
+            Last update:{' '}
+            {dashboard.generated_at
+              ? (() => {
+                  const d = new Date(dashboard.generated_at);
+                  const utc = d.toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'UTC',
+                    timeZoneName: 'short',
+                  });
+                  const local = d.toLocaleString('en-GB', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZoneName: 'short',
+                  });
+                  return `${utc} (${local})`;
+                })()
+              : '—'}
+          </span>
+          <RegenerateButton />
+        </div>
       </div>
 
       {/* 2. Alert explainer + alert card */}
