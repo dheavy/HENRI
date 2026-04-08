@@ -20,6 +20,29 @@ spec:
         app.kubernetes.io/component: henri
     spec:
       serviceAccountName: henri
+      # The PVC mounted at /app/data shadows whatever was baked into the
+      # image under that path. We bundle fixtures + reference data at
+      # /app/seed/ in the image and seed them into the PVC on first start.
+      # `cp -rn` (no-clobber) preserves any pipeline-generated data on
+      # subsequent restarts. To force a refresh after a release, `oc rsh`
+      # into the pod and delete the relevant subdirs from /app/data.
+      initContainers:
+        - name: seed-data
+          image: main.repository.ext.icrc.org/icrc/expr/henri:latest
+          imagePullPolicy: Always
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              mkdir -p /app/data/fixtures /app/data/reference /app/data/raw /app/data/processed /app/data/reports
+              cp -rn /app/seed/fixtures/. /app/data/fixtures/ || true
+              cp -rn /app/seed/reference/. /app/data/reference/ || true
+              echo "Seeded /app/data:"
+              ls -la /app/data
+          volumeMounts:
+            - name: henri-data
+              mountPath: /app/data
       containers:
         - name: henri
           # Image pushed by the build-and-push pipeline to Nexus.

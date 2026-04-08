@@ -43,8 +43,14 @@ RUN useradd -m -u 1001 -g 0 -s /usr/sbin/nologin henri \
 # Copy source code (group root, group-writable to match runtime UID injection)
 COPY --chown=1001:0 backend/ ./backend/
 COPY --chown=1001:0 templates/ ./templates/
-COPY --chown=1001:0 data/fixtures/ ./data/fixtures/
-COPY --chown=1001:0 data/reference/ ./data/reference/
+
+# Bundled fixtures + reference data live at /app/seed/, NOT /app/data/.
+# At runtime the PVC mounts at /app/data and would shadow anything baked in
+# under that path. The deployment's initContainer seeds /app/data from
+# /app/seed on first start using `cp -rn` (no-clobber) so user/pipeline-
+# generated data is preserved on subsequent restarts.
+COPY --chown=1001:0 data/fixtures/ ./seed/fixtures/
+COPY --chown=1001:0 data/reference/ ./seed/reference/
 
 # Copy built React frontend from stage 1
 COPY --from=frontend-build --chown=1001:0 /app/frontend/dist ./frontend/dist
