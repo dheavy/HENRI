@@ -190,12 +190,12 @@ function CoverageChart({
             ]}
           />
           <Bar dataKey="value" stackId="a" fill="var(--color-green)" radius={0}>
-            {data.map((entry, i) => (
+            {data.map((_entry, i) => (
               <Cell key={i} fill="var(--color-green)" />
             ))}
           </Bar>
           <Bar dataKey="remaining" stackId="a" fill="var(--color-bg-highlight)" radius={0}>
-            {data.map((entry, i) => (
+            {data.map((_entry, i) => (
               <Cell key={i} fill="var(--color-bg-highlight)" />
             ))}
           </Bar>
