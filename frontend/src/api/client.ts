@@ -217,3 +217,75 @@ export async function triggerRegenerate(): Promise<{ accepted: boolean; reason?:
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
 }
+
+// ── Fixtures ────────────────────────────────────────────────────────
+
+export interface FixtureFileInfo {
+  name: string;
+  exists: boolean;
+  size_bytes?: number;
+  modified_at?: string;
+  rows?: number;
+  columns?: string[];
+  record_count?: number;
+  top_keys?: string[];
+}
+
+export interface RefreshInfo {
+  prerequisites: string;
+  env_vars: string[];
+  cli: string;
+  notes: string;
+}
+
+export interface FixtureSlot {
+  id: string;
+  label: string;
+  category: 'servicenow' | 'osint' | 'internal';
+  type: 'csv' | 'json';
+  multi: boolean;
+  pattern: string;
+  description: string;
+  required_columns: string[] | null;
+  refresh_info: RefreshInfo | null;
+  file?: FixtureFileInfo;
+  files?: FixtureFileInfo[];
+}
+
+export interface FixturesResponse {
+  fixtures: FixtureSlot[];
+}
+
+export const fetchFixtures = () =>
+  fetchJson<FixturesResponse>(`${BASE}/fixtures`);
+
+export async function uploadFixture(
+  fixtureId: string,
+  file: globalThis.File,
+): Promise<{ uploaded: boolean; filename: string }> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${BASE}/fixtures/upload/${fixtureId}`, {
+    method: 'POST',
+    body: form,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(body.detail || `Upload failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function deleteFixture(
+  fixtureId: string,
+  filename: string,
+): Promise<{ deleted: boolean }> {
+  const res = await fetch(`${BASE}/fixtures/${fixtureId}/${encodeURIComponent(filename)}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(body.detail || `Delete failed: ${res.status}`);
+  }
+  return res.json();
+}

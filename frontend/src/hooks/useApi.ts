@@ -6,6 +6,7 @@ import {
   fetchDelegations,
   fetchCountryDetail,
   fetchConnectivity,
+  fetchFixtures,
 } from '../api/client';
 
 // Dashboard refreshes every 60s, all others every 30 minutes (for overnight sessions)
@@ -58,5 +59,12 @@ export function useConnectivity() {
     queryKey: ['connectivity'],
     queryFn: fetchConnectivity,
     refetchInterval: REFRESH_SLOW,
+  });
+}
+
+export function useFixtures() {
+  return useQuery({
+    queryKey: ['fixtures'],
+    queryFn: fetchFixtures,
   });
 }

@@ -7,6 +7,7 @@ import Surges from './pages/Surges';
 import Delegations from './pages/Delegations';
 import Report from './pages/Report';
 import Connectivity from './pages/Connectivity';
+import Fixtures from './pages/Fixtures';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +30,7 @@ export default function App() {
             <Route path="/delegations" element={<Delegations />} />
             <Route path="/connectivity" element={<Connectivity />} />
             <Route path="/report" element={<Report />} />
+            <Route path="/fixtures" element={<Fixtures />} />
           </Route>
         </Routes>
       </BrowserRouter>

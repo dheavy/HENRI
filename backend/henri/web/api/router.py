@@ -11,6 +11,7 @@ from .pipeline import router as pipeline_router
 from .bandwidth import router as bandwidth_router
 from .coherence import router as coherence_router
 from .connectivity import router as connectivity_router
+from .fixtures import router as fixtures_router
 
 api_router = APIRouter()
 
@@ -23,3 +24,4 @@ api_router.include_router(alerts_router, prefix="/alerts", tags=["alerts"])
 api_router.include_router(bandwidth_router, prefix="/bandwidth", tags=["bandwidth"])
 api_router.include_router(coherence_router, prefix="/coherence", tags=["coherence"])
 api_router.include_router(connectivity_router, prefix="/connectivity", tags=["connectivity"])
+api_router.include_router(fixtures_router, prefix="/fixtures", tags=["fixtures"])
