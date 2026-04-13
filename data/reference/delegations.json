@@ -25,6 +25,7 @@
     "source": "grafana_fortigate_labels",
     "sub_sites": [
       "BIU",
+      "DAT",
       "ID1",
       "YOL"
     ]
@@ -113,6 +114,7 @@
     "longitude": null,
     "source": "grafana_fortigate_labels",
     "sub_sites": [
+      "AMMTEST",
       "AMW"
     ]
   },
@@ -651,8 +653,7 @@
       "ATEL01",
       "BET",
       "HEB",
-      "JERWH1",
-      "TEL"
+      "JERWH1"
     ]
   },
   "JUB": {
@@ -943,7 +944,6 @@
     "source": "grafana_fortigate_labels",
     "sub_sites": [
       "BDAT8",
-      "DAT",
       "MNG",
       "RDAT01",
       "RMIU02",
@@ -1035,17 +1035,6 @@
     "country": null,
     "country_iso3": null,
     "smt_assignmentgroup": "MRB ICT L2 SUPPORT",
-    "latitude": null,
-    "longitude": null,
-    "source": "grafana_fortigate_labels",
-    "sub_sites": []
-  },
-  "MSC": {
-    "name": "MSC",
-    "region": "ASIA",
-    "country": null,
-    "country_iso3": null,
-    "smt_assignmentgroup": "MSC ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "grafana_fortigate_labels",
@@ -1145,8 +1134,7 @@
     "sub_sites": [
       "DJB",
       "DOI",
-      "FDA",
-      "OUH"
+      "FDA"
     ]
   },
   "PAN": {
@@ -1321,7 +1309,7 @@
     "region": "ASIA",
     "country": null,
     "country_iso3": null,
-    "smt_assignmentgroup": "SIT ICT L2 SUPPORT",
+    "smt_assignmentgroup": "SIT ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "grafana_fortigate_labels",
@@ -1529,6 +1517,17 @@
     "country": null,
     "country_iso3": null,
     "smt_assignmentgroup": "BGD ICT L2 Support",
+    "latitude": null,
+    "longitude": null,
+    "source": "servicenow+grafana",
+    "sub_sites": []
+  },
+  "MSC": {
+    "name": "MSC",
+    "region": null,
+    "country": null,
+    "country_iso3": null,
+    "smt_assignmentgroup": "MSC ICT L2 Support",
     "latitude": null,
     "longitude": null,
     "source": "servicenow+grafana",
