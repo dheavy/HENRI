@@ -1,0 +1,14 @@
+sys_id,number,short_description,opened_at,resolved_at,closed_at,sys_updated_on,assignment_group,location,priority,state
+aaa001,INC0001,"⚠ Prometheus - fw-ade-01.ade.icrc.priv - FortigateSiteDown",01.03.2026 08:00:00,01.03.2026 12:00:00,01.03.2026 12:00:00,01.03.2026 12:00:00,ADE ICT L2 SUPPORT,Aden,2,Closed
+aaa002,INC0002,"⚠ Prometheus - fw-ade-01.ade.icrc.priv - FortigateSiteDown",05.03.2026 10:00:00,05.03.2026 14:00:00,05.03.2026 14:00:00,05.03.2026 14:00:00,ADE ICT L2 SUPPORT,Aden,2,Closed
+aaa003,INC0003,"⚠ Prometheus - fw-abj-01.abj.icrc.priv - FortigateSiteDown",02.03.2026 09:00:00,02.03.2026 11:00:00,02.03.2026 11:00:00,02.03.2026 11:00:00,ABJ ICT L2 SUPPORT,Abidjan,2,Closed
+aaa004,INC0004,"⚠ Prometheus - fw-abj-01.abj.icrc.priv - HighCpuUsage",03.03.2026 14:00:00,03.03.2026 16:00:00,03.03.2026 16:00:00,03.03.2026 16:00:00,ABJ ICT L2 SUPPORT,Abidjan,3,Closed
+aaa005,INC0005,"⚠ Prometheus - fw-add-01.add.icrc.priv - ServerDown",04.03.2026 07:00:00,04.03.2026 09:00:00,04.03.2026 09:00:00,04.03.2026 09:00:00,ADD ICT L2 SUPPORT,Addis Ababa,2,Closed
+aaa006,INC0006,"⚠ Prometheus - fw-dam-01.dam.icrc.priv - FortigateSiteDown",06.03.2026 11:00:00,06.03.2026 15:00:00,06.03.2026 15:00:00,06.03.2026 15:00:00,DAM ICT L2 SUPPORT,Damascus,2,Closed
+aaa007,INC0007,"⚠ Prometheus - fw-dam-01.dam.icrc.priv - HighMemoryUsage",07.03.2026 08:30:00,07.03.2026 10:00:00,07.03.2026 10:00:00,07.03.2026 10:00:00,DAM ICT L2 SUPPORT,Damascus,3,Closed
+aaa008,INC0008,"Network outage in Aden office",08.03.2026 06:00:00,08.03.2026 18:00:00,08.03.2026 18:00:00,08.03.2026 18:00:00,ADE ICT L2 SUPPORT,Aden,1,Closed
+aaa009,INC0009,"Internet connectivity issue - satellite link down",10.03.2026 09:00:00,10.03.2026 12:00:00,10.03.2026 12:00:00,10.03.2026 12:00:00,ABJ ICT L2 SUPPORT,Abidjan,2,Closed
+aaa010,INC0010,"VPN tunnel flapping between sites",12.03.2026 14:00:00,12.03.2026 16:00:00,12.03.2026 16:00:00,12.03.2026 16:00:00,ADD ICT L2 SUPPORT,Addis Ababa,2,Closed
+aaa011,INC0011,"⚠ Prometheus - fw-gva-01.gva.icrc.priv - FortigateSiteDown",15.03.2026 09:00:00,15.03.2026 10:00:00,15.03.2026 10:00:00,15.03.2026 10:00:00,TI NETWORK SUPPORT,Geneva,2,Closed
+aaa012,INC0012,"⚠ Prometheus - fw-col-01.col.icrc.priv - FortigateSiteDown",16.03.2026 08:00:00,16.03.2026 12:00:00,16.03.2026 12:00:00,16.03.2026 12:00:00,COL ICT L2 SUPPORT,Colombo,2,Closed
+aaa001,INC0001_dup,"⚠ Prometheus - fw-ade-01.ade.icrc.priv - FortigateSiteDown",01.03.2026 08:00:00,01.03.2026 12:00:00,01.03.2026 12:00:00,02.03.2026 08:00:00,ADE ICT L2 SUPPORT,Aden,2,Closed

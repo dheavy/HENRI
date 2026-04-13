@@ -1,0 +1,9 @@
+sys_id,name,city,country,latitude,longitude
+loc001,Aden Office,Aden,Yemen,12.7855,45.0187
+loc002,Abidjan Office,Abidjan,"Côte D'Ivoire | Cote d'Ivoire",5.3600,-4.0083
+loc003,Addis Ababa Office,Addis Ababa,Ethiopia,9.0250,38.7469
+loc004,Damascus Office,Damascus,Syria,33.5138,36.2765
+loc005,Geneva HQ,Geneva,Switzerland,46.2044,6.1432
+loc006,Colombo Office,Colombo,Sri Lanka,6.9271,79.8612
+loc007,Nairobi Office,Nairobi,Kenya,,
+loc008,Kinshasa Office,Kinshasa,République Démocratique Du Congo,-4.3250,15.3222
